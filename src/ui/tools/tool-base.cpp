@@ -766,6 +766,14 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             ret = true;
             break;
 
+        case GDK_KEY_r:
+        case GDK_KEY_R:
+            if (MOD__ALT_ONLY(event)) {
+                _desktop->rotate_grab_focus();
+                ret = true;
+            }
+            break;
+
         case GDK_KEY_z:
         case GDK_KEY_Z:
             if (MOD__ALT_ONLY(event)) {

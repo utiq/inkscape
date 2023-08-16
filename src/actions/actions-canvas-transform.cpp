@@ -13,6 +13,8 @@
 #include <giomm.h>  // Not <gtkmm.h>! To eventually allow a headless version!
 #include <glibmm/i18n.h>
 
+#include <2geom/angle.h>  // rad_from_deg
+
 #include "actions-canvas-transform.h"
 #include "actions-helper.h"
 #include "inkscape-application.h"
@@ -166,6 +168,70 @@ canvas_transform(InkscapeWindow *win, const int& option)
     }
 }
 
+// Zoom to an arbitrary value
+void
+canvas_zoom_absolute(Glib::VariantBase const &value, InkscapeWindow *win)
+{
+    auto d = Glib::VariantBase::cast_dynamic<Glib::Variant<double> >(value);
+
+    SPDesktop* dt = win->get_desktop();
+
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    if (prefs->getDouble("/options/zoomcorrection/shown", true)) {
+        dt->zoom_realworld(dt->current_center(), d.get());
+    } else {
+        dt->zoom_absolute(dt->current_center(), d.get(), false);
+    }
+}
+
+// Zoom a relative amount
+void
+canvas_zoom_relative(Glib::VariantBase const &value, InkscapeWindow *win)
+{
+    auto d = Glib::VariantBase::cast_dynamic<Glib::Variant<double> >(value);
+
+    SPDesktop* dt = win->get_desktop();
+    dt->zoom_relative(dt->current_center(), d.get());
+}
+
+// Rotate to an arbitrary value
+void
+canvas_rotate_absolute_radians(Glib::VariantBase const &value, InkscapeWindow *win)
+{
+    auto d = Glib::VariantBase::cast_dynamic<Glib::Variant<double> >(value);
+
+    SPDesktop* dt = win->get_desktop();
+    dt->rotate_absolute_center_point(dt->current_center(), d.get());
+}
+
+void
+canvas_rotate_absolute_degrees(Glib::VariantBase const &value, InkscapeWindow *win)
+{
+    auto d = Glib::VariantBase::cast_dynamic<Glib::Variant<double> >(value);
+
+    SPDesktop* dt = win->get_desktop();
+    dt->rotate_absolute_center_point(dt->current_center(), Geom::rad_from_deg(d.get()));
+}
+
+// Rotate a relative amount
+void
+canvas_rotate_relative_radians(Glib::VariantBase const &value, InkscapeWindow *win)
+{
+    auto d = Glib::VariantBase::cast_dynamic<Glib::Variant<double> >(value);
+
+    SPDesktop* dt = win->get_desktop();
+    dt->rotate_relative_center_point(dt->current_center(), d.get());
+}
+
+void
+canvas_rotate_relative_degrees(Glib::VariantBase const &value, InkscapeWindow *win)
+{
+    auto d = Glib::VariantBase::cast_dynamic<Glib::Variant<double> >(value);
+
+    SPDesktop* dt = win->get_desktop();
+    dt->rotate_relative_center_point(dt->current_center(), Geom::rad_from_deg(d.get()));
+}
+
 /**
  * Toggle rotate lock.
  */
@@ -222,6 +288,14 @@ std::vector<std::vector<Glib::ustring>> raw_data_canvas_transform =
     {"win.canvas-flip-vertical",      N_("Flip Vertical"),       "Canvas Geometry",  N_("Flip canvas vertically")                     },
     {"win.canvas-flip-reset",         N_("Reset Flipping"),      "Canvas Geometry",  N_("Reset canvas flipping")                      },
 
+    {"win.canvas-zoom-absolute",      N_("Zoom Absolute"),       "Canvas Geometry",  N_("Zoom to an absolute value")                  },
+    {"win.canvas-zoom-relative",      N_("Zoom Relative"),       "Canvas Geometry",  N_("Zoom to by a relative amount")               },
+
+    {"win.canvas-rotate-absolute-radians", N_("Rotate Absolute (Radians)"), "Canvas Geometry",  N_("Rotate to an absolute value (Radians)")    },
+    {"win.canvas-rotate-relative-radians", N_("Rotate Relative (Radians)"), "Canvas Geometry",  N_("Rotate to by a relative amount (Radians)") },
+    {"win.canvas-rotate-absolute-degrees", N_("Rotate Absolute (Degrees)"), "Canvas Geometry",  N_("Rotate to an absolute value (Degrees)")    },
+    {"win.canvas-rotate-relative-degrees", N_("Rotate Relative (Degrees)"), "Canvas Geometry",  N_("Rotate to by a relative amount (Degrees)") },
+
     {"win.canvas-rotate-lock",        N_("Lock Rotation"),       "Canvas Geometry",  N_("Lock canvas rotation")                       },
     // clang-format on
 };
@@ -239,6 +313,8 @@ add_actions_canvas_transform(InkscapeWindow* win)
     } else {
         show_output("add_actions_canvas_transform: no desktop!");
     }
+
+    Glib::VariantType Double(Glib::VARIANT_TYPE_DOUBLE);
 
     // clang-format off
     win->add_action( "canvas-zoom-in",         sigc::bind(sigc::ptr_fun(&canvas_transform), win, INK_CANVAS_ZOOM_IN));
@@ -261,6 +337,14 @@ add_actions_canvas_transform(InkscapeWindow* win)
     win->add_action( "canvas-flip-horizontal", sigc::bind(sigc::ptr_fun(&canvas_transform), win, INK_CANVAS_FLIP_HORIZONTAL));
     win->add_action( "canvas-flip-vertical",   sigc::bind(sigc::ptr_fun(&canvas_transform), win, INK_CANVAS_FLIP_VERTICAL));
     win->add_action( "canvas-flip-reset",      sigc::bind(sigc::ptr_fun(&canvas_transform), win, INK_CANVAS_FLIP_RESET));
+
+    win->add_action_with_parameter( "canvas-zoom-absolute",   Double, sigc::bind(sigc::ptr_fun(&canvas_zoom_absolute),   win));
+    win->add_action_with_parameter( "canvas-zoom-relative",   Double, sigc::bind(sigc::ptr_fun(&canvas_zoom_relative),   win));
+
+    win->add_action_with_parameter( "canvas-rotate-absolute-radians", Double, sigc::bind(sigc::ptr_fun(&canvas_rotate_absolute_radians), win));
+    win->add_action_with_parameter( "canvas-rotate-relative-radians", Double, sigc::bind(sigc::ptr_fun(&canvas_rotate_relative_radians), win));
+    win->add_action_with_parameter( "canvas-rotate-absolute-degrees", Double, sigc::bind(sigc::ptr_fun(&canvas_rotate_absolute_degrees), win));
+    win->add_action_with_parameter( "canvas-rotate-relative-degrees", Double, sigc::bind(sigc::ptr_fun(&canvas_rotate_relative_degrees), win));
 
     win->add_action_bool( "canvas-rotate-lock",sigc::bind(sigc::ptr_fun(&canvas_rotate_lock),    win), rotate_lock);
     // clang-format on

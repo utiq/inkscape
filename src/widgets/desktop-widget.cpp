@@ -37,6 +37,7 @@
 #include "object/sp-image.h"
 #include "object/sp-namedview.h"
 
+#include "ui/builder-utils.h"
 #include "ui/dialog/swatches.h"
 #include "ui/dialog-run.h"
 #include "ui/monitor.h"   // Monitor aspect ratio
@@ -57,6 +58,7 @@
 #include "ui/widget/page-selector.h"
 #include "ui/widget/selected-style.h"
 #include "ui/widget/spin-button-tool-item.h"
+#include "ui/widget/status-bar.h"
 #include "ui/widget/unit-tracker.h"
 #include "ui/themes.h"
 
@@ -76,9 +78,11 @@ using Inkscape::Util::unit_table;
 //---------------------------------------------------------------------
 /* SPDesktopWidget */
 
-SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
+SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *document)
     : window (inkscape_window)
 {
+    set_name("SPDesktopWidget");
+
     auto *const dtw = this;
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -89,8 +93,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->add(*dtw->_vbox);
 
     /* Status bar */
-    dtw->_statusbar = Gtk::make_managed<Gtk::Box>();
-    dtw->_statusbar->set_name("DesktopStatusBar");
+    dtw->_statusbar = Gtk::make_managed<Inkscape::UI::Widget::StatusBar>();
     dtw->_vbox->pack_end(*dtw->_statusbar, false, true);
 
     /* Swatch Bar */
@@ -181,153 +184,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     _canvas_grid->set_vexpand(true);
     _columns->append(_canvas_grid);
 
-    // --------------- Status Tool Bar ------------------//
-
-    // Selected Style (Fill/Stroke/Opacity)
-    dtw->_selected_style = Gtk::make_managed<Inkscape::UI::Widget::SelectedStyle>(true);
-    dtw->_statusbar->pack_start(*dtw->_selected_style, false, false);
-    _selected_style->show_all();
-    _selected_style->set_no_show_all();
-
-    // Layer Selector
-    _layer_selector = Gtk::make_managed<Inkscape::UI::Widget::LayerSelector>(nullptr);
-    // separate layer selector buttons from status text
-    auto const vseparator = Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_VERTICAL);
-    vseparator->set_margin_end(6);
-    vseparator->set_margin_top(6);
-    vseparator->set_margin_bottom(6);
-    _layer_selector->pack_end(*vseparator);
-    _layer_selector->show_all();
-    _layer_selector->set_no_show_all();
-    dtw->_statusbar->pack_start(*_layer_selector, false, false, 1);
-
-    // Select Status
-    dtw->_select_status = Gtk::make_managed<Gtk::Label>();
-    dtw->_select_status->set_name("SelectStatus");
-    dtw->_select_status->set_ellipsize(Pango::ELLIPSIZE_END);
-    dtw->_select_status->set_line_wrap(true);
-    dtw->_select_status->set_lines(2);
-    dtw->_select_status->set_halign(Gtk::ALIGN_START);
-    dtw->_select_status->set_size_request(1, -1);
-
-    // Display the initial welcome message in the statusbar
-    dtw->_select_status->set_markup(_("<b>Welcome to Inkscape!</b> Use shape or freehand tools to create objects; use selector (arrow) to move or transform them."));
-
-    dtw->_statusbar->pack_start(*dtw->_select_status, true, true);
-
-    dtw->_zoom_status_box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
-    // Zoom status spinbutton ---------------
-    auto zoom_adj = Gtk::Adjustment::create(100.0, log(SP_DESKTOP_ZOOM_MIN)/log(2), log(SP_DESKTOP_ZOOM_MAX)/log(2), 0.1);
-    dtw->_zoom_status = Gtk::make_managed<Inkscape::UI::Widget::SpinButton>(zoom_adj);
-
-    dtw->_zoom_status->set_defocus_widget(dtw->_canvas);
-    dtw->_zoom_status->set_tooltip_text(_("Zoom"));
-    dtw->_zoom_status->set_size_request(STATUS_ZOOM_WIDTH, -1);
-    dtw->_zoom_status->set_width_chars(6);
-    dtw->_zoom_status->set_numeric(false);
-    dtw->_zoom_status->set_update_policy(Gtk::UPDATE_ALWAYS);
-
-    // Callbacks
-    dtw->_zoom_status_input_connection  = dtw->_zoom_status->signal_input().connect(sigc::mem_fun(*dtw, &SPDesktopWidget::zoom_input));
-    dtw->_zoom_status_output_connection = dtw->_zoom_status->signal_output().connect(sigc::mem_fun(*dtw, &SPDesktopWidget::zoom_output));
-    dtw->_zoom_status_value_changed_connection = dtw->_zoom_status->signal_value_changed().connect(sigc::mem_fun(*dtw, &SPDesktopWidget::zoom_value_changed));
-    dtw->_zoom_status_populate_popup_connection = dtw->_zoom_status->signal_populate_popup().connect(sigc::mem_fun(*dtw, &SPDesktopWidget::zoom_populate_popup));
-
-    // Style
-    auto css_provider_spinbutton = Gtk::CssProvider::create();
-    css_provider_spinbutton->load_from_data("* { padding-left: 2px; padding-right: 2px; padding-top: 0px; padding-bottom: 0px;}");  // Shouldn't this be in a style sheet? Used also by rotate.
-
-    dtw->_zoom_status->set_name("ZoomStatus");
-    auto context_zoom = dtw->_zoom_status->get_style_context();
-    context_zoom->add_provider(css_provider_spinbutton, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-    dtw->_rotation_status_box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
-    dtw->_rotation_status_box->set_margin_start(10);
-    // Rotate status spinbutton ---------------
-    auto rotation_adj = Gtk::Adjustment::create(0, -360.0, 360.0, 1.0);
-
-    dtw->_rotation_status = Gtk::make_managed<Inkscape::UI::Widget::SpinButton>(rotation_adj);
-
-    // FIXME: This is a bit of a hack, to avoid the ExpressionEvaluator struggling to parse the
-    //        degree symbol.  It would be better to improve ExpressionEvaluator so it copes
-    dtw->_rotation_status->set_dont_evaluate(true);
-
-    dtw->_rotation_status->set_defocus_widget(dtw->_canvas);
-    dtw->_rotation_status->set_tooltip_text(_("Rotation. (Also Ctrl+Shift+Scroll)"));
-    dtw->_rotation_status->set_size_request(STATUS_ROTATION_WIDTH, -1);
-    dtw->_rotation_status->set_width_chars(7);
-    dtw->_rotation_status->set_numeric(false);
-    dtw->_rotation_status->set_digits(2);
-    dtw->_rotation_status->set_increments(1.0, 15.0);
-    dtw->_rotation_status->set_update_policy(Gtk::UPDATE_ALWAYS);
-
-    // Callbacks
-    dtw->_rotation_status_output_connection = dtw->_rotation_status->signal_output().connect(sigc::mem_fun(*dtw, &SPDesktopWidget::rotation_output));
-    dtw->_rotation_status_value_changed_connection = dtw->_rotation_status->signal_value_changed().connect(sigc::mem_fun(*dtw, &SPDesktopWidget::rotation_value_changed));
-    dtw->_rotation_status_populate_popup_connection = dtw->_rotation_status->signal_populate_popup().connect(sigc::mem_fun(*dtw, &SPDesktopWidget::rotation_populate_popup));
-
-    // Style
-    dtw->_rotation_status->set_name("RotationStatus");
-    auto context_rotation = dtw->_rotation_status->get_style_context();
-    context_rotation->add_provider(css_provider_spinbutton, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-    // Cursor coordinates
-    dtw->_coord_status = Gtk::make_managed<Gtk::Grid>();
-    dtw->_coord_status->set_name("CoordinateAndZStatus");
-    dtw->_coord_status->set_row_spacing(0);
-    dtw->_coord_status->set_column_spacing(10);
-    dtw->_coord_status->set_margin_end(10);
-    auto const sep = Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_VERTICAL);
-    sep->set_name("CoordinateSeparator");
-    dtw->_coord_status->attach(*sep, 0, 0, 1, 2);
-
-    dtw->_coord_status->set_tooltip_text(_("Cursor coordinates"));
-    auto const label_x = Gtk::make_managed<Gtk::Label>(_("X:"));
-    auto const label_y = Gtk::make_managed<Gtk::Label>(_("Y:"));
-    label_x->set_halign(Gtk::ALIGN_START);
-    label_y->set_halign(Gtk::ALIGN_START);
-    dtw->_coord_status->attach(*label_x, 1, 0, 1, 1);
-    dtw->_coord_status->attach(*label_y, 1, 1, 1, 1);
-    dtw->_coord_status_x = Gtk::make_managed<Gtk::Label>();
-    dtw->_coord_status_y = Gtk::make_managed<Gtk::Label>();
-    dtw->_coord_status_x->set_name("CoordinateStatusX");
-    dtw->_coord_status_y->set_name("CoordinateStatusY");
-    dtw->_coord_status_x->set_markup("   0.00 ");
-    dtw->_coord_status_y->set_markup("   0.00 ");
-
-    // TRANSLATORS: Abbreviation for canvas zoom level
-    auto const label_z = Gtk::make_managed<Gtk::Label>(C_("canvas", "Z:"));
-    label_z->set_name("ZLabel");
-    // TRANSLATORS: Abbreviation for canvas rotation
-    auto const label_r = Gtk::make_managed<Gtk::Label>(C_("canvas", "R:"));
-    label_r->set_name("RLabel");
-
-    dtw->_coord_status_x->set_halign(Gtk::ALIGN_END);
-    dtw->_coord_status_y->set_halign(Gtk::ALIGN_END);
-    dtw->_coord_status->attach(*dtw->_coord_status_x, 2, 0, 1, 1);
-    dtw->_coord_status->attach(*dtw->_coord_status_y, 2, 1, 1, 1);
-    dtw->_coord_status->show_all();
-    dtw->_coord_status->set_no_show_all();
-
-    dtw->_zoom_status_box->pack_start(*label_z, true, true);
-    dtw->_zoom_status_box->pack_end(*dtw->_zoom_status, true, true);
-    dtw->_zoom_status_box->show_all();
-
-    dtw->_rotation_status_box->pack_start(*label_r, true, true);
-    dtw->_rotation_status_box->pack_end(*dtw->_rotation_status, true, true);
-    dtw->_rotation_status_box->show_all();
-    dtw->_rotation_status_box->set_no_show_all();
-
-    dtw->_statusbar->pack_end(*dtw->_rotation_status_box, false, false);
-    dtw->_statusbar->pack_end(*dtw->_zoom_status_box, false, false);
-    dtw->_statusbar->pack_end(*dtw->_coord_status, false, false);
-
-    update_statusbar_visibility();
-
-    _statusbar_preferences_observer = prefs->createObserver("/statusbar/visibility", [=]() {
-        update_statusbar_visibility();
-    });
-
     // ------------------ Finish Up -------------------- //
     dtw->_vbox->show_all();
     dtw->_canvas_grid->ShowCommandPalette(false);
@@ -335,6 +191,35 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_canvas->grab_focus();
 
     dtw->snap_toolbar->mode_update(); // Hide/show parts.
+
+    SPNamedView *namedview = document->getNamedView();
+    dtw->_dt2r = 1. / namedview->display_units->factor;
+
+    // ---------- Desktop Dependent Setup -------------- //
+    // This section seems backwards!
+    dtw->desktop = new SPDesktop(); // An SPDesktop is a View::View
+    dtw->desktop->init (namedview, dtw->_canvas, this);
+    dtw->_canvas->set_desktop(desktop);
+    INKSCAPE.add_desktop (dtw->desktop);
+
+    // Add the shape geometry to libavoid for autorouting connectors.
+    // This needs desktop set for its spacing preferences.
+    init_avoided_shape_geometry(dtw->desktop);
+
+    dtw->_statusbar->set_desktop(dtw->desktop);
+
+    /* Once desktop is set, we can update rulers */
+    dtw->_canvas_grid->updateRulers();
+
+    /* Listen on namedview modification */
+    dtw->modified_connection = namedview->connectModified(sigc::mem_fun(*dtw, &SPDesktopWidget::namedviewModified));
+
+    // tool_toolbars is an empty Gtk::Box at this point, fill it.
+    dtw->tool_toolbars->create_toolbars(dtw->desktop);
+
+    dtw->layoutWidgets();
+
+    dtw->_panels->setDesktop(dtw->desktop);
 }
 
 void SPDesktopWidget::apply_ctrlbar_settings() {
@@ -347,27 +232,10 @@ void SPDesktopWidget::apply_ctrlbar_settings() {
     Inkscape::UI::set_icon_sizes(tool_toolbars, size);
 }
 
-void SPDesktopWidget::update_statusbar_visibility() {
-    auto prefs = Inkscape::Preferences::get();
-    Glib::ustring path("/statusbar/visibility/");
-
-    _coord_status->set_visible(prefs->getBool(path + "coordinates", true));
-    _rotation_status_box->set_visible(prefs->getBool(path + "rotation", true));
-    _layer_selector->set_visible(prefs->getBool(path + "layer", true));
-    _selected_style->set_visible(prefs->getBool(path + "style", true));
-}
-
 void
 SPDesktopWidget::setMessage (Inkscape::MessageType type, const gchar *message)
 {
-    _select_status->set_markup(message ? message : "");
-
-    // make sure the important messages are displayed immediately!
-    if (type == Inkscape::IMMEDIATE_MESSAGE && _select_status->get_is_drawable()) {
-        _select_status->queue_draw();
-    }
-
-    _select_status->set_tooltip_text(_select_status->get_text());
+    _statusbar->set_message (type, message);
 }
 
 /**
@@ -393,25 +261,10 @@ SPDesktopWidget::on_unrealize()
         dtw->_canvas->set_drawing(nullptr); // Ensures deactivation
         dtw->_canvas->set_desktop(nullptr); // Todo: Remove desktop dependency.
 
-        // Zoom
-        dtw->_zoom_status_input_connection.disconnect();
-        dtw->_zoom_status_output_connection.disconnect();
-        g_signal_handlers_disconnect_by_data(G_OBJECT(dtw->_zoom_status->gobj()), dtw->_zoom_status->gobj());
-        dtw->_zoom_status_value_changed_connection.disconnect();
-        dtw->_zoom_status_populate_popup_connection.disconnect();
-
-        // Rotation
-        dtw->_rotation_status_input_connection.disconnect();
-        dtw->_rotation_status_output_connection.disconnect();
-        g_signal_handlers_disconnect_by_data(G_OBJECT(dtw->_rotation_status->gobj()), dtw->_rotation_status->gobj());
-        dtw->_rotation_status_value_changed_connection.disconnect();
-        dtw->_rotation_status_populate_popup_connection.disconnect();
-
         dtw->_panels->setDesktop(nullptr);
 
         delete _container; // will unrealize dtw->_canvas
 
-        _layer_selector->setDesktop(nullptr);
         INKSCAPE.remove_desktop(dtw->desktop); // clears selection and event_context
         dtw->modified_connection.disconnect();
         dtw->desktop->destroy();
@@ -582,20 +435,19 @@ SPDesktopWidget::disableInteraction()
 void
 SPDesktopWidget::setCoordinateStatus(Geom::Point p)
 {
-    gchar *cstr;
-    cstr = g_strdup_printf("%7.2f", _dt2r * p[Geom::X]);
-    _coord_status_x->set_markup(cstr);
-    g_free(cstr);
+    _statusbar->set_coordinate(_dt2r * p);
+}
 
-    cstr = g_strdup_printf("%7.2f", _dt2r * p[Geom::Y]);
-    _coord_status_y->set_markup(cstr);
-    g_free(cstr);
+void
+SPDesktopWidget::letRotateGrabFocus()
+{
+    _statusbar->rotate_grab_focus();
 }
 
 void
 SPDesktopWidget::letZoomGrabFocus()
 {
-    if (_zoom_status) _zoom_status->grab_focus();
+    _statusbar->zoom_grab_focus();
 }
 
 void
@@ -778,6 +630,7 @@ void SPDesktopWidget::layoutWidgets()
     } else {
         dtw->_statusbar->show_all();
     }
+    dtw->_statusbar->update_visibility(); // Individual items in bar
 
     if (!prefs->getBool(pref_root + "panels/state", true)) {
         dtw->_panels->set_visible(false);
@@ -897,49 +750,6 @@ SPDesktopWidget::isToolboxButtonActive (const gchar* id)
     return isActive;
 }
 
-SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *document)
-    : SPDesktopWidget(inkscape_window)
-{
-    set_name("SPDesktopWidget");
-
-    SPDesktopWidget *dtw = this;
-
-    SPNamedView *namedview = document->getNamedView();
-
-    dtw->_dt2r = 1. / namedview->display_units->factor;
-
-    // This section seems backwards!
-    dtw->desktop = new SPDesktop(); // An SPDesktop is a View::View
-    dtw->desktop->init (namedview, dtw->_canvas, this);
-    dtw->_canvas->set_desktop(desktop);
-    INKSCAPE.add_desktop (dtw->desktop);
-
-    // Add the shape geometry to libavoid for autorouting connectors.
-    // This needs desktop set for its spacing preferences.
-    init_avoided_shape_geometry(dtw->desktop);
-
-    dtw->_selected_style->setDesktop(dtw->desktop);
-
-    /* Once desktop is set, we can update rulers */
-    dtw->_canvas_grid->updateRulers();
-
-    /* Listen on namedview modification */
-    dtw->modified_connection = namedview->connectModified(sigc::mem_fun(*dtw, &SPDesktopWidget::namedviewModified));
-
-    _layer_selector->setDesktop(dtw->desktop);
-
-    // We never want a page widget if there's no desktop.
-    _page_selector = Gtk::make_managed<Inkscape::UI::Widget::PageSelector>(desktop);
-    _statusbar->pack_end(*_page_selector, false, false);
-
-    // tool_toolbars is an empty Gtk::Box at this point, fill it.
-    dtw->tool_toolbars->create_toolbars(dtw->desktop);
-
-    dtw->layoutWidgets();
-
-    dtw->_panels->setDesktop(dtw->desktop);
-}
-
 /**
  * Choose where to pack the snap toolbar.
  * Hiding/unhiding is done in the SnapToolbar widget.
@@ -1051,127 +861,6 @@ bool SPDesktopWidget::onFocusInEvent(GdkEventFocus*)
 }
 
 // ------------------------ Zoom ------------------------
-static gdouble
-sp_dtw_zoom_value_to_display (gdouble value)
-{
-    return floor (10 * (pow (2, value) * 100.0 + 0.05)) / 10;
-}
-
-static gdouble
-sp_dtw_zoom_display_to_value (gdouble value)
-{
-    return  log (value / 100.0) / log (2);
-}
-
-int
-SPDesktopWidget::zoom_input(double *new_val)
-{
-    double new_typed = g_strtod (_zoom_status->get_text().c_str(), nullptr);
-    *new_val = sp_dtw_zoom_display_to_value (new_typed);
-    return true;
-}
-
-bool
-SPDesktopWidget::zoom_output()
-{
-    gchar b[64];
-    double val = sp_dtw_zoom_value_to_display (_zoom_status->get_value());
-    if (val < 10) {
-        g_snprintf (b, 64, "%4.1f%%", val);
-    } else {
-        g_snprintf (b, 64, "%4.0f%%", val);
-    }
-    _zoom_status->set_text(b);
-    return true;
-}
-
-void
-SPDesktopWidget::zoom_value_changed()
-{
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    double const zoom_factor = pow (2, _zoom_status->get_value());
-
-    // Zoom around center of window
-    Geom::Rect const d_canvas = _canvas->get_area_world();
-    Geom::Point midpoint = desktop->w2d(d_canvas.midpoint());
-
-    _zoom_status_value_changed_connection.block();
-    if(prefs->getDouble("/options/zoomcorrection/shown", true)) {
-        desktop->zoom_realworld(midpoint, zoom_factor);
-    } else {
-        desktop->zoom_absolute(midpoint, zoom_factor);
-    }
-    _zoom_status_value_changed_connection.unblock();
-    _zoom_status->defocus();
-}
-
-void
-SPDesktopWidget::zoom_menu_handler(double factor)
-{
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    if(prefs->getDouble("/options/zoomcorrection/shown", true)) {
-        desktop->zoom_realworld(desktop->current_center(), factor);
-    } else {
-        desktop->zoom_absolute(desktop->current_center(), factor, false);
-    }
-}
-
-
-
-void
-SPDesktopWidget::zoom_populate_popup(Gtk::Menu *menu)
-{
-    for ( auto iter : menu->get_children()) {
-        menu->remove(*iter);
-    }
-
-    auto const item_1000 = Gtk::make_managed<Gtk::MenuItem>("1000%");
-    auto const item_500  = Gtk::make_managed<Gtk::MenuItem>("500%");
-    auto const item_200  = Gtk::make_managed<Gtk::MenuItem>("200%");
-    auto const item_100  = Gtk::make_managed<Gtk::MenuItem>("100%");
-    auto const item_50   = Gtk::make_managed<Gtk::MenuItem>( "50%");
-    auto const item_25   = Gtk::make_managed<Gtk::MenuItem>( "25%");
-    auto const item_10   = Gtk::make_managed<Gtk::MenuItem>( "10%");
-
-    item_1000->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler), 10.00));
-    item_500->signal_activate().connect( sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler),  5.00));
-    item_200->signal_activate().connect( sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler),  2.00));
-    item_100->signal_activate().connect( sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler),  1.00));
-    item_50->signal_activate().connect(  sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler),  0.50));
-    item_25->signal_activate().connect(  sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler),  0.25));
-    item_10->signal_activate().connect(  sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler),  0.10));
-
-    menu->append(*item_1000);
-    menu->append(*item_500);
-    menu->append(*item_200);
-    menu->append(*item_100);
-    menu->append(*item_50);
-    menu->append(*item_25);
-    menu->append(*item_10);
-
-    auto const sep = Gtk::make_managed<Gtk::SeparatorMenuItem>();
-    menu->append(*sep);
-
-    auto const item_page = Gtk::make_managed<Gtk::MenuItem>(_("Page"));
-    item_page->signal_activate().connect([=]() { desktop->getDocument()->getPageManager().zoomToSelectedPage(desktop); });
-    menu->append(*item_page);
-
-    auto const item_drawing = Gtk::make_managed<Gtk::MenuItem>(_("Drawing"));
-    item_drawing->signal_activate().connect(sigc::mem_fun(*desktop, &SPDesktop::zoom_drawing));
-    menu->append(*item_drawing);
-
-    auto const item_selection = Gtk::make_managed<Gtk::MenuItem>(_("Selection"));
-    item_selection->signal_activate().connect(sigc::mem_fun(*desktop, &SPDesktop::zoom_selection));
-    menu->append(*item_selection);
-
-    auto const item_center_page = Gtk::make_managed<Gtk::MenuItem>(_("Centre Page"));
-    item_center_page->signal_activate().connect([=]() { desktop->getDocument()->getPageManager().centerToSelectedPage(desktop); });
-    menu->append(*item_center_page);
-
-    menu->show_all();
-}
-
-
 void
 SPDesktopWidget::sticky_zoom_toggled()
 {
@@ -1189,101 +878,16 @@ SPDesktopWidget::sticky_zoom_updated()
 void
 SPDesktopWidget::update_zoom()
 {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    // It's very important that the value used in set_value is the same as the one
-    // set as it otherwise creates an infinate loop between the spin button and update_zoom
-    double correction = 1.0;
-    if(prefs->getDouble("/options/zoomcorrection/shown", true)) {
-        correction = prefs->getDouble("/options/zoomcorrection/value", 1.0);
-    }
-    _zoom_status_value_changed_connection.block();
-    _zoom_status->set_value(log(desktop->current_zoom() / correction) / log(2));
-    _zoom_status->queue_draw();
-    _zoom_status_value_changed_connection.unblock();
+    _statusbar->update_zoom();
 }
 
 
 // ---------------------- Rotation ------------------------
 
-bool
-SPDesktopWidget::rotation_output()
-{
-    gchar b[64];
-    double val = _rotation_status->get_value();
-
-    if (val < -180) val += 360;
-    if (val >  180) val -= 360;
-
-    g_snprintf (b, 64, "%7.2f°", val);
-
-    _rotation_status->set_text(b);
-    return true;
-}
-
-void
-SPDesktopWidget::rotation_value_changed()
-{
-    double const rotate_factor = M_PI / 180.0 * _rotation_status->get_value();
-    // std::cout << "SPDesktopWidget::rotation_value_changed: "
-    //           << _rotation_status->get_value()
-    //           << "  (" << rotate_factor << ")" <<std::endl;
-
-    // Rotate around center of window
-    Geom::Rect const d_canvas = _canvas->get_area_world();
-    _rotation_status_value_changed_connection.block();
-    Geom::Point midpoint = desktop->w2d(d_canvas.midpoint());
-    desktop->rotate_absolute_center_point (midpoint, rotate_factor);
-    _rotation_status_value_changed_connection.unblock();
-
-    _rotation_status->defocus();
-}
-
-void
-SPDesktopWidget::rotation_populate_popup(Gtk::Menu *menu)
-{
-    for ( auto iter : menu->get_children()) {
-        menu->remove(*iter);
-    }
-
-    auto const item_m135 = Gtk::make_managed<Gtk::MenuItem>("-135°");
-    auto const item_m90  = Gtk::make_managed<Gtk::MenuItem>( "-90°");
-    auto const item_m45  = Gtk::make_managed<Gtk::MenuItem>( "-45°");
-    auto const item_0    = Gtk::make_managed<Gtk::MenuItem>(   "0°");
-    auto const item_p45  = Gtk::make_managed<Gtk::MenuItem>(  "45°");
-    auto const item_p90  = Gtk::make_managed<Gtk::MenuItem>(  "90°");
-    auto const item_p135 = Gtk::make_managed<Gtk::MenuItem>( "135°");
-    auto const item_p180 = Gtk::make_managed<Gtk::MenuItem>( "180°");
-
-    item_m135->signal_activate().connect(sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value), -135));
-    item_m90->signal_activate().connect( sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value), -90));
-    item_m45->signal_activate().connect( sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value), -45));
-    item_0->signal_activate().connect(   sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value),   0));
-    item_p45->signal_activate().connect( sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value),  45));
-    item_p90->signal_activate().connect( sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value),  90));
-    item_p135->signal_activate().connect(sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value), 135));
-    item_p180->signal_activate().connect(sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value), 180));
-
-    menu->append(*item_m135);
-    menu->append(*item_m90);
-    menu->append(*item_m45);
-    menu->append(*item_0);
-    menu->append(*item_p45);
-    menu->append(*item_p90);
-    menu->append(*item_p135);
-    menu->append(*item_p180);
-
-    menu->show_all();
-}
-
-
 void
 SPDesktopWidget::update_rotation()
 {
-    _rotation_status_value_changed_connection.block();
-    _rotation_status->set_value(desktop->current_rotation() / M_PI * 180.0);
-    _rotation_status->queue_draw();
-    _rotation_status_value_changed_connection.unblock();
-
+    _statusbar->update_rotate();
 }
 
 // --------------- Rulers/Scrollbars/Etc. -----------------

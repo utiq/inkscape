@@ -348,6 +348,7 @@ public:
     bool get_rotation_lock() const { return rotation_locked; }
 
     void zoom_grab_focus();
+    void rotate_grab_focus();
 
     void rotate_absolute_keep_point   (Geom::Point const &c, double const rotate);
     void rotate_relative_keep_point   (Geom::Point const &c, double const rotate);

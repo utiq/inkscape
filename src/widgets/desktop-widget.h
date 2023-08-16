@@ -51,6 +51,7 @@ namespace Widget {
   class PageSelector;
   class SelectedStyle;
   class SpinButton;
+  class StatusBar;
 } // namespace Widget
 
 } // namespace UI
@@ -60,8 +61,6 @@ namespace Widget {
 class SPDesktopWidget : public Gtk::EventBox
 {
     using parent_type = Gtk::EventBox;
-
-    SPDesktopWidget(InkscapeWindow *inkscape_window);
 
 public:
     SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *document);
@@ -92,32 +91,11 @@ private:
     Inkscape::UI::Dialog::DialogMultipaned *_columns = nullptr;
     Gtk::Grid* _top_toolbars = nullptr;
 
-    Gtk::Box     *_statusbar = nullptr;
-
+    Inkscape::UI::Widget::StatusBar    *_statusbar = nullptr;
     Inkscape::UI::Dialog::SwatchesPanel *_panels;
 
     Glib::RefPtr<Gtk::Adjustment> _hadj;
     Glib::RefPtr<Gtk::Adjustment> _vadj;
-
-    Gtk::Grid *_coord_status;
-
-    Gtk::Label *_select_status;
-    Gtk::Label *_coord_status_x;
-    Gtk::Label *_coord_status_y;
-
-    Gtk::Box* _zoom_status_box;
-    Inkscape::UI::Widget::SpinButton *_zoom_status;
-    sigc::connection _zoom_status_input_connection;
-    sigc::connection _zoom_status_output_connection;
-    sigc::connection _zoom_status_value_changed_connection;
-    sigc::connection _zoom_status_populate_popup_connection;
-
-    Gtk::Box* _rotation_status_box;
-    Inkscape::UI::Widget::SpinButton *_rotation_status = nullptr;
-    sigc::connection _rotation_status_input_connection;
-    sigc::connection _rotation_status_output_connection;
-    sigc::connection _rotation_status_value_changed_connection;
-    sigc::connection _rotation_status_populate_popup_connection;
 
     Inkscape::UI::Widget::SelectedStyle *_selected_style;
 
@@ -132,13 +110,13 @@ public:
 private:
     Inkscape::UI::Widget::Canvas *_canvas = nullptr;
     std::vector<sigc::connection> _connections;
-    Inkscape::PrefObserver _statusbar_preferences_observer;
     Inkscape::UI::Widget::LayerSelector* _layer_selector;
     Inkscape::UI::Widget::PageSelector* _page_selector;
 
 public:
     void setMessage(Inkscape::MessageType type, gchar const *message);
     void viewSetPosition (Geom::Point p);
+    void letRotateGrabFocus();
     void letZoomGrabFocus();
     void getWindowGeometry (gint &x, gint &y, gint &w, gint &h);
     void setWindowPosition (Geom::Point p);
@@ -195,15 +173,6 @@ private:
     Inkscape::PrefObserver _ds_sticky_zoom;
 
     void namedviewModified(SPObject *obj, unsigned flags);
-    int zoom_input(double *new_val);
-    bool zoom_output();
-    void zoom_value_changed();
-    void zoom_menu_handler(double factor);
-    void zoom_populate_popup(Gtk::Menu *menu);
-    bool rotation_output();
-    void rotation_value_changed();
-    void rotation_populate_popup(Gtk::Menu *menu);
-    void update_statusbar_visibility();
     void apply_ctrlbar_settings();
 };
 

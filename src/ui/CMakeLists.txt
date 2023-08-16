@@ -261,6 +261,7 @@ set(ui_SRC
 	widget/spin-button-tool-item.cpp
 	widget/spin-scale.cpp
 	widget/spinbutton.cpp
+        widget/status-bar.cpp
 	widget/stroke-style.cpp
 	widget/style-subject.cpp
 	widget/style-swatch.cpp
@@ -552,6 +553,7 @@ set(ui_SRC
 	widget/spin-button-tool-item.h
 	widget/spin-scale.h
 	widget/spinbutton.h
+        widget/status-bar.h
 	widget/stroke-style.h
 	widget/style-subject.h
 	widget/style-swatch.h

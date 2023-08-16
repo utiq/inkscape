@@ -851,6 +851,16 @@ SPDesktop::zoom_grab_focus()
 
 
 /**
+ * Tell widget to let rotate widget grab keyboard focus.
+ */
+void
+SPDesktop::rotate_grab_focus()
+{
+    _widget->letRotateGrabFocus();
+}
+
+
+/**
  * Set new rotation, keeping the point 'c' fixed in the desktop window.
  *
  * @param c Point in desktop coordinates

@@ -33,6 +33,7 @@
 ../share/ui/pattern-edit.glade
 ../share/ui/align-and-distribute.ui
 ../share/ui/menus.ui
+../share/ui/statusbar.ui
 ../share/ui/toolbar-booleans.ui
 ../share/ui/toolbar-commands.ui
 ../share/ui/toolbar-page.ui
