@@ -93,24 +93,17 @@ class SPStop;
 
 class SPMeshNode {
 public:
-  SPMeshNode() {
-    node_type = MG_NODE_TYPE_UNKNOWN;
-    node_edge = MG_NODE_EDGE_NONE;
-    set = false;
-    draggable = -1;
-    path_type = 'u';
-    opacity = 0.0;
-    stop = nullptr;
-  }
-  NodeType node_type;
-  unsigned int     node_edge;
-  bool set;
+  SPMeshNode() {}
+
+  NodeType node_type = MG_NODE_TYPE_UNKNOWN;
+  unsigned int node_edge = MG_NODE_EDGE_NONE;
+  bool set = false;
   Geom::Point p;
-  unsigned int draggable;  // index of on-screen node
-  char path_type;
-  SPColor color;
-  double opacity;
-  SPStop *stop; // Stop corresponding to node.
+  unsigned int draggable = -1;  // index of on-screen node
+  char path_type = 'u';
+  SPColor color{0, 0, 0}; // Default black
+  double opacity = 0.0;
+  SPStop *stop = nullptr; // Stop corresponding to node.
 };
 
 
