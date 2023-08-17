@@ -14,8 +14,6 @@
 
 #include "actions-extra-data.h"
 
-#include <iostream>
-
 #include <glibmm/i18n.h>
 
 std::vector<Glib::ustring> InkActionExtraData::get_actions()
@@ -28,10 +26,11 @@ std::vector<Glib::ustring> InkActionExtraData::get_actions()
 }
 
 Glib::ustring
-InkActionExtraData::get_label_for_action(Glib::ustring const &action_name, bool translated)
+InkActionExtraData::get_label_for_action(Glib::ustring const &action_name,
+                                         bool const translated) const
 {
     Glib::ustring value;
-    auto search = data.find(action_name);
+    auto const search = data.find(action_name.raw());
     if (search != data.end()) {
         value = translated ? _(search->second.label.c_str())
                            :   search->second.label;
@@ -41,21 +40,22 @@ InkActionExtraData::get_label_for_action(Glib::ustring const &action_name, bool 
 
 // TODO: Section should be translatable, too
 Glib::ustring
-InkActionExtraData::get_section_for_action(Glib::ustring const &action_name) {
-
+InkActionExtraData::get_section_for_action(Glib::ustring const &action_name) const
+{
     Glib::ustring value;
-    auto search = data.find(action_name);
+    auto const search = data.find(action_name.raw());
     if (search != data.end()) {
         value = search->second.section;
     }
     return value;
 }
 
-Glib::ustring InkActionExtraData::get_tooltip_for_action(Glib::ustring const &action_name, bool translated,
-                                                         bool expanded)
+Glib::ustring InkActionExtraData::get_tooltip_for_action(Glib::ustring const &action_name,
+                                                         bool const translated           ,
+                                                         bool const expanded             ) const
 {
     Glib::ustring value;
-    auto search = data.find(action_name);
+    auto const search = data.find(action_name.raw());
     if (search != data.end()) {
         if (expanded && strncmp(action_name.c_str(), "win:tool-switch('", 17)) {
             value = translated ? ("<b>" + Glib::ustring(_(search->second.label.c_str())) + "</b>\n" +
@@ -70,6 +70,7 @@ Glib::ustring InkActionExtraData::get_tooltip_for_action(Glib::ustring const &ac
 
 void InkActionExtraData::add_data(std::vector<std::vector<Glib::ustring>> const &raw_data)
 {
+    data.reserve(data.size() + raw_data.size());
     for (auto const &raw : raw_data) {
         data.emplace(raw[0], InkActionExtraDatum{ raw[1], raw[2], raw[3] });
     }

@@ -15,11 +15,10 @@
 #ifndef INK_ACTIONS_EXTRA_DATA_H
 #define INK_ACTIONS_EXTRA_DATA_H
 
-#include <glibmm/ustring.h>
-#include <glibmm/varianttype.h>
-#include <map>
-#include <utility>
+#include <string>
+#include <unordered_map>
 #include <vector>
+#include <glibmm/ustring.h>
 
 enum class ParamType
 {
@@ -44,13 +43,15 @@ public:
 
     void add_data(std::vector<std::vector<Glib::ustring>> const &raw_data);
 
-    Glib::ustring get_label_for_action(Glib::ustring const &action_name, bool translated = true);
-    Glib::ustring get_section_for_action(Glib::ustring const &action_name);
-    Glib::ustring get_tooltip_for_action(Glib::ustring const &action_name, bool translated = true,
-                                         bool expanded = false);
+    Glib::ustring get_label_for_action  (Glib::ustring const &action_name,
+                                         bool translated = true          ) const;
+    Glib::ustring get_section_for_action(Glib::ustring const &action_name) const;
+    Glib::ustring get_tooltip_for_action(Glib::ustring const &action_name,
+                                         bool translated = true          ,
+                                         bool expanded   = false         ) const;
 
 private:
-    std::map<Glib::ustring, InkActionExtraDatum> data;
+    std::unordered_map<std::string, InkActionExtraDatum> data;
 };
 
 #endif // INK_ACTIONS_EXTRA_DATA_H
