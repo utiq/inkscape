@@ -14,13 +14,13 @@
 /* Rewrite of the C Ruler. */
 
 #include <unordered_map>
+#include <utility>
 #include <cairomm/refptr.h>
 #include <cairomm/types.h> // Cairo::RectangleInt
 #include <pangomm/fontdescription.h>
 #include <gdkmm/rgba.h>
 #include <gtk/gtk.h> // GtkEventControllerMotion
-#include <gtkmm/border.h>
-#include <gtkmm/drawingarea.h>
+#include <gtkmm/box.h>
 #include <gtkmm/enums.h> // Gtk::Orientation
 #include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include "preferences.h"
@@ -30,6 +30,7 @@ class Context;
 } // namespace Cairo
 
 namespace Gtk {
+class DrawingArea;
 class GestureMultiPress;
 class Popover;
 } // namespace Gtk
@@ -40,7 +41,9 @@ class Unit;
 
 namespace Inkscape::UI::Widget {
   
-class Ruler : public Gtk::DrawingArea
+// Box because GTK3 does not bother applying CSS bits like border-*|min-width|height on DrawingArea
+// TODO: GTK4: Revisit whether that is still the case; hopefully it isnʼt, then just be DrawingArea
+class Ruler : public Gtk::Box
 {
 public:
     Ruler(Gtk::Orientation orientation);
@@ -52,19 +55,15 @@ public:
 
     void add_track_widget(Gtk::Widget& widget);
 
-    void size_request(Gtk::Requisition& requisition) const;
-    void get_preferred_width_vfunc( int& minimum_width,  int& natural_width ) const override;
-    void get_preferred_height_vfunc(int& minimum_height, int& natural_height) const override;
-
-protected:
+private:
+    std::pair<int, int> get_drawing_size();
     bool draw_scale(const Cairo::RefPtr<::Cairo::Context>& cr);
     void draw_marker(const Cairo::RefPtr<::Cairo::Context>& cr);
     Cairo::RectangleInt marker_rect();
-    bool on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) override;
+    bool on_drawing_area_draw(Cairo::RefPtr<::Cairo::Context> const &cr);
     void on_style_updated() override;
     void on_prefs_changed();
 
-private:
     void on_motion(GtkEventControllerMotion const *motion, double x, double y);
     Gtk::EventSequenceState on_click_pressed(Gtk::GestureMultiPress const &click,
                                              int n_press, double x, double y);
@@ -72,6 +71,7 @@ private:
     void set_context_menu();
     Cairo::RefPtr<Cairo::Surface> draw_label(Cairo::RefPtr<Cairo::Surface> const &surface_in, int label_value);
 
+    Gtk::DrawingArea *_drawing_area;
     Inkscape::PrefObserver _watch_prefs;
     Gtk::Popover* _popover = nullptr;
     Gtk::Orientation    _orientation;
@@ -97,10 +97,8 @@ private:
     std::unordered_map<int, Cairo::RefPtr<::Cairo::Surface>> _label_cache;
 
     // Cached style properties
-    Gtk::Border _border;
     Gdk::RGBA _shadow;
     Gdk::RGBA _foreground;
-    Pango::FontDescription _font;
     int _font_size;
     Gdk::RGBA _page_fill;
     Gdk::RGBA _select_fill;

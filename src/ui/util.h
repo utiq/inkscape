@@ -128,6 +128,8 @@ Gtk::Widget *for_each_parent(Gtk::Widget &widget, Func &&func)
 [[nodiscard]] Gtk::Widget *find_focusable_widget(Gtk::Widget &parent);
 [[nodiscard]] bool is_descendant_of(Gtk::Widget const &descendant, Gtk::Widget const &ancestor);
 
+[[nodiscard]] int get_font_size(Gtk::Widget &widget);
+
 } // namespace Inkscape::UI
 
 // Mix two RGBA colors using simple linear interpolation:
@@ -152,6 +154,9 @@ Gdk::RGBA get_color_with_class(Glib::RefPtr<Gtk::StyleContext> const &context,
 guint32 to_guint32(Gdk::RGBA const &rgba);
 Gdk::RGBA to_rgba(guint32 const u32);
 
+// convert Gdk::RGBA into 32-bit rrggbbaa color, optionally replacing alpha, if specified
+uint32_t conv_gdk_color_to_rgba(const Gdk::RGBA& color, double replace_alpha = -1);
+
 Geom::IntRect cairo_to_geom(const Cairo::RectangleInt &rect);
 Cairo::RectangleInt geom_to_cairo(const Geom::IntRect &rect);
 Cairo::Matrix geom_to_cairo(const Geom::Affine &affine);
@@ -171,10 +176,8 @@ Cairo::RefPtr<Cairo::LinearGradient> create_cubic_gradient(
 );
 
 void set_dark_tittlebar(Glib::RefPtr<Gdk::Window> win, bool is_dark);
-// convert Gdk::RGBA into 32-bit rrggbbaa color, optionally replacing alpha, if specified
-uint32_t conv_gdk_color_to_rgba(const Gdk::RGBA& color, double replace_alpha = -1);
 
-#endif
+#endif // UI_UTIL_SEEN
 
 /*
   Local Variables:

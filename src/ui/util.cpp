@@ -12,11 +12,15 @@
 
 #include "util.h"
 
-#include <cairomm/pattern.h>
 #include <cstdint>
-#include <gtkmm/revealer.h>
 #include <stdexcept>
 #include <tuple>
+#include <cairomm/pattern.h>
+#include <pangomm/context.h>
+#include <pangomm/fontdescription.h>
+#include <pangomm/layout.h>
+#include <gtkmm/revealer.h>
+#include <gtkmm/widget.h>
 
 #if (defined (_WIN32) || defined (_WIN64))
 #include <gdk/gdkwin32.h>
@@ -176,6 +180,19 @@ bool is_descendant_of(Gtk::Widget const &descendant, Gtk::Widget const &ancestor
 {
     return nullptr != for_each_descendant(const_cast<Gtk::Widget &>(ancestor), [&](auto const &widget)
           { return &widget == &descendant ? ForEachResult::_break : ForEachResult::_continue; });
+}
+
+/// Get the relative font size as determined by a widgetʼs style/Pango contexts.
+/// This creates an empty Pango Layout for the widget so only call it sparingly!
+int
+get_font_size(Gtk::Widget &widget)
+{
+    auto const layout = widget.create_pango_layout({});
+    auto font = layout->get_font_description();
+    if (!font.gobj()) font = layout->get_context()->get_font_description();
+    auto font_size = font.get_size();
+    if (!font.get_size_is_absolute()) font_size /= Pango::SCALE;
+    return font_size;
 }
 
 } // namespace Inkscape::UI

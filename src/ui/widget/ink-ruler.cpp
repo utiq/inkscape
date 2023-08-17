@@ -11,11 +11,12 @@
  *
  */
 
+#include <algorithm>
 #include <cmath>
-#include <utility>
 #include <sigc++/functors/mem_fun.h>
 #include <cairomm/context.h>
 #include <glibmm/ustring.h>
+#include <gtkmm/drawingarea.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/stylecontext.h>
 
@@ -53,6 +54,7 @@ namespace Inkscape::UI::Widget {
 
 Ruler::Ruler(Gtk::Orientation orientation)
     : _orientation(orientation)
+    , _drawing_area(Gtk::make_managed<Gtk::DrawingArea>())
     , _backing_store(nullptr)
     , _lower(0)
     , _upper(1000)
@@ -65,8 +67,14 @@ Ruler::Ruler(Gtk::Orientation orientation)
     set_name("InkRuler");
     get_style_context()->add_class(_orientation == Gtk::ORIENTATION_HORIZONTAL ? "horz" : "vert");
 
-    Controller::add_motion<nullptr, &Ruler::on_motion, nullptr>(*this, *this);
-    Controller::add_click(*this, sigc::mem_fun(*this, &Ruler::on_click_pressed), {}, Controller::Button::right);
+    _drawing_area->set_visible(true);
+    _drawing_area->signal_draw().connect(sigc::mem_fun(*this, &Ruler::on_drawing_area_draw));
+    _drawing_area->property_expand() = true; // DrawingArea fills self Box,
+    property_expand() = false;               // but the Box doesnʼt expand.
+    add(*_drawing_area);
+
+    Controller::add_motion<nullptr, &Ruler::on_motion, nullptr>(*_drawing_area, *this);
+    Controller::add_click(*_drawing_area, sigc::mem_fun(*this, &Ruler::on_click_pressed), {}, Controller::Button::right);
 
     set_no_show_all();
 
@@ -85,7 +93,7 @@ void Ruler::on_prefs_changed()
     _sel_visible = prefs->getBool("/options/ruler/show_bbox", true);
 
     _backing_store_valid = false;
-    queue_draw();
+    _drawing_area->queue_draw();
 }
 
 // Set display unit for ruler.
@@ -96,7 +104,7 @@ Ruler::set_unit(Inkscape::Util::Unit const *unit)
         _unit = unit;
 
         _backing_store_valid = false;
-        queue_draw();
+        _drawing_area->queue_draw();
     }
 }
 
@@ -114,7 +122,7 @@ Ruler::set_range(double lower, double upper)
         }
 
         _backing_store_valid = false;
-        queue_draw();
+        _drawing_area->queue_draw();
     }
 }
 
@@ -128,7 +136,7 @@ void Ruler::set_page(double lower, double upper)
         _page_upper = upper;
 
         _backing_store_valid = false;
-        queue_draw();
+        _drawing_area->queue_draw();
     }
 }
 
@@ -142,7 +150,7 @@ void Ruler::set_selection(double lower, double upper)
         _sel_upper = upper;
 
         _backing_store_valid = false;
-        queue_draw();
+        _drawing_area->queue_draw();
     }
 }
 
@@ -159,28 +167,24 @@ Ruler::add_track_widget(Gtk::Widget& widget)
 // coordinates. The routine assumes that the ruler is the same width (height) as the canvas. If
 // not, one could use Gtk::Widget::translate_coordinates() to convert the coordinates.
 void
-Ruler::on_motion(GtkEventControllerMotion const * /*motion*/, double const x, double const y)
+Ruler::on_motion(GtkEventControllerMotion const * motion, double const x, double const y)
 {
-    double position = 0;
-    if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
-        position = x;
-    } else {
-        position = y;
-    }
+    // This may come from a widget other than _drawing_area, so translate to accommodate border etc
+    auto const widget = Glib::wrap(gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(motion)));
+    int drawing_x, drawing_y;
+    widget->translate_coordinates(*_drawing_area, std::lround(x), std::lround(y), drawing_x, drawing_y);
 
-    if (position != _position) {
-        _position = position;
+    double const position = _orientation == Gtk::ORIENTATION_HORIZONTAL ? drawing_x : drawing_y;
+    if (position == _position) return;
 
-        // Find region to repaint (old and new marker positions).
-        Cairo::RectangleInt new_rect = marker_rect();
-        Cairo::RefPtr<Cairo::Region> region = Cairo::Region::create(new_rect);
-        region->do_union(_rect);
-
-        // Queue repaint
-        queue_draw_region(region);
-
-        _rect = new_rect;
-    }
+    _position = position;
+    // Find region to repaint (old and new marker positions).
+    Cairo::RectangleInt new_rect = marker_rect();
+    Cairo::RefPtr<Cairo::Region> region = Cairo::Region::create(new_rect);
+    region->do_union(_rect);
+    _rect = new_rect;
+    // Queue repaint
+    _drawing_area->queue_draw_region(region);
 }
 
 Gtk::EventSequenceState
@@ -192,62 +196,17 @@ Ruler::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-// Find smallest dimension of ruler based on font size.
-void
-Ruler::size_request (Gtk::Requisition& requisition) const
+std::pair<int, int>
+Ruler::get_drawing_size()
 {
-    // Get border size
-    Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-    Gtk::Border border = style_context->get_border(get_state_flags());
-
-    // get ruler's size from CSS style
-    GValue minimum_height = G_VALUE_INIT;
-    gtk_style_context_get_property(style_context->gobj(), "min-height", GTK_STATE_FLAG_NORMAL, &minimum_height);
-    auto size = g_value_get_int(&minimum_height);
-    g_value_unset(&minimum_height);
-
-    int width = border.get_left() + border.get_right();
-    int height = border.get_top() + border.get_bottom();
-
-    if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
-        width += 1;
-        height += size;
-    } else {
-        width += size;
-        height += 1;
-    }
-
-    // Only valid for orientation in question (smallest dimension)!
-    requisition.width = width;
-    requisition.height = height;
-}
-
-void
-Ruler::get_preferred_width_vfunc (int& minimum_width,  int& natural_width) const
-{
-    Gtk::Requisition requisition;
-    size_request(requisition);
-    minimum_width = natural_width = requisition.width;
-} 	
-
-void
-Ruler::get_preferred_height_vfunc (int& minimum_height, int& natural_height) const
-{
-    Gtk::Requisition requisition;
-    size_request(requisition);
-    minimum_height = natural_height = requisition.height;
+    return {_drawing_area->get_width(), _drawing_area->get_height()};
 }
 
 // Update backing store when scale changes.
-// Note: in principle, there should not be a border (ruler ends should match canvas ends). If there
-// is a border, we calculate tick position ignoring border width at ends of ruler but move the
-// ticks and position marker inside the border.
 bool
 Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
 {
-    Gtk::Allocation allocation = get_allocation();
-    int awidth  = allocation.get_width();
-    int aheight = allocation.get_height();
+    auto const [awidth, aheight] = get_drawing_size();
 
     // Create backing store (need surface_in to get scale factor correct).
     Cairo::RefPtr<Cairo::Surface> surface_in = cr_in->get_target();
@@ -255,10 +214,6 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
 
     // Get context
     Cairo::RefPtr<::Cairo::Context> cr = ::Cairo::Context::create(_backing_store);
-
-    // background
-    auto context = get_style_context();
-    context->render_background(cr, 0, 0, awidth, aheight);
 
     // Color in page indication box
     if (double psize = std::abs(_page_upper - _page_lower)) {
@@ -273,31 +228,24 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
     } else {
         g_warning("No size?");
     }
+
     cr->set_line_width(1.0);
 
-    // Ruler size (only smallest dimension used later).
-    int rwidth  = awidth  - (_border.get_left() + _border.get_right());
-    int rheight = aheight - (_border.get_top()  + _border.get_bottom());
+    // aparallel is the longer, oriented dimension of the ruler; aperpendicular shorter.
+    auto const [aparallel, aperpendicular] = _orientation == Gtk::ORIENTATION_HORIZONTAL
+                                             ? std::pair{awidth , aheight}
+                                             : std::pair{aheight, awidth };
 
-    auto paint_line = [=](Gdk::RGBA color, int offset) {
-        if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
-            cr->move_to(0, offset - 0.5);
-            cr->line_to(allocation.get_width(), offset - 0.5);
-        } else {
-            cr->move_to(offset - 0.5, 0);
-            cr->line_to(offset - 0.5, allocation.get_height());
-        }
-        Gdk::Cairo::set_source_rgba(cr, color);
-        cr->stroke();
-    };
-
-    if (_orientation != Gtk::ORIENTATION_HORIZONTAL) {
-        // From here on, awidth is the longest dimension of the ruler, rheight is the shortest.
-        std::swap(awidth, aheight);
-        std::swap(rwidth, rheight);
-    }
     // Draw bottom/right line of ruler
-    paint_line(_foreground, aheight);
+    Gdk::Cairo::set_source_rgba(cr, _foreground);
+    if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
+        cr->move_to(0     , aheight - 0.5);
+        cr->line_to(awidth, aheight - 0.5);
+    } else {
+        cr->move_to(awidth - 0.5, 0      );
+        cr->line_to(awidth - 0.5, aheight);
+    }
+    cr->stroke();
 
     // Draw a shadow which overlaps any previously painted object.
     auto paint_shadow = [=](double size_x, double size_y, double width, double height) {
@@ -309,9 +257,9 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
     };
     int gradient_size = 4;
     if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
-        paint_shadow(0, gradient_size, allocation.get_width(), gradient_size);
+        paint_shadow(0, gradient_size, awidth, gradient_size);
     } else {
-        paint_shadow(gradient_size, 0, gradient_size, allocation.get_height());
+        paint_shadow(gradient_size, 0, gradient_size, aheight);
     }
 
     // Figure out scale. Largest ticks must be far enough apart to fit largest text in vertical ruler.
@@ -321,7 +269,7 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
     unsigned int digits = scale_text.length() + 1; // Add one for negative sign.
     unsigned int minimum = digits * _font_size * 2;
 
-    double pixels_per_unit = awidth/_max_size; // pixel per distance
+    auto const pixels_per_unit = aparallel / _max_size; // pixel per distance
 
     SPRulerMetric ruler_metric = ruler_metric_general;
     if (_unit == Inkscape::Util::unit_table.getUnit("in")) {
@@ -365,10 +313,10 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
         double position = std::floor(i*pixels_per_tick - _lower*pixels_per_unit) + 0.5;
 
         // Height of tick
-        int height = rheight - 7;
+        int size = aperpendicular - 7;
         for (int j = divide_index; j > 0; --j) {
             if (i%ruler_metric.subdivide[j] == 0) break;
-            height = height/2 + 1;
+            size = size / 2 + 1;
         }
 
         // Draw text for major ticks.
@@ -383,11 +331,11 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
             }
 
             // Align text to pixel
-            int x = _border.get_left() + 3;
+            int x = 3;
             int y = position + 2.5;
             if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
                 x = position + 2.5;
-                y = _border.get_top() + 3;
+                y = 3;
             }
 
             // We don't know the surface height/width, damn you cairo.
@@ -401,24 +349,23 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
         // Draw ticks
         Gdk::Cairo::set_source_rgba(cr, _foreground);
         if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
-            cr->move_to(position, rheight + _border.get_top() - height);
-            cr->line_to(position, rheight + _border.get_top());
+            cr->move_to(position, aheight - size);
+            cr->line_to(position, aheight       );
         } else {
-            cr->move_to(rheight + _border.get_left() - height, position);
-            cr->line_to(rheight + _border.get_left(),          position);
+            cr->move_to(awidth - size, position);
+            cr->line_to(awidth       , position);
         }
         cr->stroke();
     }
 
     // Draw a selection bar
     if (_sel_lower != _sel_upper && _sel_visible) {
-
         const auto radius = 3.0;
         const auto delta = _sel_upper - _sel_lower;
         const auto dxy = delta > 0 ? radius : -radius;
         double sy0 = _sel_lower;
         double sy1 = _sel_upper;
-        double sx0 = floor(aheight * 0.7);
+        double sx0 = floor(aperpendicular * 0.7);
         double sx1 = sx0;
 
         if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
@@ -469,7 +416,6 @@ Cairo::RefPtr<Cairo::Surface> Ruler::draw_label(Cairo::RefPtr<Cairo::Surface> co
     bool rotate = _orientation != Gtk::ORIENTATION_HORIZONTAL;
 
     Glib::RefPtr<Pango::Layout> layout = create_pango_layout(std::to_string(label_value));
-    layout->set_font_description(_font);
 
     int text_width;
     int text_height;
@@ -498,22 +444,17 @@ Cairo::RefPtr<Cairo::Surface> Ruler::draw_label(Cairo::RefPtr<Cairo::Surface> co
 void
 Ruler::draw_marker(const Cairo::RefPtr<::Cairo::Context>& cr)
 {
-    Gtk::Allocation allocation = get_allocation();
-    const int awidth  = allocation.get_width();
-    const int aheight = allocation.get_height();
-
+    auto const [awidth, aheight] = get_drawing_size();
     Gdk::Cairo::set_source_rgba(cr, _foreground);
     if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
-        double offset = aheight - _border.get_bottom();
-        cr->move_to(_position,              offset);
-        cr->line_to(_position - half_width, offset - half_width);
-        cr->line_to(_position + half_width, offset - half_width);
+        cr->move_to(_position             , aheight             );
+        cr->line_to(_position - half_width, aheight - half_width);
+        cr->line_to(_position + half_width, aheight - half_width);
         cr->close_path();
      } else {
-        double offset = awidth - _border.get_right();
-        cr->move_to(offset,              _position);
-        cr->line_to(offset - half_width, _position - half_width);
-        cr->line_to(offset - half_width, _position + half_width);
+        cr->move_to(awidth             , _position             );
+        cr->line_to(awidth - half_width, _position - half_width);
+        cr->line_to(awidth - half_width, _position + half_width);
         cr->close_path();
     }
     cr->fill();
@@ -524,12 +465,7 @@ Ruler::draw_marker(const Cairo::RefPtr<::Cairo::Context>& cr)
 Cairo::RectangleInt
 Ruler::marker_rect()
 {
-    Gtk::Allocation allocation = get_allocation();
-    const int awidth  = allocation.get_width();
-    const int aheight = allocation.get_height();
-
-    int rwidth  = awidth  - _border.get_left() - _border.get_right();
-    int rheight = aheight - _border.get_top()  - _border.get_bottom();
+    auto const [awidth, aheight] = get_drawing_size();
 
     Cairo::RectangleInt rect;
     rect.x = 0;
@@ -540,11 +476,11 @@ Ruler::marker_rect()
     // Find size of rectangle to enclose triangle.
     if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
         rect.x = std::floor(_position - half_width);
-        rect.y = std::floor(_border.get_top() + rheight - half_width);
+        rect.y = std::floor(  aheight - half_width);
         rect.width  = std::ceil(half_width * 2.0 + 1);
         rect.height = std::ceil(half_width);
     } else {
-        rect.x = std::floor(_border.get_left() + rwidth - half_width);
+        rect.x = std::floor(  awidth - half_width);
         rect.y = std::floor(_position - half_width);
         rect.width  = std::ceil(half_width);
         rect.height = std::ceil(half_width * 2.0 + 1);
@@ -555,7 +491,7 @@ Ruler::marker_rect()
 
 // Draw the ruler using the tick backing store.
 bool
-Ruler::on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) {
+Ruler::on_drawing_area_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) {
     if (!_backing_store_valid) {
         draw_scale (cr);
     }
@@ -571,17 +507,14 @@ Ruler::on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) {
 // Update ruler on style change (font-size, etc.)
 void
 Ruler::on_style_updated() {
-    Gtk::DrawingArea::on_style_updated();
+    Gtk::Box::on_style_updated();
 
     Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
 
     // Cache all our colors to speed up rendering.
-    _border = style_context->get_border();
+
     _foreground = get_foreground_color(style_context);
-    _font = style_context->get_font();
-    _font_size = _font.get_size();
-    if (!_font.get_size_is_absolute())
-        _font_size /= Pango::SCALE;
+    _font_size = get_font_size(*this);
 
     _shadow = get_color_with_class(style_context, "shadow");
     _page_fill = get_color_with_class(style_context, "page");
@@ -595,7 +528,7 @@ Ruler::on_style_updated() {
     _backing_store_valid = false;
 
     queue_resize();
-    queue_draw();
+    _drawing_area->queue_draw();
 }
 
 /**
