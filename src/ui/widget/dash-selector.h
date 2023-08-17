@@ -30,7 +30,6 @@ namespace Widget {
 class DashSelector : public Gtk::Box {
 public:
     DashSelector();
-    ~DashSelector() override;
 
     /**
      * Get and set methods for dashes

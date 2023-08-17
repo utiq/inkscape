@@ -14,29 +14,26 @@
 
 #include <gtkmm/bin.h>
 #include <gtkmm/box.h>
-#include <gtkmm/builder.h>
-#include <gtkmm/checkbutton.h>
-#include <gtkmm/flowbox.h>
-#include <gtkmm/image.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/menubutton.h>
-#include <gtkmm/spinbutton.h>
-#include <gio/gliststore.h>
-
+#include <gtkmm/treemodel.h>
 #include <sigc++/signal.h>
 
 #include "document.h"
-#include "inkscape.h"
-#include "scrollprotected.h"
 #include "display/drawing.h"
+#include "helper/auto-connection.h"
+#include "inkscape.h"
 #include "ui/operation-blocker.h"
 
 class SPMarker;
 
 namespace Gtk {
-
-class Container;
 class Adjustment;
+class Builder;
+class Button;
+class Container;
+class FlowBox;
+class Image;
+class Label;
+class SpinButton;
 }
 
 namespace Inkscape {
@@ -51,7 +48,6 @@ class MarkerComboBox : public Gtk::Bin {
 
 public:
     MarkerComboBox(Glib::ustring id, int loc);
-    ~MarkerComboBox() override;
 
     void setDocument(SPDocument *);
 
@@ -154,8 +150,8 @@ private:
     Cairo::RefPtr<Cairo::Surface> create_marker_image(Geom::IntPoint pixel_size, gchar const *mname,
         SPDocument *source, Inkscape::Drawing &drawing, unsigned /*visionkey*/, bool checkerboard, bool no_clip, double scale);
     void refresh_after_markers_modified();
-    sigc::connection modified_connection;
-    sigc::connection _idle;
+    auto_connection modified_connection;
+    auto_connection _idle;
 };
 
 } // namespace Widget

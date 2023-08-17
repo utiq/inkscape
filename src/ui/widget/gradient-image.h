@@ -16,6 +16,7 @@
 
 #include <glibmm/refptr.h>
 #include <gtkmm/widget.h>
+#include "helper/auto-connection.h"
 
 class SPGradient;
 class SPObject;
@@ -25,17 +26,15 @@ namespace Gdk {
     class Pixbuf;
 }
 
-#include <sigc++/connection.h>
-
 namespace Inkscape {
 namespace UI {
 namespace Widget {
 class GradientImage : public Gtk::Widget {
   private:
-    SPGradient *_gradient;
+    SPGradient *_gradient = nullptr;
 
-    sigc::connection _release_connection;
-    sigc::connection _modified_connection;
+    auto_connection _release_connection;
+    auto_connection _modified_connection;
 
     void gradient_release(SPObject *obj);
     void gradient_modified(SPObject *obj, guint flags);
@@ -49,7 +48,6 @@ class GradientImage : public Gtk::Widget {
 
   public:
     GradientImage(SPGradient *gradient);
-    ~GradientImage() override;
 
     void set_gradient(SPGradient *gr);
 };

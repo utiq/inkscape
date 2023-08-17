@@ -273,8 +273,6 @@ PatternEditor::PatternEditor(const char* prefs, Inkscape::PatternManager& manage
     pack_start(_main_grid);
 }
 
-PatternEditor::~PatternEditor() noexcept {}
-
 void PatternEditor::bind_store(Gtk::FlowBox& list, PatternStore& pat) {
     pat.store.set_filter([=](const Glib::RefPtr<PatternItem>& p){
         if (!p) return false;

@@ -80,21 +80,6 @@ GradientVectorSelector::GradientVectorSelector(SPDocument *doc, SPGradient *gr)
     }
 }
 
-GradientVectorSelector::~GradientVectorSelector()
-{
-    if (_gr) {
-        _gradient_release_connection.disconnect();
-        _tree_select_connection.disconnect();
-        _gr = nullptr;
-    }
-
-    if (_doc) {
-        _defs_release_connection.disconnect();
-        _defs_modified_connection.disconnect();
-        _doc = nullptr;
-    }
-}
-
 void GradientVectorSelector::set_gradient(SPDocument *doc, SPGradient *gr)
 {
 //     g_message("sp_gradient_vector_selector_set_gradient(%p, %p, %p) [%s] %d %d", gvs, doc, gr,

@@ -73,11 +73,6 @@ DashSelector::DashSelector()
     _pattern = &s_dashes.front();
 }
 
-DashSelector::~DashSelector() {
-    // FIXME: for some reason this doesn't get called; does the call to manage() in
-    // sp_stroke_style_line_widget_new() not processed correctly?
-}
-
 void DashSelector::prepareImageRenderer( Gtk::TreeModel::const_iterator const &row ) {
     // dashes are rendered on the fly to adapt to current theme colors
     std::size_t index = (*row)[dash_columns.dash];

@@ -29,19 +29,9 @@ namespace Inkscape {
 namespace UI {
 namespace Widget {
 GradientImage::GradientImage(SPGradient *gradient)
-    : _gradient(nullptr)
 {
     set_has_window(false);
     set_gradient(gradient);
-}
-
-GradientImage::~GradientImage()
-{
-    if (_gradient) {
-        _release_connection.disconnect();
-        _modified_connection.disconnect();
-        _gradient = nullptr;
-    }
 }
 
 void

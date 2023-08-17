@@ -40,7 +40,6 @@ namespace Widget {
 class PatternEditor : public Gtk::Box {
 public:
     PatternEditor(const char* prefs, PatternManager& manager);
-    ~PatternEditor() noexcept override;
 
     // pass current document to extract patterns
     void set_document(SPDocument* document);

@@ -255,15 +255,6 @@ MarkerComboBox::MarkerComboBox(Glib::ustring id, int l) :
     set_visible(true);
 }
 
-MarkerComboBox::~MarkerComboBox() {
-    if (_idle) {
-        _idle.disconnect();
-    }
-    if (_document) {
-        modified_connection.disconnect();
-    }
-}
-
 void MarkerComboBox::update_widgets_from_marker(SPMarker* marker) {
     _input_grid.set_sensitive(marker != nullptr);
 
