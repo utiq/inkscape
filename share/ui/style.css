@@ -254,7 +254,6 @@ iconview *:hover {
 
 /* Selector dialog */
 #SelectorsAndStyleDialog button {
-    padding: 4px;
     min-height: 16px;
     margin: 2px;
     padding: 2px;

@@ -5,6 +5,7 @@
 /* Authors:
  *   Kamalpreet Kaur Grewal
  *   Tavmjong Bah
+ *   Jabiertxof
  *
  * Copyright (C) Kamalpreet Kaur Grewal 2016 <grewalkamal005@gmail.com>
  * Copyright (C) Tavmjong Bah 2017 <tavmjong@free.fr>
@@ -15,25 +16,32 @@
 #ifndef SELECTORSDIALOG_H
 #define SELECTORSDIALOG_H
 
-#include <gtkmm/dialog.h>
-#include <gtkmm/paned.h>
-#include <gtkmm/radiobutton.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/switch.h>
-#include <gtkmm/treemodelfilter.h>
-#include <gtkmm/treeselection.h>
-#include <gtkmm/treestore.h>
-#include <gtkmm/treeview.h>
 #include <memory>
 #include <vector>
+#include <glibmm/refptr.h>
+#include <gtkmm/box.h>
+#include <gtkmm/button.h>
+#include <gtkmm/paned.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/treemodel.h>
+#include <gtkmm/treestore.h>
+#include <gtkmm/treeview.h>
 
 #include "ui/dialog/dialog-base.h"
-#include "ui/dialog/styledialog.h"
 #include "xml/helper-observer.h"
 
+namespace Gtk {
+class Adjustment;
+class Dialog;
+class RadioButton;
+class SelectionData;
+} // namespace Gtk
+
 namespace Inkscape {
-namespace UI {
-namespace Dialog {
+
+namespace UI::Dialog {
+
+class StyleDialog;
 
 /**
  * @brief The SelectorsDialog class
@@ -176,8 +184,8 @@ public:
     void _styleButton(Gtk::Button& btn, char const* iconName, char const* tooltip);
 };
 
-} // namespace Dialog
-} // namespace UI
+} // namespace UI::Dialog
+
 } // namespace Inkscape
 
 #endif // SELECTORSDIALOG_H

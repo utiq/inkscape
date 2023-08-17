@@ -5,6 +5,7 @@
 /* Authors:
  *   Kamalpreet Kaur Grewal
  *   Tavmjong Bah
+ *   Jabiertxof
  *
  * Copyright (C) Kamalpreet Kaur Grewal 2016 <grewalkamal005@gmail.com>
  * Copyright (C) Tavmjong Bah 2017 <tavmjong@free.fr>
@@ -12,41 +13,44 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef STYLEDIALOG_H
-#define STYLEDIALOG_H
+#ifndef SEEN_UI_DIALOG_STYLEDIALOG_H
+#define SEEN_UI_DIALOG_STYLEDIALOG_H
 
-#include <glibmm/regex.h>
-#include <gtkmm/adjustment.h>
-#include <gtkmm/builder.h>
-#include <gtkmm/celleditable.h>
-#include <gtkmm/cellrenderercombo.h>
-#include <gtkmm/dialog.h>
-#include <gtkmm/entry.h>
-#include <gtkmm/entrycompletion.h>
-#include <gtkmm/eventbox.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/paned.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/switch.h>
-#include <gtkmm/tooltip.h>
-#include <gtkmm/treemodelfilter.h>
-#include <gtkmm/treeselection.h>
-#include <gtkmm/treestore.h>
-#include <gtkmm/treeview.h>
-#include <gtkmm/viewport.h>
+#include <map>
 #include <memory>
 #include <vector>
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
+#include <gtk/gtk.h> // GtkEventControllerKey
+#include <gtkmm/box.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/treemodel.h>
 
 #include "style-enums.h"
 #include "ui/dialog/dialog-base.h"
-#include "xml/helper-observer.h"
+
+namespace Gtk {
+class Adjustment;
+class CellEditable;
+class Dialog;
+class Entry;
+class Label;
+class TreeStore;
+class TreeView;
+class TreeViewColumn;
+} // namespace Gtk
 
 namespace Inkscape {
 
-XML::Node *get_first_style_text_node(XML::Node *root, bool create_if_missing);
+namespace XML {
+class Node;
+class NodeObserver;
+} // namespace XML
 
-namespace UI {
-namespace Dialog {
+namespace UI::Dialog {
+
+// for selectorsdialog.cpp
+XML::Node *get_first_style_text_node(XML::Node *root, bool create_if_missing);
 
 /**
  * @brief The StyleDialog class
@@ -77,6 +81,8 @@ public:
     void readStyleElement();
 
   private:
+    using AttrProp = std::map<Glib::ustring, Glib::ustring>;
+
     // Monitor <style> element for changes.
     class NodeObserver;
     // Monitor all objects for addition/removal/attribute change
@@ -87,7 +93,7 @@ public:
     void _nodeRemoved(Inkscape::XML::Node &repr);
     void _nodeChanged(Inkscape::XML::Node &repr);
     void removeObservers();
-    /* void _stylesheetChanged( Inkscape::XML::Node &repr ); */
+
     // Data structure
     class ModelColumns : public Gtk::TreeModel::ColumnRecord {
       public:
@@ -121,54 +127,66 @@ public:
         Gtk::TreeModelColumn<Glib::ustring> _colCSSData; // Name of the property.
     };
     CSSData _mCSSData;
+
     guint _deleted_pos{0};
+
     // Widgets
     Gtk::ScrolledWindow _scrolledWindow;
     Glib::RefPtr<Gtk::Adjustment> _vadj;
     Gtk::Box _mainBox;
     Gtk::Box _styleBox;
+
     // Reading and writing the style element.
+
     Inkscape::XML::Node *_getStyleTextNode(bool create_if_missing = false);
-    Glib::RefPtr<Gtk::TreeModel> _selectTree(Glib::ustring selector);
-    void _writeStyleElement(Glib::RefPtr<Gtk::TreeStore> store, Glib::ustring selector,
-                            Glib::ustring new_selector = "");
-    // void _selectorActivate(Glib::RefPtr<Gtk::TreeStore> store, Gtk::Label *selector, Gtk::Entry *selector_edit);
-    bool _selectorEditKeyPress(GdkEventKey *event, Glib::RefPtr<Gtk::TreeStore> store, Gtk::Label *selector,
-                               Gtk::Entry *selector_edit);
-    bool _selectorStartEdit(GdkEventButton *event, Gtk::Label *selector, Gtk::Entry *selector_edit);
-    void _activeToggled(const Glib::ustring &path, Glib::RefPtr<Gtk::TreeStore> store);
-    bool _addRow(GdkEventButton *evt, Glib::RefPtr<Gtk::TreeStore> store, Gtk::TreeView *css_tree,
-                 Glib::ustring selector, gint pos);
-    void _onPropDelete(Glib::ustring path, Glib::RefPtr<Gtk::TreeStore> store);
+    Glib::RefPtr<Gtk::TreeModel> _selectTree(Glib::ustring const &selector);
+
+    void _writeStyleElement(Glib::RefPtr<Gtk::TreeStore> const &store,
+                            Glib::ustring selector, Glib::ustring const &new_selector = {});
+
+    void _activeToggled(const Glib::ustring &path, Glib::RefPtr<Gtk::TreeStore> const &store);
+
+    void _addRow(Glib::RefPtr<Gtk::TreeStore> const &store, Gtk::TreeView *css_tree,
+                 Glib::ustring const &selector, int pos);
+
+    void _onPropDelete(Glib::ustring const &path, Glib::RefPtr<Gtk::TreeStore> const &store);
+
     void _nameEdited(const Glib::ustring &path, const Glib::ustring &name, Glib::RefPtr<Gtk::TreeStore> store,
                      Gtk::TreeView *css_tree);
-    bool _onNameKeyReleased(GdkEventKey *event, Gtk::Entry *entry);
-    bool _onValueKeyReleased(GdkEventKey *event, Gtk::Entry *entry);
-    bool _onNameKeyPressed(GdkEventKey *event, Gtk::Entry *entry);
-    bool _onValueKeyPressed(GdkEventKey *event, Gtk::Entry *entry);
+
+    Gtk::Entry *_editingEntry = nullptr;
+    void _addTreeViewHandlers(Gtk::TreeView &treeview);
+    void _setEditingEntry(Gtk::Entry *entry, Glib::ustring endChars);
+    bool _onTreeViewKeyReleased(GtkEventControllerKey const *controller,
+                                unsigned keyval, unsigned keycode, GdkModifierType state);
+    bool _onTreeViewFocus(Gtk::DirectionType const direction);
+
     void _onLinkObj(Glib::ustring path, Glib::RefPtr<Gtk::TreeStore> store);
+
     void _valueEdited(const Glib::ustring &path, const Glib::ustring &value, Glib::RefPtr<Gtk::TreeStore> store);
     void _startNameEdit(Gtk::CellEditable *cell, const Glib::ustring &path);
-
     void _startValueEdit(Gtk::CellEditable *cell, const Glib::ustring &path, Glib::RefPtr<Gtk::TreeStore> store);
+
     void _setAutocompletion(Gtk::Entry *entry, SPStyleEnum const cssenum[]);
     void _setAutocompletion(Gtk::Entry *entry, Glib::ustring name);
     bool _on_foreach_iter(const Gtk::TreeModel::iterator &iter);
     void _reload();
     void _vscroll();
+
     bool _scrollock;
     double _scrollpos{0};
     Glib::ustring _current_selector;
 
     // Update watchers
-    std::unique_ptr<Inkscape::XML::NodeObserver> m_nodewatcher;
-    std::unique_ptr<Inkscape::XML::NodeObserver> m_styletextwatcher;
+    std::unique_ptr<XML::NodeObserver> const m_nodewatcher;
+    std::unique_ptr<XML::NodeObserver> const m_styletextwatcher;
 
     // Manipulate Tree
     std::vector<SPObject *> _getObjVec(Glib::ustring selector);
-    std::map<Glib::ustring, Glib::ustring> parseStyle(Glib::ustring style_string);
-    std::map<Glib::ustring, Glib::ustring> _owner_style;
+    AttrProp parseStyle(Glib::ustring style_string);
+    AttrProp _owner_style;
     void _addOwnerStyle(Glib::ustring name, Glib::ustring selector);
+
     // Variables
     Inkscape::XML::Node *m_root{nullptr};
     Inkscape::XML::Node *_textNode{nullptr}; // Track so we know when to add a NodeObserver.
@@ -177,11 +195,11 @@ public:
     void _closeDialog(Gtk::Dialog *textDialogPtr);
 };
 
-} // namespace Dialog
-} // namespace UI
+} // namespace UI::Dialog
+
 } // namespace Inkscape
 
-#endif // STYLEDIALOG_H
+#endif // SEEN_UI_DIALOG_STYLEDIALOG_H
 
 /*
   Local Variables:

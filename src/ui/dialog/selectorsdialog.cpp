@@ -15,30 +15,29 @@
 
 #include "selectorsdialog.h"
 
-#include <map>
-#include <regex>
+#include <algorithm>
+#include <string>
 #include <utility>
-
 #include <glibmm/i18n.h>
 #include <glibmm/regex.h>
+#include <gtkmm/adjustment.h>
+#include <gtkmm/dialog.h>
+#include <gtkmm/radiobutton.h>
+#include <gtkmm/selectiondata.h>
 
 #include "attribute-rel-svg.h"
 #include "document-undo.h"
 #include "inkscape.h"
 #include "selection.h"
 #include "style.h"
-
 #include "ui/dialog-run.h"
+#include "ui/dialog/styledialog.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/widget/iconrenderer.h"
-
 #include "util/trim.h"
-
 #include "xml/attribute-record.h"
-#include "xml/node-observer.h"
 #include "xml/sp-css-attr.h"
-
 
 // G_MESSAGES_DEBUG=DEBUG_SELECTORSDIALOG  gdb ./inkscape
 // #define DEBUG_SELECTORSDIALOG
@@ -46,9 +45,7 @@
 
 using Inkscape::DocumentUndo;
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 // Keeps a watch on style element
 class SelectorsDialog::NodeObserver : public Inkscape::XML::NodeObserver
@@ -355,7 +352,7 @@ Inkscape::XML::Node *SelectorsDialog::_getStyleTextNode(bool create_if_missing)
 {
     g_debug("SelectorsDialog::_getStyleTextNode");
 
-    auto textNode = Inkscape::get_first_style_text_node(m_root, create_if_missing);
+    auto const textNode = get_first_style_text_node(m_root, create_if_missing);
 
     if (_textNode != textNode) {
         if (_textNode) {
@@ -1323,10 +1320,7 @@ void SelectorsDialog::_styleButton(Gtk::Button &btn, char const *iconName, char 
     btn.set_tooltip_text (tooltip);
 }
 
-
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:
