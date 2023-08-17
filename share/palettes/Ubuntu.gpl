@@ -1,10 +1,7 @@
 GIMP Palette
 Name: Ubuntu
+Columns: 14
 # <http://design.ubuntu.com/brand/colour-palette>
-
-
-0	0	0	Black
-255	255	255	White
 
 
 221	72	20	Ubuntu orange
@@ -119,3 +116,5 @@ Name: Ubuntu
 241	234	238	Canonical aubergine 10%
 
 
+0	0	0	Black
+255	255	255	White

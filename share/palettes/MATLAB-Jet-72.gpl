@@ -1,7 +1,7 @@
 GIMP Palette
 Name: MATLAB Jet (72)
 Columns: 6
-#
+# <https://www.ncl.ucar.edu/Document/Graphics/ColorTables/matlab_jet.shtml>
   0   0 127 0
   0   0 127 #1
   0   0 141 #2

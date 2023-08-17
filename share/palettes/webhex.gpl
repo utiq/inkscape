@@ -1,6 +1,7 @@
 GIMP Palette
 Name: WebHex
-#
+Columns: 6
+# <https://www.w3.org/TR/css-color-3/>
 255 255 255
 255 255 204
 255 255 153
