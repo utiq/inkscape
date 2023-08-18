@@ -71,28 +71,29 @@ enum class ForEachResult {_continue, _break};
 /// Accessing children changes between GTK3 & GTK4, so best consolidate it here.
 /// @param widget    The initial widget at the top of the hierarchy, to start at
 /// @param func      The widget-testing predicate, returning whether to continue
-/// @param test_self Whether to call the predicate @a func on the initial widget
+/// @param plus_self Whether to call the predicate @a func on the initial widget
 /// @param recurse   Whether to recurse also calling @a func for nested children
 /// @return The first widget for which @a func returns _break or nullptr if none
 template <typename Func>
 Gtk::Widget *for_each_child(Gtk::Widget &widget, Func &&func,
-                            bool const test_self = false, bool const recurse = false)
+                            bool const plus_self = false, bool const recurse = false,
+                            int const level = 0)
 {
     static_assert(std::is_invocable_r_v<ForEachResult, Func, Gtk::Widget &>);
 
-    if (test_self && func(widget) == ForEachResult::_break) return &widget;
-    if (!recurse) return nullptr;
+    if (plus_self && func(widget) == ForEachResult::_break) return &widget;
+    if (!recurse && level > 0) return nullptr;
 
     if (auto const bin = dynamic_cast<Gtk::Bin *>(&widget)) {
         if (auto const child = bin->get_child()) {
-            auto const descendant = for_each_child(*child, func, true, recurse);
+            auto const descendant = for_each_child(*child, func, true, recurse, level + 1);
             if (descendant) return descendant;
         }
     }
 
     if (auto const container = dynamic_cast<Gtk::Container *>(&widget)) {
         for (auto const child: container->get_children()) {
-            auto const descendant = for_each_child(*child, func, true, recurse);
+            auto const descendant = for_each_child(*child, func, true, recurse, level + 1);
             if (descendant) return descendant;
         }
     }
