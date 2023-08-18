@@ -574,7 +574,7 @@ void StyleDialog::readStyleElement()
                     row[_mColumns._colLinked] = true;
                 }
             }
-            _addOwnerStyle(name, _("Style attribute"));
+            _addOwnerStyle(name, _("Used in style attribute"));
         }
 
         // this is to fix a bug on cairo win:
@@ -785,7 +785,8 @@ void StyleDialog::readStyleElement()
                 row[_mColumns._colStrike] = true;
             } else {
                 row[_mColumns._colOwner] = _("Current value");
-                _addOwnerStyle(name, selector);
+                // Translators: %1 is a CSS selector.
+                _addOwnerStyle(name, Glib::ustring::compose(_("Used in %1"), selector));
             }
         }
 
@@ -882,7 +883,7 @@ void StyleDialog::readStyleElement()
                         } else {
                             row[_mColumns._colStrike] = false;
                             row[_mColumns._colOwner] = _("Current value");
-                            _addOwnerStyle(iter->name(), "inline attributes");
+                            _addOwnerStyle(iter->name(), _("Used in inline attributes"));
                         }
                         hasattributes = true;
                     }
@@ -932,18 +933,16 @@ bool StyleDialog::_on_foreach_iter(const Gtk::TreeModel::iterator &iter)
     g_debug("StyleDialog::_on_foreach_iter");
 
     Gtk::TreeModel::Row row = *(iter);
-    Glib::ustring owner = row[_mColumns._colOwner];
-    if (owner.empty()) {
-        Glib::ustring value = _owner_style[row[_mColumns._colName]];
-        auto tooltiptext = Glib::ustring{};
-        if (!value.empty()) {
-            tooltiptext = Glib::ustring::compose(_("Used in %1"), _owner_style[row[_mColumns._colName]]);
-            row[_mColumns._colStrike] = true;
-        } else {
-            tooltiptext = _("Current value");
-            row[_mColumns._colStrike] = false;
-        }
-        row[_mColumns._colOwner] = tooltiptext;
+    auto const &owner = row.get_value(_mColumns._colOwner);
+    if (!owner.empty()) return false;
+
+    auto const it = _owner_style.find(row.get_value(_mColumns._colName));
+    if (it != _owner_style.end()) {
+        row[_mColumns._colOwner] = it->second;
+        row[_mColumns._colStrike] = true;
+    } else {
+        row[_mColumns._colOwner] = _("Current value");
+        row[_mColumns._colStrike] = false;
     }
     return false;
 }
