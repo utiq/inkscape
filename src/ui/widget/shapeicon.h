@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
-#define SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
 /*
  * Authors:
  *   Martin Owens
@@ -10,14 +8,18 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
+#define SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
+
+#include <map>
+#include <string>
+#include <glibmm/property.h>
+#include <glibmm/refptr.h>
 #include <gtkmm/iconinfo.h>
 #include <gtkmm/cellrenderer.h>
 #include <gtkmm/widget.h>
-#include <glibmm/property.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 // Object overlay states usually modify the icon and indicate
 // That there may be non-item children under this item (e.g. clip)
@@ -32,7 +34,6 @@ enum OverlayStates : OverlayState {
 /* Custom cell renderer for type icon */
 class CellRendererItemIcon : public Gtk::CellRenderer {
 public:
-  
     CellRendererItemIcon() :
         Glib::ObjectBase(typeid(CellRenderer)),
         Gtk::CellRenderer(),
@@ -45,7 +46,6 @@ public:
     {
         Gtk::IconSize::lookup(Gtk::ICON_SIZE_MENU, _size, _size);
     } 
-    ~CellRendererItemIcon() override = default;
      
     Glib::PropertyProxy<std::string> property_shape_type() {
         return _property_shape_type.get_proxy();
@@ -58,11 +58,12 @@ public:
     }
   
     typedef sigc::signal<void (Glib::ustring)> type_signal_activated;
+
     type_signal_activated signal_activated() {
         return _signal_activated;
     }
 
-protected:
+private:
     void render_vfunc(const Cairo::RefPtr<Cairo::Context>& cr, 
                       Gtk::Widget& widget,
                       const Gdk::Rectangle& background_area,
@@ -82,7 +83,7 @@ protected:
                         const Gdk::Rectangle& background_area,
                         const Gdk::Rectangle& cell_area,
                         Gtk::CellRendererState flags) override;
-private:
+
     type_signal_activated _signal_activated;
     int _size;
     Glib::Property<std::string> _property_shape_type;
@@ -96,10 +97,7 @@ private:
     Glib::RefPtr<Gdk::Pixbuf> _both_overlay;
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
-
+} // namespace Inkscape::UI::Widget
 
 #endif // SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
 

@@ -14,7 +14,6 @@
 
 #include <cstdint>
 #include <stdexcept>
-#include <tuple>
 #include <cairomm/pattern.h>
 #include <pangomm/context.h>
 #include <pangomm/fontdescription.h>
@@ -124,25 +123,6 @@ void resize_widget_children(Gtk::Widget *widget) {
         widget->get_allocated_size(allocation, baseline);
         widget->size_allocate(allocation, baseline);
     }
-}
-
-Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state)
-{
-    auto flags = Gtk::STATE_FLAG_NORMAL;
-
-    for (auto [s, f]: (std::tuple<Gtk::CellRendererState, Gtk::StateFlags>[]) {
-        {Gtk::CELL_RENDERER_SELECTED, Gtk::STATE_FLAG_SELECTED},
-        {Gtk::CELL_RENDERER_PRELIT, Gtk::STATE_FLAG_PRELIGHT},
-        {Gtk::CELL_RENDERER_INSENSITIVE, Gtk::STATE_FLAG_INSENSITIVE},
-        {Gtk::CELL_RENDERER_FOCUSED, Gtk::STATE_FLAG_FOCUSED},
-    })
-    {
-        if (state & s) {
-            flags |= f;
-        }
-    }
-
-    return flags;
 }
 
 /**

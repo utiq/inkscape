@@ -61,9 +61,6 @@ void resize_widget_children(Gtk::Widget *widget);
 
 void gui_warning(const std::string &msg, Gtk::Window * parent_window = nullptr);
 
-/// Translate cell renderer state to style flags.
-Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state);
-
 /// Whether for_each_*() will continue or stop after calling Func per child.
 enum class ForEachResult {_continue, _break};
 
