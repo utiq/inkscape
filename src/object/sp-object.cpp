@@ -988,7 +988,6 @@ void SPObject::notifyElementNameChanged(Inkscape::XML::Node &node, GQuark old_na
 }
 
 void SPObject::set(SPAttr key, gchar const* value) {
-
 #ifdef OBJECT_TRACE
     std::stringstream temp;
     temp << "SPObject::set: " << sp_attribute_name(key)  << " " << (value?value:"null");
@@ -1097,6 +1096,7 @@ void SPObject::set(SPAttr key, gchar const* value) {
         default:
             break;
     }
+
 #ifdef OBJECT_TRACE
     objectTrace( "SPObject::set", false );
 #endif

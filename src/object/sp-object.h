@@ -222,10 +222,6 @@ public:
      * Represents the style properties, whether from presentation attributes, the <tt>style</tt>
      * attribute, or inherited.
      *
-     * private_set() doesn't handle SPAttr::STYLE or any presentation attributes at the
-     * time of writing, so this is probably NULL for all SPObject's that aren't an SPItem.
-     *
-     * However, this gives rise to the bugs mentioned in sp_object_get_style_property.
      * Note that some non-SPItem SPObject's, such as SPStop, do need styling information,
      * and need to inherit properties even through other non-SPItem parents like \<defs\>.
      */

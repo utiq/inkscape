@@ -14,7 +14,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-
 #include "sp-stop.h"
 #include "style.h"
 
@@ -52,12 +51,6 @@ void SPStop::set(SPAttr key, const gchar* value) {
         case SPAttr::STOP_PATH: {
             if (value) {
                 this->path_string = Glib::ustring(value);
-                //Geom::PathVector pv = sp_svg_read_pathv(value);
-                //SPCurve *curve = new SPCurve(pv);
-                //if( curve ) {
-                    // std::cout << "Got Curve" << std::endl;
-                    //curve->unref();
-                //}
                 this->requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
@@ -70,7 +63,6 @@ void SPStop::set(SPAttr key, const gchar* value) {
             }
             // This makes sure that the parent sp-gradient is updated.
             this->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
-            break;
         }
     }
 }
@@ -81,7 +73,6 @@ void SPStop::modified(guint flags)
         parent->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
     }
 }
-
 
 /**
  * Virtual set: set attribute to value.
