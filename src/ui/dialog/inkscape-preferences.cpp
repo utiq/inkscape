@@ -1583,11 +1583,6 @@ void InkscapePreferences::initPageUI()
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
-    _ui_colorsliders_top.init( _("Work-around color sliders not drawing"), "/options/workarounds/colorsontop", false);
-    _page_ui.add_line( false, "", _ui_colorsliders_top, "",
-                       _("When on, will attempt to work around bugs in certain GTK themes drawing color sliders"), true);
-
-
     _misc_recent.init("/options/maxrecentdocuments/value", 0.0, 1000.0, 1.0, 1.0, 1.0, true, false);
 
     auto const reset_recent = Gtk::make_managed<Gtk::Button>(_("Clear list"));

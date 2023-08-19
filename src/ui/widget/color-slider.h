@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * TODO: insert short description here
+ * A slider with colored background - implementation.
  *//*
  * Authors:
- * see git history
-*   Lauris Kaplinski <lauris@kaplinski.com>
+ *   see git history
+ *   Lauris Kaplinski <lauris@kaplinski.com>
+ *   bulia byak <buliabyak@users.sf.net>
  *
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -14,32 +15,32 @@
 #define SEEN_COLOR_SLIDER_H
 
 #include <gtk/gtk.h> // GtkEventController*
+#include <glibmm/refptr.h>
+#include <gtkmm/box.h>
 #include <gtkmm/gesture.h> // Gtk::EventSequenceState
-#include <gtkmm/widget.h>
 #include <sigc++/signal.h>
 
 namespace Gtk {
+class Adjustment;
+class DrawingArea;
 class GestureMultiPress;
 } // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /*
  * A slider with colored background
  */
-class ColorSlider : public Gtk::Widget {
+// Box because GTK3 does not bother applying CSS bits like padding*|min-width|height on DrawingArea
+// TODO: GTK4: Revisit whether that is still the case; hopefully it isnʼt, then just be DrawingArea
+class ColorSlider : public Gtk::Box {
 public:
     ColorSlider(Glib::RefPtr<Gtk::Adjustment> adjustment);
     ~ColorSlider() override;
 
     void setAdjustment(Glib::RefPtr<Gtk::Adjustment> adjustment);
-
     void setColors(guint32 start, guint32 mid, guint32 end);
-
     void setMap(const guchar *map);
-
     void setBackground(guint dark, guint light, guint size);
 
     sigc::signal<void ()> signal_grabbed;
@@ -47,17 +48,9 @@ public:
     sigc::signal<void ()> signal_released;
     sigc::signal<void ()> signal_value_changed;
 
-protected:
-    void on_size_allocate(Gtk::Allocation &allocation) override;
-    void on_realize() override;
-    void on_unrealize() override;
-    bool on_draw(const Cairo::RefPtr<Cairo::Context> &cr) override;
-    void get_preferred_width_vfunc(int &minimum_width, int &natural_width) const override;
-    void get_preferred_width_for_height_vfunc(int height, int &minimum_width, int &natural_width) const override;
-    void get_preferred_height_vfunc(int &minimum_height, int &natural_height) const override;
-    void get_preferred_height_for_width_vfunc(int width, int &minimum_height, int &natural_height) const override;
-
 private:
+    bool on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr);
+
     Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &click,
                                               int n_press, double x, double y);
     Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress const &click,
@@ -69,6 +62,8 @@ private:
 
     bool _dragging;
 
+    Gtk::DrawingArea *_drawing_area;
+
     Glib::RefPtr<Gtk::Adjustment> _adjustment;
     sigc::connection _adjustment_changed_connection;
     sigc::connection _adjustment_value_changed_connection;
@@ -78,17 +73,13 @@ private:
     guchar _c0[4], _cm[4], _c1[4];
     guchar _b0, _b1;
     guchar _bmask;
-
     guchar *_map;
-
-    Glib::RefPtr<Gdk::Window> _gdk_window;
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
-#endif
+#endif // SEEN_COLOR_SLIDER_H
+
 /*
   Local Variables:
   mode:c++

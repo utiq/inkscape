@@ -1165,3 +1165,9 @@ popover.menu.menuize > stack > box > modelbutton:first-child > * /* Affect child
 {
     color: @theme_selected_bg_color;
 }
+
+/* ColorSlider */
+#ColorSlider {
+  min-width : 96px;
+  min-height:  8px;
+}

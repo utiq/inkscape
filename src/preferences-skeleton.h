@@ -393,7 +393,6 @@ static char const preferences_skeleton[] =
              />
     </group>
     <group id="workarounds"
-           colorsontop="0"
            partialdynamic="0"/>
     <group
        id="font"

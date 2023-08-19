@@ -1,44 +1,55 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_SP_MARKER_SELECTOR_NEW_H
-#define SEEN_SP_MARKER_SELECTOR_NEW_H
-
-/* Authors:
+/**
+ * @file
+ * Combobox for selecting dash patterns - implementation.
+ */
+/* Author:
  *   Lauris Kaplinski <lauris@kaplinski.com>
- *   Maximilian Albert <maximilian.albert> (gtkmm-ification)
+ *   bulia byak <buliabyak@users.sf.net>
+ *   Maximilian Albert <maximilian.albert@gmail.com>
  *
  * Copyright (C) 2002 Lauris Kaplinski
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#include <vector>
 
+#ifndef SEEN_SP_MARKER_COMBO_BOX_H
+#define SEEN_SP_MARKER_COMBO_BOX_H
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
+#include <giomm/liststore.h>
 #include <gtkmm/bin.h>
-#include <gtkmm/box.h>
+#include <gtkmm/cellrendererpixbuf.h>
 #include <gtkmm/treemodel.h>
 #include <sigc++/signal.h>
 
-#include "document.h"
 #include "display/drawing.h"
+#include "document.h"
 #include "helper/auto-connection.h"
-#include "inkscape.h"
 #include "ui/operation-blocker.h"
 
-class SPMarker;
-
 namespace Gtk {
-class Adjustment;
 class Builder;
 class Button;
-class Container;
+class CheckButton;
 class FlowBox;
 class Image;
 class Label;
+class MenuButton;
+class RadioButton;
 class SpinButton;
-}
+} // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+class SPDocument;
+class SPMarker;
+class SPObject;
+
+namespace Inkscape::UI::Widget {
 
 /**
  * ComboBox-like class for selecting stroke markers.
@@ -154,10 +165,9 @@ private:
     auto_connection _idle;
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
-#endif // SEEN_SP_MARKER_SELECTOR_NEW_H
+} // namespace Inkscape::UI::Widget
+
+#endif // SEEN_SP_MARKER_COMBO_BOX_H
 
 /*
   Local Variables:

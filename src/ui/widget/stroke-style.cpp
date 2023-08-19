@@ -26,6 +26,7 @@
 
 #include "actions/actions-tools.h"
 #include "fill-or-stroke.h"
+#include "inkscape.h"
 #include "object/sp-marker.h"
 #include "object/sp-namedview.h"
 #include "object/sp-rect.h"

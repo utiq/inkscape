@@ -420,7 +420,7 @@ void ColorICCSelector::init(bool no_alpha)
         _impl->_compUI[i]._slider->set_visible(true);
         _impl->_compUI[i]._slider->set_no_show_all();
 
-        attachToGridOrTable(t, _impl->_compUI[i]._slider->gobj(), 1, row, 1, 1, true);
+        attachToGridOrTable(t, _impl->_compUI[i]._slider->Gtk::Widget::gobj(), 1, row, 1, 1, true);
 
         auto const spinbutton = Gtk::make_managed<ScrollProtected<Gtk::SpinButton>>(_impl->_compUI[i]._adj, step, digits);
         _impl->_compUI[i]._btn = GTK_WIDGET(spinbutton->gobj());
@@ -464,7 +464,7 @@ void ColorICCSelector::init(bool no_alpha)
     _impl->_slider->set_tooltip_text(_("Alpha (opacity)"));
     _impl->_slider->set_visible(true);
 
-    attachToGridOrTable(t, _impl->_slider->gobj(), 1, row, 1, 1, true);
+    attachToGridOrTable(t, _impl->_slider->Gtk::Widget::gobj(), 1, row, 1, 1, true);
 
     _impl->_slider->setColors(SP_RGBA32_F_COMPOSE(1.0, 1.0, 1.0, 0.0), SP_RGBA32_F_COMPOSE(1.0, 1.0, 1.0, 0.5),
                               SP_RGBA32_F_COMPOSE(1.0, 1.0, 1.0, 1.0));

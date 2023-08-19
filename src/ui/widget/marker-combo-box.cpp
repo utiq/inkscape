@@ -15,15 +15,27 @@
 
 #include "marker-combo-box.h"
 
+#include <chrono>
+#include <optional>
+#include <sstream>
+#include <utility>
 #include <glibmm/fileutils.h>
 #include <glibmm/i18n.h>
+#include <gtkmm/builder.h>
+#include <gtkmm/button.h>
+#include <gtkmm/checkbutton.h>
+#include <gtkmm/flowbox.h>
 #include <gtkmm/icontheme.h>
+#include <gtkmm/image.h>
+#include <gtkmm/label.h>
 #include <gtkmm/menubutton.h>
+#include <gtkmm/radiobutton.h>
+#include <gtkmm/spinbutton.h>
 
 #include "desktop-style.h"
 #include "helper/stock-items.h"
+#include "inkscape.h"
 #include "io/resource.h"
-#include "io/sys.h"
 #include "manipulation/copy-resource.h"
 #include "object/sp-defs.h"
 #include "object/sp-marker.h"
@@ -49,9 +61,7 @@ using Inkscape::UI::create_builder;
 static const int ITEM_WIDTH = 40;
 static const int ITEM_HEIGHT = 32;
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 // separator for FlowBox widget
 static cairo_surface_t* create_separator(double alpha, int width, int height, int device_scale) {
@@ -753,9 +763,9 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
     if (checkerboard) {
         checkerboard_color = _background_color;
     }
+
     int device_scale = get_scale_factor();
-    auto context = get_style_context();
-    Gdk::RGBA fg = context->get_color(get_state_flags());
+    auto const fg = get_foreground_color(get_style_context());
 
     return Inkscape::create_marker_image(_combo_id, _sandbox.get(), fg, pixel_size, mname, source,
         drawing, checkerboard_color, no_clip, scale, device_scale);
@@ -774,8 +784,7 @@ void MarkerComboBox::on_style_updated() {
             0xff;
     }
 
-    auto context = get_style_context();
-    Gdk::RGBA color = context->get_color(get_state_flags());
+    auto const color = get_foreground_color(get_style_context());
     auto foreground =
         gint32(0xff * color.get_red()) << 24 |
         gint32(0xff * color.get_green()) << 16 |
@@ -789,9 +798,7 @@ void MarkerComboBox::on_style_updated() {
     }
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:
