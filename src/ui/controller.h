@@ -150,6 +150,8 @@ void connect(Emitter * const emitter, char const * const detailed_signal,
 }
 
 /// Whether Function can be invoked with Args... to return Result; OR it's a nullptr.
+// FIXME: shouldnʼt allow functions that return non-void for signals declaring a void
+//        result, as thatʼs misleading, but I didnʼt yet manage that with type_traits
 // TODO: C++20: Use concepts instead.
 template <typename Function, typename Result, typename ...Args>
 auto constexpr callable_or_null = std::is_same_v       <Function, std::nullptr_t > ||

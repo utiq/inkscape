@@ -20,9 +20,7 @@
 #include <glibmm/convert.h>
 #include <glibmm/regex.h>
 #include <gtkmm/box.h>
-#include <gtkmm/frame.h>
 #include <gtkmm/scale.h>
-#include <gtkmm/table.h>
 
 #include "desktop.h"
 #include "inkscape.h"
@@ -40,8 +38,6 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
-
-using namespace Inkscape::UI::Widget;
 
 namespace Inkscape::UI::Widget {
 
