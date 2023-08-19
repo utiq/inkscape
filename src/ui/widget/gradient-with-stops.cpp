@@ -199,13 +199,11 @@ GradientWithStops::stop_pos_t GradientWithStops::get_stop_position(size_t index,
 
 // widget's layout; mainly location of the gradient's image and stop handles
 GradientWithStops::layout_t GradientWithStops::get_layout() const {
-    auto allocation = get_allocation();
-
     const auto stop_width = _template.get_width_px();
     const auto half_stop = round((stop_width + 1) / 2);
     const auto x = half_stop;
-    const double width = allocation.get_width() - stop_width;
-    const double height = allocation.get_height();
+    const double width = get_width() - stop_width;
+    const double height = get_height();
 
     return layout_t {
         .x = x,
@@ -453,14 +451,10 @@ void GradientWithStops::set_cursor(Glib::RefPtr<Gdk::Cursor> const * const curso
 }
 
 bool GradientWithStops::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
-    auto allocation = get_allocation();
-    auto context = get_style_context();
     const double scale = get_scale_factor();
     const auto layout = get_layout();
 
     if (layout.width <= 0) return true;
-
-    context->render_background(cr, 0, 0, allocation.get_width(), allocation.get_height());
 
     // empty gradient checkboard or gradient itself
     cr->rectangle(layout.x, layout.y, layout.width, GRADIENT_IMAGE_HEIGHT);
@@ -472,7 +466,7 @@ bool GradientWithStops::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
 
     cr->begin_new_path();
 
-    auto const fg = get_foreground_color(context);
+    auto const fg = get_foreground_color(get_style_context());
     auto const &bg = _background_color;
 
     // stop handle outlines and selection indicator use theme colors:

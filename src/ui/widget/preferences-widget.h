@@ -16,20 +16,18 @@
 #ifndef INKSCAPE_UI_WIDGET_INKSCAPE_PREFERENCES_H
 #define INKSCAPE_UI_WIDGET_INKSCAPE_PREFERENCES_H
 
-#include <iostream>
+#include <utility>
 #include <vector>
-
-#include <gtkmm/filechooserbutton.h>
-#include "ui/widget/spinbutton.h"
-#include <cstddef>
-#include <sigc++/sigc++.h>
+#include <sigc++/signal.h>
+#include <glibmm/refptr.h>
 #include <gtkmm/checkbutton.h>
+#include <gtkmm/comboboxtext.h>
+#include <gtkmm/drawingarea.h>
+#include <gtkmm/filechooserbutton.h>
+#include <gtkmm/grid.h>
 #include <gtkmm/radiobutton.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/textview.h>
-#include <gtkmm/comboboxtext.h>
-#include <gtkmm/drawingarea.h>
-#include <gtkmm/grid.h>
 
 #include "ui/widget/color-picker.h"
 #include "ui/widget/unit-menu.h"
@@ -38,11 +36,9 @@
 
 namespace Gtk {
 class Scale;
-}
+} // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 class PrefCheckButton : public Gtk::CheckButton
 {
@@ -187,7 +183,6 @@ private:
 
     bool freeze; // used to block recursive updates of slider and spinbutton
 };
-
 
 class PrefCombo : public Gtk::ComboBoxText
 {
@@ -338,10 +333,7 @@ public:
     void set_tip(Gtk::Widget &widget, Glib::ustring const &tip);
 };
 
-
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif //INKSCAPE_UI_WIDGET_INKSCAPE_PREFERENCES_H
 

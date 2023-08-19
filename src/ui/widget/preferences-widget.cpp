@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/**
+ * @file
+ * Widgets for Inkscape Preferences dialog.
+ */
 /*
- * Inkscape Preferences dialog.
- *
  * Authors:
  *   Marco Scholten
  *   Bruno Dilly <bruno.dilly@gmail.com>
@@ -11,15 +13,16 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <iostream>
+#include <sstream>
+#include <string>
 #include <glibmm/i18n.h>
 #include <glibmm/convert.h>
 #include <glibmm/regex.h>
-
 #include <gtkmm/box.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/scale.h>
 #include <gtkmm/table.h>
-
 
 #include "desktop.h"
 #include "inkscape.h"
@@ -27,16 +30,12 @@
 #include "preferences.h"
 #include "selcue.h"
 #include "selection-chemistry.h"
-
 #include "include/gtkmm_version.h"
-
 #include "io/sys.h"
-
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-loader.h"
 #include "ui/util.h"
 #include "ui/widget/preferences-widget.h"
-
 
 #ifdef _WIN32
 #include <windows.h>
@@ -44,9 +43,7 @@
 
 using namespace Inkscape::UI::Widget;
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 DialogPage::DialogPage()
 {
@@ -247,7 +244,6 @@ void PrefRadioButton::on_toggled()
     this->changed_signal.emit(this->get_active());
 }
 
-
 PrefRadioButtons::PrefRadioButtons(const std::vector<PrefItem>& buttons, const Glib::ustring& prefs_path) {
     set_spacing(2);
 
@@ -260,7 +256,6 @@ PrefRadioButtons::PrefRadioButtons(const std::vector<PrefItem>& buttons, const G
         if (!group) group = btn;
     }
 }
-
 
 void PrefSpinButton::init(Glib::ustring const &prefs_path,
               double lower, double upper, double step_increment, double /*page_increment*/,
@@ -440,15 +435,10 @@ ZoomCorrRuler::draw_marks(Cairo::RefPtr<Cairo::Context> cr, double dist, int maj
 
 bool
 ZoomCorrRuler::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
-    Glib::RefPtr<Gdk::Window> window = get_window();
-
-    int w = window->get_width();
+    auto const w = get_width();
     _drawing_width = w - _border * 2;
 
-    auto context = get_style_context();
-    auto const fg = get_foreground_color(context);
-
-    context->render_background(cr, 0, 0, w, _height + _border * 2);
+    auto const fg = get_foreground_color(get_style_context());
 
     cr->set_line_width(1);
     cr->set_source_rgb(fg.get_red(), fg.get_green(), fg.get_blue());
@@ -478,7 +468,6 @@ ZoomCorrRuler::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
 
     return true;
 }
-
 
 void
 ZoomCorrRulerSlider::on_slider_value_changed()
@@ -528,7 +517,6 @@ bool ZoomCorrRulerSlider::on_mnemonic_activate ( bool group_cycling )
 {
     return _sb->mnemonic_activate ( group_cycling );
 }
-
 
 void
 ZoomCorrRulerSlider::init(int ruler_width, int ruler_height, double lower, double upper,
@@ -871,7 +859,6 @@ void PrefEntryFileButtonHBox::onRelatedButtonClickedCallback()
         static Glib::ustring open_path;
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
-
         Glib::ustring attr = prefs->getString(_prefs_path);
         if (!attr.empty()) open_path = attr;
         
@@ -1101,9 +1088,7 @@ void PrefUnit::on_changed()
     }
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:
