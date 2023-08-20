@@ -19,24 +19,29 @@
 #include <2geom/coord.h>
 #include <sigc++/functors/mem_fun.h>
 #include <gdkmm/display.h>
+#include <gdkmm/general.h>
 #include <gtkmm/stylecontext.h>
 
 #include "ui/controller.h"
 #include "ui/dialog/color-item.h"
+#include "ui/util.h"
 #include "ui/widget/ink-color-wheel.h"
 
 // Sizes in pixels
-static int const SIZE = 400;
-static int const OUTER_CIRCLE_RADIUS = 190;
-
-static double const MAX_HUE = 360.0;
-static double const MAX_SATURATION = 100.0;
-static double const MAX_LIGHTNESS = 100.0;
-static double const MIN_HUE = 0.0;
-static double const MIN_SATURATION = 0.0;
-static double const MIN_LIGHTNESS = 0.0;
-static double const OUTER_CIRCLE_DASH_SIZE = 10.0;
-static double const VERTEX_EPSILON = 0.01;
+constexpr static int const SIZE = 400;
+constexpr static int const OUTER_CIRCLE_RADIUS = 190;
+constexpr static double MAX_HUE = 360.0;
+constexpr static double MAX_SATURATION = 100.0;
+constexpr static double MAX_LIGHTNESS = 100.0;
+constexpr static double MIN_HUE = 0.0;
+constexpr static double MIN_SATURATION = 0.0;
+constexpr static double MIN_LIGHTNESS = 0.0;
+constexpr static double OUTER_CIRCLE_DASH_SIZE = 10.0;
+constexpr static double VERTEX_EPSILON = 0.01;
+constexpr static double marker_radius = 4.0;
+constexpr static double focus_line_width = 0.5;
+constexpr static double focus_padding = 3.0;
+static auto const focus_dash = std::vector{1.5};
 
 struct ColorPoint final
 {
@@ -109,16 +114,6 @@ ColorWheel::ColorWheel()
     Controller::add_key<nullptr, &ColorWheel::on_key_released>(*this, *this);
 }
 
-void ColorWheel::setRgb(double /*r*/, double /*g*/, double /*b*/, bool /*overrideHue*/)
-{}
-
-void ColorWheel::getRgb(double * /*r*/, double * /*g*/, double * /*b*/) const
-{}
-
-void ColorWheel::getRgbV(double *rgb) const {}
-
-guint32 ColorWheel::getRgb() const { return 0; }
-
 void ColorWheel::setHue(double h)
 {
     _values[0] = std::clamp(h, MIN_HUE, MAX_HUE);
@@ -140,9 +135,6 @@ void ColorWheel::getValues(double *a, double *b, double *c) const
     if (b) *b = _values[1];
     if (c) *c = _values[2];
 }
-
-void ColorWheel::_set_from_xy(double const x, double const y)
-{}
 
 bool ColorWheel::on_key_released(GtkEventControllerKey const * /*controller*/,
                                  unsigned /*keyval*/, unsigned const keycode,
@@ -244,19 +236,13 @@ void ColorWheelHSL::getHsl(double *h, double *s, double *l) const
 
 bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
 {
-    Gtk::Allocation allocation = get_allocation();
-    int const width = allocation.get_width();
-    int const height = allocation.get_height();
+    int const width = get_width();
+    int const height = get_height();
 
     int const cx = width/2;
     int const cy = height/2;
 
     int const stride = Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_RGB24, width);
-
-    int focus_line_width;
-    int focus_padding;
-    get_style_property("focus-line-width", focus_line_width);
-    get_style_property("focus-padding",    focus_padding);
 
     // Paint ring
     guint32* buffer_ring = g_new (guint32, height * stride / 4);
@@ -296,10 +282,8 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     double l = 0.0;
     guint32 color_on_ring = hsv_to_rgb(_values[0], 1.0, 1.0);
     if (luminance(color_on_ring) < 0.5) l = 1.0;
-
     Cairo::RefPtr<::Cairo::Context> cr_source_ring = ::Cairo::Context::create(source_ring);
     cr_source_ring->set_source_rgb(l, l, l);
-
     cr_source_ring->move_to (cx, cy);
     cr_source_ring->line_to (cx + cos(_values[0] * M_PI * 2.0) * r_max+1,
                              cy - sin(_values[0] * M_PI * 2.0) * r_max+1);
@@ -315,12 +299,6 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     cr->restore();
 
     g_free(buffer_ring);
-
-    // Draw focus
-    if (has_focus() && _focus_on_ring) {
-        Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-        style_context->render_focus(cr, 0, 0, width, height);
-    }
 
     // Paint triangle.
     /* The triangle is painted by first finding color points on the
@@ -428,24 +406,30 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     // Draw marker
     double mx = x1 + (x2-x1) * _values[2] + (x0-x2) * _values[1] * _values[2];
     double my = y1 + (y2-y1) * _values[2] + (y0-y2) * _values[1] * _values[2];
-
     double a = 0.0;
     guint32 color_at_marker = getRgb();
     if (luminance(color_at_marker) < 0.5) a = 1.0;
-
     cr->set_source_rgb(a, a, a);
     cr->begin_new_path();
-    cr->arc(mx, my, 4, 0, 2 * M_PI);
+    cr->arc(mx, my, marker_radius, 0, 2 * M_PI);
     cr->stroke();
 
     // Draw focus
-    if (has_focus() && !_focus_on_ring) {
-        Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-        style_context->render_focus(cr, mx - 4, my - 4, 8, 8); // This doesn't seem to work.
+    if (has_focus()) {
+        cr->set_dash(focus_dash, 0);
         cr->set_line_width(0.5);
-        cr->set_source_rgb(1 - a, 1 - a, 1 - a);
-        cr->begin_new_path();
-        cr->arc(mx, my, 7, 0, 2 * M_PI);
+
+        if (_focus_on_ring) {
+            auto const rgba = change_alpha(get_foreground_color(get_style_context()), 0.7);
+            Gdk::Cairo::set_source_rgba(cr, rgba);
+            cr->begin_new_path();
+            cr->arc(cx, cy, r_max + focus_padding, 0, 2.0 * M_PI);
+        } else {
+            cr->set_source_rgb(1 - a, 1 - a, 1 - a);
+            cr->begin_new_path();
+            cr->arc(mx, my, marker_radius + focus_padding, 0, 2 * M_PI);
+        }
+
         cr->stroke();
     }
 
@@ -492,9 +476,8 @@ bool ColorWheelHSL::on_focus(Gtk::DirectionType direction)
 
 void ColorWheelHSL::_set_from_xy(double const x, double const y)
 {
-    Gtk::Allocation allocation = get_allocation();
-    int const width = allocation.get_width();
-    int const height = allocation.get_height();
+    int const width = get_width();
+    int const height = get_height();
 
     double const cx = width/2.0;
     double const cy = height/2.0;
@@ -525,17 +508,11 @@ void ColorWheelHSL::_set_from_xy(double const x, double const y)
 
 bool ColorWheelHSL::_is_in_ring(double x, double y)
 {
-    Gtk::Allocation allocation = get_allocation();
-    int const width  = allocation.get_width();
-    int const height = allocation.get_height();
+    int const width  = get_width();
+    int const height = get_height();
 
     int const cx = width/2;
     int const cy = height/2;
-
-    int focus_line_width;
-    int focus_padding;
-    get_style_property("focus-line-width", focus_line_width);
-    get_style_property("focus-padding",    focus_padding);
 
     double r_max = std::min( width, height)/2.0 - 2 * (focus_line_width + focus_padding);
     double r_min = r_max * (1.0 - _ring_width);
@@ -571,17 +548,11 @@ void ColorWheelHSL::_update_triangle_color(double x, double y)
 void ColorWheelHSL::_triangle_corners(double &x0, double &y0, double &x1, double &y1,
         double &x2, double &y2)
 {
-    Gtk::Allocation allocation = get_allocation();
-    int const width  = allocation.get_width();
-    int const height = allocation.get_height();
+    int const width  = get_width();
+    int const height = get_height();
 
     int const cx = width / 2;
     int const cy = height / 2;
-
-    int focus_line_width;
-    int focus_padding;
-    get_style_property("focus-line-width", focus_line_width);
-    get_style_property("focus-padding",    focus_padding);
 
     double r_max = std::min(width, height) / 2.0 - 2 * (focus_line_width + focus_padding);
     double r_min = r_max * (1.0 - _ring_width);
@@ -598,9 +569,8 @@ void ColorWheelHSL::_triangle_corners(double &x0, double &y0, double &x1, double
 
 void ColorWheelHSL::_update_ring_color(double x, double y)
 {
-    Gtk::Allocation allocation = get_allocation();
-    int const width = allocation.get_width();
-    int const height = allocation.get_height();
+    int const width  = get_width();
+    int const height = get_height();
 
     double cx = width / 2.0;
     double cy = height / 2.0;
@@ -677,7 +647,7 @@ bool ColorWheelHSL::on_key_pressed(GtkEventControllerKey const * /*controller*/,
     double mx = x1 + (x2 - x1) * _values[2] + (x0 - x2) * _values[1] * _values[2];
     double my = y1 + (y2 - y1) * _values[2] + (y0 - y2) * _values[1] * _values[2];
 
-    double const delta_hue = 2.0 / MAX_HUE;
+    static constexpr double delta_hue = 2.0 / MAX_HUE;
 
     switch (key) {
         case GDK_KEY_Up:
@@ -979,18 +949,16 @@ bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
 
     cr->set_line_width(inner_stroke_width);
     cr->begin_new_path();
-    cr->arc(mp[Geom::X], mp[Geom::Y], 2 * inner_stroke_width, 0, 2 * M_PI);
+    cr->arc(mp[Geom::X], mp[Geom::Y], marker_radius, 0, 2 * M_PI);
     cr->stroke();
 
     // Focus
     if (has_focus()) {
-        Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-        style_context->render_focus(cr, mp[Geom::X] - 4, mp[Geom::Y] - 4, 8, 8);
-
-        cr->set_line_width(0.25 * inner_stroke_width);
+        cr->set_dash(focus_dash, 0);
+        cr->set_line_width(focus_line_width);
         cr->set_source_rgb(1 - gray, 1 - gray, 1 - gray);
         cr->begin_new_path();
-        cr->arc(mp[Geom::X], mp[Geom::Y], 7, 0, 2 * M_PI);
+        cr->arc(mp[Geom::X], mp[Geom::Y], marker_radius + focus_padding, 0, 2 * M_PI);
         cr->stroke();
     }
 
@@ -1252,6 +1220,7 @@ static guint32 hsv_to_rgb(double h, double s, double v)
     return rgb;
 }
 
+// N.B. We also have util:get_luminance(), but that uses different weightings..!
 double luminance(guint32 color)
 {
     double r = ((color & 0xff0000) >> 16) / 255.0;

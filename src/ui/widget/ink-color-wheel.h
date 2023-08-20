@@ -41,10 +41,10 @@ class ColorWheel : public Gtk::DrawingArea
 public:
     ColorWheel();
 
-    virtual void setRgb(double r, double g, double b, bool overrideHue = true);
-    virtual void getRgb(double *r, double *g, double *b) const;
-    virtual void getRgbV(double *rgb) const;
-    virtual guint32 getRgb() const;
+    virtual void setRgb(double r, double g, double b, bool overrideHue = true) = 0;
+    virtual void getRgb(double *r, double *g, double *b) const = 0;
+    virtual void getRgbV(double *rgb) const = 0;
+    virtual guint32 getRgb() const = 0;
 
     void setHue(double h);
     void setSaturation(double s);
@@ -55,8 +55,6 @@ public:
     sigc::signal<void ()> signal_color_changed();
 
 protected:
-    virtual void _set_from_xy(double const x, double const y);
-
     double _values[3];
     bool _adjusting;
     sigc::signal<void ()> _signal_color_changed;
@@ -81,12 +79,11 @@ public:
     guint32 getRgb() const override;
     void getHsl(double *h, double *s, double *l) const;
 
-protected:
+private:
     bool on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) override;
     bool on_focus(Gtk::DirectionType direction) override;
 
-private:
-    void _set_from_xy(double const x, double const y) override;
+    void _set_from_xy(double const x, double const y);
     bool _is_in_ring(double x, double y);
     bool _is_in_triangle(double x, double y);
     void _update_triangle_color(double x, double y);
@@ -100,7 +97,7 @@ private:
         SATURATION_VALUE
     };
 
-    double _ring_width = 0.2;
+    static constexpr double _ring_width = 0.2;
     DragMode _mode = DragMode::NONE;
     bool _focus_on_ring = true;
 
@@ -133,11 +130,10 @@ public:
     void getHsluv(double *h, double *s, double *l) const;
     void updateGeometry();
 
-protected:
+private:
     bool on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr) override;
 
-private:
-    void _set_from_xy(double const x, double const y) override;
+    void _set_from_xy(double const x, double const y);
     void _setFromPoint(Geom::Point const &pt) { _set_from_xy(pt[Geom::X], pt[Geom::Y]); }
     void _updatePolygon();
     bool _vertex() const;
