@@ -728,7 +728,7 @@ std::unique_ptr<Shape> SPText::getExclusionShape() const
         }
 
         auto temp = std::make_unique<Path>();
-        temp->LoadPathVector(curve->get_pathvector(), shape->transform, true);
+        temp->LoadPathVector(curve->get_pathvector(), shape->getRelativeTransform(this), true);
 
         auto margin = std::make_unique<Path>();
         if (shape->style->shape_margin.set) {
