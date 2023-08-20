@@ -11,6 +11,7 @@
 
 #include "command-palette.h"
 
+#include <cassert>
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -47,6 +48,9 @@ namespace Inkscape::UI::Dialog {
 
 CommandPalette::CommandPalette()
 {
+    // TODO: Move to a test program.
+    test_sort();
+
     // setup _builder
     {
         auto gladefile = get_filename_string(Inkscape::IO::Resource::UIS, "command-palette-main.glade");
@@ -191,19 +195,14 @@ void CommandPalette::append_recent_file_operation(const Glib::ustring &path, boo
         g_warning("Glade file loading failed for Command Palette operation dialog");
     }
 
-    // declaring required widgets pointers
     Gtk::Box *CPOperation;
-
     Gtk::Label  *CPGroup;
     Gtk::Label  *CPName;
     Gtk::Label  *CPShortcut;
     Gtk::Button *CPActionFullButton;
     Gtk::Label  *CPActionFullLabel;
     Gtk::Label  *CPDescription;
-
-    // Reading widgets
     operation_builder->get_widget("CPOperation", CPOperation);
-
     operation_builder->get_widget("CPGroup", CPGroup);
     operation_builder->get_widget("CPName", CPName);
     operation_builder->get_widget("CPShortcut", CPShortcut);
@@ -257,7 +256,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
 {
     static const auto app = InkscapeApplication::instance();
     static const auto gapp = app->gtk_app();
-    static InkActionExtraData &action_data = app->get_action_extra_data();
+    static const InkActionExtraData &action_data = app->get_action_extra_data();
     static const bool show_full_action_name =
         Inkscape::Preferences::get()->getBool("/options/commandpalette/showfullactionname/value");
     static const auto gladefile = get_filename_string(Inkscape::IO::Resource::UIS, "command-palette-operation.glade");
@@ -270,19 +269,14 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
         return false;
     }
 
-    // declaring required widgets pointers
     Gtk::Box *CPOperation;
-
     Gtk::Label *CPGroup;
     Gtk::Label *CPName;
     Gtk::Label *CPShortcut;
     Gtk::Label *CPDescription;
     Gtk::Button *CPActionFullButton;
     Gtk::Label *CPActionFullLabel;
-
-    // Reading widgets
     operation_builder->get_widget("CPOperation", CPOperation);
-
     operation_builder->get_widget("CPGroup", CPGroup);
     operation_builder->get_widget("CPName", CPName);
     operation_builder->get_widget("CPShortcut", CPShortcut);
@@ -290,7 +284,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
     operation_builder->get_widget("CPActionFullLabel", CPActionFullLabel);
     operation_builder->get_widget("CPDescription", CPDescription);
 
-    CPGroup->set_text(action_data.get_section_for_action(Glib::ustring(action_ptr_name.second)));
+    CPGroup->set_text(action_data.get_section_for_action(action_ptr_name.second));
 
     // Setting CPName
     {
@@ -306,18 +300,16 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
         CPName->set_tooltip_text(untranslated_name);
     }
 
-    {
-        CPActionFullLabel->set_text(action_ptr_name.second);
+    CPActionFullLabel->set_text(action_ptr_name.second);
 
-        if (not show_full_action_name) {
-            CPActionFullButton->set_no_show_all();
-            CPActionFullButton->set_visible(false);
-        } else {
-            CPActionFullButton->signal_clicked().connect(
-                sigc::bind(sigc::mem_fun(*this, &CommandPalette::on_action_fullname_clicked),
-                                          action_ptr_name.second),
-                false);
-        }
+    if (not show_full_action_name) {
+        CPActionFullButton->set_no_show_all();
+        CPActionFullButton->set_visible(false);
+    } else {
+        CPActionFullButton->signal_clicked().connect(
+            sigc::bind(sigc::mem_fun(*this, &CommandPalette::on_action_fullname_clicked),
+                                      action_ptr_name.second),
+            false);
     }
 
     {
@@ -355,13 +347,20 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
 
 void CommandPalette::on_search()
 {
+    // TODO: Why is this done here? It seems very wasteful! But I didnʼt get anything else to work,
+    //       for example by setting it elsewhere and then only invalidating it here. Ponder more...
+    //       Although in saying that, TODO: GTK4: Consider porting this whole thing to GtkListView.
     _CPSuggestions->unset_sort_func();
     _CPSuggestions->set_sort_func(sigc::mem_fun(*this, &CommandPalette::on_sort));
+
     _search_text = _CPFilter->get_text();
+
     _CPSuggestions->invalidate_filter(); // Remove old filter constraint and apply new one
+
     if (auto top_row = _CPSuggestions->get_row_at_y(0); top_row) {
         _CPSuggestions->select_row(*top_row); // select top row
     }
+
     _CPSuggestionsScroll->get_vadjustment()->set_value(0);
 }
 
@@ -912,6 +911,8 @@ int CommandPalette::fuzzy_tolerance_points(const Glib::ustring &subject, const G
 int CommandPalette::on_filter_general(Gtk::ListBoxRow *child)
 {
     auto [CPName, CPDescription] = get_name_desc(child);
+
+    /*
     if (CPName) {
         remove_color(CPName, CPName->get_text());
         remove_color(CPName, CPName->get_tooltip_text(), true);
@@ -919,35 +920,44 @@ int CommandPalette::on_filter_general(Gtk::ListBoxRow *child)
     if (CPDescription) {
         remove_color(CPDescription, CPDescription->get_text());
     }
+    */
 
     if (_search_text.empty()) {
         return 1;
     } // Every operation is visible if search text is empty
 
     if (CPName) {
-        if (fuzzy_search(CPName->get_text(), _search_text)) {
-            add_color(CPName, _search_text, CPName->get_text());
-            return fuzzy_points(CPName->get_text(), _search_text);
+        auto const &name_text = CPName->get_text();
+
+        if (fuzzy_search(name_text, _search_text)) {
+            // add_color(CPName, _search_text, name_text);
+            return fuzzy_points(name_text, _search_text);
         }
 
-        if (fuzzy_search(CPName->get_tooltip_text(), _search_text)) {
-            add_color(CPName, _search_text, CPName->get_tooltip_text(), true);
-            return fuzzy_points(CPName->get_tooltip_text(), _search_text);
+        auto const &name_tooltip = CPName->get_tooltip_text();
+
+        if (fuzzy_search(name_tooltip, _search_text)) {
+            // add_color(CPName, _search_text, name_tooltip, true);
+            return fuzzy_points(name_tooltip, _search_text);
         }
 
-        if (fuzzy_tolerance_search(CPName->get_text(), _search_text)) {
-            add_color(CPName, _search_text, CPName->get_text());
-            return fuzzy_tolerance_points(CPName->get_text(), _search_text);
+        if (fuzzy_tolerance_search(name_text, _search_text)) {
+            // add_color(CPName, _search_text, name_text);
+            return fuzzy_tolerance_points(name_text, _search_text);
         }
 
-        if (fuzzy_tolerance_search(CPName->get_tooltip_text(), _search_text)) {
-            add_color(CPName, _search_text, CPName->get_tooltip_text(), true);
-            return fuzzy_tolerance_points(CPName->get_tooltip_text(), _search_text);
+        if (fuzzy_tolerance_search(name_tooltip, _search_text)) {
+            // add_color(CPName, _search_text, name_tooltip, true);
+            return fuzzy_tolerance_points(name_tooltip, _search_text);
         }
     }
-    if (CPDescription && normal_search(CPDescription->get_text(), _search_text)) {
-        add_color_description(CPDescription, _search_text);
-        return fuzzy_points(CPDescription->get_text(), _search_text);
+
+    if (CPDescription) {
+        auto const &description_text = CPDescription->get_text();
+        if (normal_search(description_text, _search_text)) {
+            // add_color_description(CPDescription, _search_text);
+            return fuzzy_points(description_text, _search_text);
+        }
     }
 
     return 0;
@@ -980,14 +990,8 @@ int CommandPalette::fuzzy_points_compare(int fuzzy_points_count_1, int fuzzy_poi
     return 0;
 }
 
-/**
- * compare different rows for order of display
- * priority of comparison
- * 1) CPName->get_text()
- * 2) CPName->get_tooltip_text()
- * 3) CPDescription->get_text()
- */
-int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
+// TODO: Move to a test program.
+void CommandPalette::test_sort()
 {
     // tests for fuzzy_search
     assert(fuzzy_search("Export background", "ebo") == true);
@@ -1008,7 +1012,17 @@ int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
     assert(fuzzy_tolerance_points("object to path", "ebo") == 189);
     assert(fuzzy_tolerance_points("execute verb", "vec") == 196);
     assert(fuzzy_tolerance_points("color mode", "moco") == 195);
+}
 
+/**
+ * compare different rows for order of display
+ * priority of comparison
+ * 1) CPName->get_text()
+ * 2) CPName->get_tooltip_text()
+ * 3) CPDescription->get_text()
+ */
+int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
+{
     if (_search_text.empty()) {
         return -1;
     } // No change in the order
@@ -1024,13 +1038,16 @@ int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
     constexpr int DESCRIPTION_PENALTY = 500;
 
     if (cp_name_1 && cp_name_2) {
-        if (fuzzy_search(cp_name_1->get_text(), _search_text)) {
-            text_len_1 = cp_name_1->get_text().length();
-            fuzzy_points_count_1 = fuzzy_points(cp_name_1->get_text(), _search_text);
+        auto const &name_1_text = cp_name_1->get_text();
+        auto const &name_2_text = cp_name_2->get_text();
+
+        if (fuzzy_search(name_1_text, _search_text)) {
+            text_len_1 = name_1_text.length();
+            fuzzy_points_count_1 = fuzzy_points(name_1_text, _search_text);
         }
-        if (fuzzy_search(cp_name_2->get_text(), _search_text)) {
-            text_len_2 = cp_name_2->get_text().length();
-            fuzzy_points_count_2 = fuzzy_points(cp_name_2->get_text(), _search_text);
+        if (fuzzy_search(name_2_text, _search_text)) {
+            text_len_2 = name_2_text.length();
+            fuzzy_points_count_2 = fuzzy_points(name_2_text, _search_text);
         }
 
         points_compare = fuzzy_points_compare(fuzzy_points_count_1, fuzzy_points_count_2, text_len_1, text_len_2);
@@ -1038,27 +1055,13 @@ int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
             return points_compare;
         }
 
-        if (fuzzy_tolerance_search(cp_name_1->get_text(), _search_text)) {
-            text_len_1 = cp_name_1->get_text().length();
-            fuzzy_points_count_1 = fuzzy_tolerance_points(cp_name_1->get_text(), _search_text);
+        if (fuzzy_tolerance_search(name_1_text, _search_text)) {
+            text_len_1 = name_1_text.length();
+            fuzzy_points_count_1 = fuzzy_tolerance_points(name_1_text, _search_text);
         }
-        if (fuzzy_tolerance_search(cp_name_2->get_text(), _search_text)) {
-            text_len_2 = cp_name_2->get_text().length();
-            fuzzy_points_count_2 = fuzzy_tolerance_points(cp_name_2->get_text(), _search_text);
-        }
-
-        points_compare = fuzzy_points_compare(fuzzy_points_count_1, fuzzy_points_count_2, text_len_1, text_len_2);
-        if (points_compare != 0) {
-            return points_compare;
-        }
-
-        if (fuzzy_search(cp_name_1->get_tooltip_text(), _search_text)) {
-            text_len_1 = cp_name_1->get_tooltip_text().length();
-            fuzzy_points_count_1 = fuzzy_points(cp_name_1->get_tooltip_text(), _search_text) + TOOLTIP_PENALTY;
-        }
-        if (fuzzy_search(cp_name_2->get_tooltip_text(), _search_text)) {
-            text_len_2 = cp_name_2->get_tooltip_text().length();
-            fuzzy_points_count_2 = fuzzy_points(cp_name_2->get_tooltip_text(), _search_text) + TOOLTIP_PENALTY;
+        if (fuzzy_tolerance_search(name_2_text, _search_text)) {
+            text_len_2 = name_2_text.length();
+            fuzzy_points_count_2 = fuzzy_tolerance_points(name_2_text, _search_text);
         }
 
         points_compare = fuzzy_points_compare(fuzzy_points_count_1, fuzzy_points_count_2, text_len_1, text_len_2);
@@ -1066,14 +1069,31 @@ int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
             return points_compare;
         }
 
-        if (fuzzy_tolerance_search(cp_name_1->get_tooltip_text(), _search_text)) {
-            text_len_1 = cp_name_1->get_tooltip_text().length();
-            fuzzy_points_count_1 = fuzzy_tolerance_points(cp_name_1->get_tooltip_text(), _search_text) +
+        auto const &name_1_tooltip = cp_name_1->get_tooltip_text();
+        auto const &name_2_tooltip = cp_name_2->get_tooltip_text();
+
+        if (fuzzy_search(name_1_tooltip, _search_text)) {
+            text_len_1 = name_1_tooltip.length();
+            fuzzy_points_count_1 = fuzzy_points(name_1_tooltip, _search_text) + TOOLTIP_PENALTY;
+        }
+        if (fuzzy_search(name_2_tooltip, _search_text)) {
+            text_len_2 = name_2_tooltip.length();
+            fuzzy_points_count_2 = fuzzy_points(name_2_tooltip, _search_text) + TOOLTIP_PENALTY;
+        }
+
+        points_compare = fuzzy_points_compare(fuzzy_points_count_1, fuzzy_points_count_2, text_len_1, text_len_2);
+        if (points_compare != 0) {
+            return points_compare;
+        }
+
+        if (fuzzy_tolerance_search(name_1_tooltip, _search_text)) {
+            text_len_1 = name_1_tooltip.length();
+            fuzzy_points_count_1 = fuzzy_tolerance_points(name_1_tooltip, _search_text) +
                                    TOOLTIP_PENALTY; // Adding a constant integer to decrease the prefrence
         }
-        if (fuzzy_tolerance_search(cp_name_2->get_tooltip_text(), _search_text)) {
-            text_len_2 = cp_name_2->get_tooltip_text().length();
-            fuzzy_points_count_2 = fuzzy_tolerance_points(cp_name_2->get_tooltip_text(), _search_text) +
+        if (fuzzy_tolerance_search(name_2_tooltip, _search_text)) {
+            text_len_2 = name_2_tooltip.length();
+            fuzzy_points_count_2 = fuzzy_tolerance_points(name_2_tooltip, _search_text) +
                                    TOOLTIP_PENALTY; // Adding a constant integer to decrease the prefrence
         }
         points_compare = fuzzy_points_compare(fuzzy_points_count_1, fuzzy_points_count_2, text_len_1, text_len_2);
@@ -1082,14 +1102,17 @@ int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
         }
     }
 
-    if (cp_description_1 && normal_search(cp_description_1->get_text(), _search_text)) {
-        text_len_1 = cp_description_1->get_text().length();
-        fuzzy_points_count_1 = fuzzy_points(cp_description_1->get_text(), _search_text) +
+    auto const &description_1_text = cp_description_1->get_text();
+    auto const &description_2_text = cp_description_2->get_text();
+
+    if (cp_description_1 && normal_search(description_1_text, _search_text)) {
+        text_len_1 = description_1_text.length();
+        fuzzy_points_count_1 = fuzzy_points(description_1_text, _search_text) +
                                DESCRIPTION_PENALTY; // Adding a constant integer to decrease the prefrence
     }
-    if (cp_description_2 && normal_search(cp_description_2->get_text(), _search_text)) {
-        text_len_2 = cp_description_2->get_text().length();
-        fuzzy_points_count_2 = fuzzy_points(cp_description_2->get_text(), _search_text) +
+    if (cp_description_2 && normal_search(description_2_text, _search_text)) {
+        text_len_2 = description_2_text.length();
+        fuzzy_points_count_2 = fuzzy_points(description_2_text, _search_text) +
                                DESCRIPTION_PENALTY; // Adding a constant integer to decrease the prefrence
     }
 

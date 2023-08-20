@@ -176,6 +176,7 @@ private:
     static int fuzzy_tolerance_points(const Glib::ustring &subject, const Glib::ustring &search);
     static int fuzzy_points_compare(int fuzzy_points_count_1, int fuzzy_points_count_2, int text_len_1, int text_len_2);
 
+    static void test_sort();
     int on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2);
     void set_mode(CPMode mode);
 
