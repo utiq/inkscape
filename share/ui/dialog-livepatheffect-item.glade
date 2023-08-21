@@ -4,11 +4,9 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkMenu" id="LPEEffectMenu">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <child>
       <object class="GtkMenuItem">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Duplicate</property>
         <property name="use-underline">True</property>
       </object>
@@ -16,7 +14,6 @@
     <child>
       <object class="GtkMenuItem" id="LPEMoveUp">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Move up</property>
         <property name="use-underline">True</property>
       </object>
@@ -24,7 +21,6 @@
     <child>
       <object class="GtkMenuItem" id="LPEMoveDown">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Move down</property>
         <property name="use-underline">True</property>
       </object>
@@ -32,7 +28,6 @@
     <child>
       <object class="GtkMenuItem">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="tooltip-text" translatable="yes">Apply this effect, and all effects above this one, to the path. This removes those effects from the stack.</property>
         <property name="label" translatable="yes">Flatten</property>
         <property name="use-underline">True</property>
@@ -41,7 +36,6 @@
     <child>
       <object class="GtkMenuItem" id="LPESetDefault">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="tooltip-text" translatable="yes">Use the current values as custom defaults for this LPE</property>
         <property name="label" translatable="yes">Set custom defaults</property>
         <property name="use-underline">True</property>
@@ -50,7 +44,6 @@
     <child>
       <object class="GtkMenuItem" id="LPEResetDefault">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="tooltip-text" translatable="yes">Reset default settings of this LPE to Inkscape's default values</property>
         <property name="label" translatable="yes">Forget custom defaults</property>
         <property name="use-underline">True</property>
@@ -59,7 +52,6 @@
     <child>
       <object class="GtkMenuItem" id="LPEtoggleFavorite">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Set Favorite</property>
         <property name="use-underline">True</property>
       </object>
@@ -67,30 +59,26 @@
   </object>
   <object class="GtkImage" id="dndImage">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="halign">center</property>
     <property name="margin-left">2</property>
     <property name="margin-start">2</property>
     <property name="icon-name">dnd</property>
-    <property name="icon_size">2</property>
+    <property name="icon-size">2</property>
   </object>
   <object class="GtkImage" id="removeImage">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">edit-delete-symbolic</property>
-    <property name="icon_size">2</property>
+    <property name="icon-size">2</property>
   </object>
   <object class="GtkImage" id="removeImage1">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">edit-delete-symbolic</property>
-    <property name="icon_size">2</property>
+    <property name="icon-size">2</property>
   </object>
   <object class="GtkImage" id="visibilityImage">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">object-visible-symbolic</property>
-    <property name="icon_size">2</property>
+    <property name="icon-size">2</property>
   </object>
   <object class="GtkBox" id="LPEEffect">
     <property name="name">LPEEffectItem</property>
@@ -100,7 +88,6 @@
       <object class="GtkBox">
         <property name="name">LPEEffectItem</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
         <child>
@@ -112,38 +99,26 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="label-fill">True</property>
-                <child>
-                  <placeholder/>
-                </child>
                 <child type="label">
                   <object class="GtkBox">
                     <property name="name">LPEExpanderBox</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="hexpand">True</property>
                     <child>
                       <object class="GtkBox" id="LPEExpanderBox">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
                           <object class="GtkImage" id="LPEIconImage">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="margin-right">5</property>
                             <property name="margin-end">5</property>
                             <property name="pixel-size">25</property>
-                            <property name="icon_size">3</property>
+                            <property name="icon-size">3</property>
                           </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkLabel" id="LPENameLabel">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="halign">start</property>
                             <property name="label" translatable="no">expander</property>
                             <property name="ellipsize">end</property>
@@ -151,31 +126,18 @@
                             <property name="xalign">0</property>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkBox">
                         <property name="width-request">145</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="halign">start</property>
-                        <child>
-                          <placeholder/>
-                        </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
@@ -190,35 +152,22 @@
               <object class="GtkBox">
                 <property name="height-request">30</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="events">GDK_EXPOSURE_MASK</property>
                 <property name="valign">start</property>
                 <child>
                   <object class="GtkEventBox" id="LPEOpenExpander">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <placeholder/>
-                    </child>
                   </object>
                   <packing>
                     <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox">
                     <property name="width-request">145</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <placeholder/>
-                    </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -231,19 +180,15 @@
               <object class="GtkBox" id="LPEActionButtons">
                 <property name="name">LPEActionButtons</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">end</property>
                 <property name="valign">start</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkButton" id="LPEHide">
                         <property name="width-request">30</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="receives-default">False</property>
                         <property name="image">visibilityImage</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
@@ -253,8 +198,6 @@
                         </style>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
@@ -262,8 +205,6 @@
                       <object class="GtkButton" id="LPEErase">
                         <property name="width-request">30</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="receives-default">False</property>
                         <property name="image">removeImage</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
@@ -273,8 +214,6 @@
                         </style>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="position">2</property>
                       </packing>
                     </child>
@@ -283,23 +222,18 @@
                         <property name="name">LPEEffectMenuButton</property>
                         <property name="width-request">30</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="focus-on-click">False</property>
-                        <property name="receives-default">False</property>
                         <property name="popup">LPEEffectMenu</property>
                         <property name="use-popover">False</property>
                         <property name="tooltip-text" translatable="yes">Menu with options related to this Live Path Effect</property>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="icon-name">go-down-symbolic</property>
                           </object>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="position">3</property>
                       </packing>
                     </child>
@@ -308,8 +242,6 @@
                     </style>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
@@ -317,7 +249,6 @@
                   <object class="GtkButton" id="LPEDrag">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
                     <property name="no-show-all">True</property>
                     <property name="halign">center</property>
                     <property name="image">dndImage</property>
@@ -332,7 +263,6 @@
                   </object>
                   <packing>
                     <property name="expand">True</property>
-                    <property name="fill">True</property>
                     <property name="position">4</property>
                   </packing>
                 </child>
@@ -345,8 +275,6 @@
           </object>
           <packing>
             <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
           </packing>
         </child>
         <style>
@@ -355,8 +283,6 @@
       </object>
       <packing>
         <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
       </packing>
     </child>
     <style>

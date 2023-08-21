@@ -31,7 +31,6 @@
       <object class="GtkIconView" id="iconview">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
-        <property name="margin">6</property>
         <property name="model">liststore</property>
         <property name="spacing">1</property>
         <child>
@@ -45,7 +44,6 @@
         </child>
         <child>
           <object class="GtkCellRendererText">
-            <property name="xalign">0.5</property>
             <property name="alignment">center</property>
             <property name="wrap-mode">word</property>
             <property name="wrap-width">16</property>
@@ -56,7 +54,6 @@
         </child>
         <child>
           <object class="GtkCellRendererText">
-            <property name="xalign">0.5</property>
             <property name="alignment">center</property>
             <property name="scale">0.90</property>
             <property name="wrap-mode">word</property>

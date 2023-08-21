@@ -5,7 +5,6 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkDialog" id="LPEDialogSelector">
     <property name="name">LPEDialogSelector</property>
-    <property name="can-focus">False</property>
     <property name="title" translatable="yes">Live Path Effects Selector</property>
     <property name="modal">True</property>
     <property name="window-position">center-on-parent</property>
@@ -16,42 +15,29 @@
     <property name="has-resize-grip">True</property>
     <child internal-child="vbox">
       <object class="GtkBox">
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <property name="baseline-position">top</property>
         <child internal-child="action_area">
           <object class="GtkBox">
-            <property name="can-focus">False</property>
             <property name="halign">end</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkBox" id="LPESelector">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="valign">start</property>
             <property name="orientation">vertical</property>
             <property name="baseline-position">top</property>
             <child>
               <object class="GtkSearchBar">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="search-mode-enabled">True</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <child>
                       <object class="GtkSearchEntry" id="LPEFilter">
@@ -70,20 +56,12 @@
                           <class name="iconymbolic"/>
                         </style>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkSeparator">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="padding">5</property>
                         <property name="position">1</property>
                       </packing>
@@ -92,14 +70,12 @@
                       <object class="GtkBox" id="LPESelectorAllButtonBox">
                         <property name="name">LPESelectorAllButtonBox</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="halign">start</property>
                         <property name="valign">center</property>
                         <child>
                           <object class="GtkRadioButton" id="LPESelectorEffectRadioPackLess">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
                             <property name="halign">end</property>
                             <property name="valign">center</property>
                             <property name="draw-indicator">False</property>
@@ -107,26 +83,22 @@
                               <object class="GtkImage" id="LPESelectorEffectPackLessImage">
                                 <property name="name">LPESelectorEffectPackLessImage</property>
                                 <property name="visible">True</property>
-                                <property name="can-focus">False</property>
                                 <property name="halign">center</property>
                                 <property name="valign">center</property>
                                 <property name="pixel-size">22</property>
                                 <property name="icon-name">pack-less</property>
-                                <property name="icon_size">2</property>
+                                <property name="icon-size">2</property>
                               </object>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
                             <property name="fill">False</property>
-                            <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkRadioButton" id="LPESelectorEffectRadioPackMore">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
                             <property name="draw-indicator">False</property>
@@ -135,17 +107,15 @@
                               <object class="GtkImage" id="LPESelectorEffectPackMoreImage">
                                 <property name="name">LPESelectorEffectPackMoreImage</property>
                                 <property name="visible">True</property>
-                                <property name="can-focus">False</property>
                                 <property name="halign">center</property>
                                 <property name="valign">center</property>
                                 <property name="pixel-size">22</property>
                                 <property name="icon-name">pack-more</property>
-                                <property name="icon_size">2</property>
+                                <property name="icon-size">2</property>
                               </object>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
                             <property name="fill">False</property>
                             <property name="position">1</property>
                           </packing>
@@ -154,7 +124,6 @@
                           <object class="GtkRadioButton" id="LPESelectorEffectRadioList">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
                             <property name="halign">start</property>
                             <property name="valign">center</property>
                             <property name="draw-indicator">False</property>
@@ -163,24 +132,21 @@
                               <object class="GtkImage" id="LPESelectorEffectListImage">
                                 <property name="name">LPESelectorEffectListImage</property>
                                 <property name="visible">True</property>
-                                <property name="can-focus">False</property>
                                 <property name="halign">center</property>
                                 <property name="valign">center</property>
                                 <property name="pixel-size">22</property>
                                 <property name="icon-name">hamburger-menu</property>
-                                <property name="icon_size">2</property>
+                                <property name="icon-size">2</property>
                               </object>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
                             <property name="fill">False</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">2</property>
                       </packing>
@@ -188,11 +154,8 @@
                     <child>
                       <object class="GtkSeparator">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="padding">4</property>
                         <property name="position">3</property>
                       </packing>
@@ -201,7 +164,6 @@
                       <object class="GtkEventBox" id="LPESelectorEffectEventFavShow">
                         <property name="name">LPESelectorEffectEventFavShow</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="no-show-all">True</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
@@ -209,12 +171,11 @@
                           <object class="GtkImage" id="LPESelectorEffectFavShowImage">
                             <property name="name">LPESelectorEffectFavShowImage</property>
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
                             <property name="pixel-size">25</property>
                             <property name="icon-name">draw-star-outline</property>
-                            <property name="icon_size">2</property>
+                            <property name="icon-size">2</property>
                             <style>
                               <class name="fab"/>
                             </style>
@@ -222,19 +183,14 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkSeparator">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="padding">5</property>
                         <property name="position">5</property>
                       </packing>
@@ -248,7 +204,6 @@
                         <property name="valign">center</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">7</property>
                       </packing>
@@ -256,12 +211,9 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Show Experimental</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
                         <property name="padding">5</property>
                         <property name="position">8</property>
                       </packing>
@@ -274,13 +226,10 @@
               </object>
               <packing>
                 <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="LPEInfo">
-                <property name="can-focus">False</property>
                 <property name="no-show-all">True</property>
                 <property name="label" translatable="yes">Message</property>
                 <property name="justify">center</property>
@@ -290,8 +239,6 @@
                 </style>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -309,12 +256,10 @@
                   <object class="GtkViewport" id="LPEViewport">
                     <property name="name">LPEViewport</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkFlowBox" id="LPESelectorFlowBox">
                         <property name="name">LPESelectorFlowBox</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="no-show-all">True</property>
                         <property name="valign">start</property>
                         <property name="column-spacing">1</property>
@@ -327,17 +272,11 @@
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
                 <property name="fill">False</property>
                 <property name="position">2</property>
               </packing>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <style>
           <class name="symbolic"/>
@@ -347,7 +286,6 @@
   </object>
   <object class="GtkPopover" id="LPESelectorEffectInfoPop">
     <property name="name">LPESelectorEffectInfoPop</property>
-    <property name="can-focus">False</property>
     <property name="no-show-all">True</property>
     <property name="valign">start</property>
     <property name="relative-to">LPEInfo</property>
@@ -358,63 +296,46 @@
       <object class="GtkEventBox" id="LPESelectorEffectInfoEventBox">
         <property name="name">LPESelectorEffectInfoEventBox</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkImage" id="LPESelectorEffectInfoIcon">
                     <property name="name">LPESelectorEffectInfoIcon</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="pixel-size">40</property>
                     <property name="icon-name">align-vertical-baseline</property>
-                    <property name="icon_size">6</property>
+                    <property name="icon-size">6</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkLabel" id="LPESelectorEffectInfoName">
                     <property name="name">LPESelectorEffectInfoName</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Name</property>
                     <property name="justify">center</property>
                     <property name="wrap">True</property>
                     <property name="max-width-chars">20</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkSeparator">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -422,15 +343,12 @@
               <object class="GtkLabel" id="LPESelectorEffectInfoDescription">
                 <property name="name">LPESelectorEffectInfoDescription</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Description</property>
                 <property name="justify">center</property>
                 <property name="wrap">True</property>
                 <property name="max-width-chars">20</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">2</property>
               </packing>
             </child>

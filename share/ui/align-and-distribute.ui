@@ -84,243 +84,202 @@
   </object>
   <object class="GtkImage" id="image-align-horizontal-baseline">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-horizontal-baseline</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-horizontal-center">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-horizontal-center</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-horizontal-left">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-horizontal-left</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-horizontal-left-to-anchor">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-horizontal-left-to-anchor</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-horizontal-node">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-horizontal-node</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-horizontal-right">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-horizontal-right</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-horizontal-right-to-anchor">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-horizontal-right-to-anchor</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-on-canvas">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-on-canvas</property>
   </object>
   <object class="GtkImage" id="image-align-sel-as-group">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-sel-as-group</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-vertical-baseline">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-vertical-baseline</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-vertical-bottom">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-vertical-bottom</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-vertical-bottom-to-anchor">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-vertical-bottom-to-anchor</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-vertical-center">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-vertical-center</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-vertical-node">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-vertical-node</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-vertical-top">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-vertical-top</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-align-vertical-top-to-anchor">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">align-vertical-top-to-anchor</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-graph">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-graph</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-horizontal-baseline">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-horizontal-baseline</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-horizontal-center">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-horizontal-center</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-horizontal-gaps">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-horizontal-gaps</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-horizontal-left">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-horizontal-left</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-horizontal-node">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-horizontal-node</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-horizontal-right">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-horizontal-right</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-randomize">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-randomize</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-remove-overlaps">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-remove-overlaps</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-unclump">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-unclump</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-vertical-baseline">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-vertical-baseline</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-vertical-bottom">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-vertical-bottom</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-vertical-center">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-vertical-center</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-vertical-gaps">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-vertical-gaps</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-vertical-node">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-vertical-node</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-distribute-vertical-top">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">distribute-vertical-top</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-exchange-positions">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">exchange-positions</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-exchange-positions-clockwise">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">exchange-positions-clockwise</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="image-exchange-positions-zorder">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">exchange-positions-zorder</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkBox" id="align-and-distribute-box">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="margin">8</property>
     <property name="orientation">vertical</property>
     <property name="spacing">4</property>
     <child>
       <object class="GtkBox" id="align-and-distribute-object">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="no-show-all">True</property>
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-bottom">4</property>
-            <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
+                <!-- n-columns=2 n-rows=2 -->
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkToggleButton" id="align-on-canvas">
                         <property name="visible">True</property>
@@ -355,7 +314,6 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="margin-start">4</property>
                         <property name="label" translatable="yes">Alignment handles with third click</property>
                         <property name="xalign">0</property>
@@ -368,7 +326,6 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="margin-start">4</property>
                         <property name="label" translatable="yes">Move/align selection as group</property>
                         <property name="xalign">0</property>
@@ -383,18 +340,15 @@
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Relative to:</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkComboBox" id="align-relative-object">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="margin-start">4</property>
                         <property name="model">RelativeToObject</property>
                         <property name="active">0</property>
@@ -409,11 +363,10 @@
                     </child>
                   </object>
                 </child>
+                <!-- n-columns=6 n-rows=2 -->
                 <child>
-                  <!-- n-columns=6 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkButton" id="align-horizontal-right-to-anchor">
                         <property name="visible">True</property>
@@ -601,7 +554,6 @@
             <child type="label">
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="ypad">2</property>
                 <property name="label" translatable="yes">Align</property>
                 <attributes>
@@ -614,15 +566,12 @@
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-bottom">4</property>
-            <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
+            <!-- n-columns=5 n-rows=2 -->
             <child>
-              <!-- n-columns=5 n-rows=2 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkButton">
                     <property name="visible">True</property>
@@ -798,7 +747,6 @@
             <child type="label">
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="ypad">2</property>
                 <property name="label" translatable="yes">Distribute</property>
                 <attributes>
@@ -811,15 +759,12 @@
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-bottom">4</property>
-            <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
+            <!-- n-columns=6 n-rows=1 -->
             <child>
-              <!-- n-columns=6 n-rows=1 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkButton">
                     <property name="visible">True</property>
@@ -927,7 +872,6 @@
             <child type="label">
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="ypad">2</property>
                 <property name="label" translatable="yes">Rearrange</property>
                 <attributes>
@@ -942,19 +886,15 @@
     <child>
       <object class="GtkFrame">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label-xalign">0</property>
         <property name="shadow-type">none</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin">4</property>
             <property name="spacing">4</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">H:</property>
               </object>
             </child>
@@ -971,7 +911,6 @@
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="margin-start">4</property>
                 <property name="label" translatable="yes">V:</property>
               </object>
@@ -1003,7 +942,6 @@
         <child type="label">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="ypad">2</property>
             <property name="label" translatable="yes">Remove overlaps</property>
             <attributes>
@@ -1016,37 +954,30 @@
     <child>
       <object class="GtkBox" id="align-and-distribute-node">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="no-show-all">True</property>
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-bottom">4</property>
-            <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Relative to:</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkComboBox" id="align-relative-node">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="margin-start">4</property>
                         <property name="model">RelativeToNode</property>
                         <property name="active">0</property>
@@ -1061,11 +992,10 @@
                     </child>
                   </object>
                 </child>
+                <!-- n-columns=2 n-rows=1 -->
                 <child>
-                  <!-- n-columns=2 n-rows=1 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkButton" id="align-node-horizontal">
                         <property name="visible">True</property>
@@ -1103,7 +1033,6 @@
             <child type="label">
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="ypad">2</property>
                 <property name="label" translatable="yes">Align Nodes</property>
                 <attributes>
@@ -1116,19 +1045,15 @@
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
+                <!-- n-columns=2 n-rows=1 -->
                 <child>
-                  <!-- n-columns=2 n-rows=1 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkButton">
                         <property name="visible">True</property>
@@ -1168,7 +1093,6 @@
             <child type="label">
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="ypad">2</property>
                 <property name="label" translatable="yes">Distribute Nodes</property>
                 <attributes>

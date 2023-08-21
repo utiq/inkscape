@@ -4,51 +4,41 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">xml-element-new</property>
   </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">xml-text-new</property>
   </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">xml-node-duplicate</property>
   </object>
   <object class="GtkImage" id="image4">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">xml-node-delete</property>
   </object>
   <object class="GtkImage" id="image5">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">format-indent-less</property>
   </object>
   <object class="GtkImage" id="image6">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">format-indent-more</property>
   </object>
   <object class="GtkImage" id="image7">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">go-up</property>
   </object>
   <object class="GtkImage" id="image8">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">go-down</property>
   </object>
   <object class="GtkMenu" id="menu-popup">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <child>
       <object class="GtkRadioMenuItem" id="auto-layout">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Automatic layout</property>
         <property name="use-underline">True</property>
         <property name="draw-as-radio">True</property>
@@ -57,7 +47,6 @@
     <child>
       <object class="GtkRadioMenuItem" id="horz-layout">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Horizontal layout</property>
         <property name="use-underline">True</property>
         <property name="draw-as-radio">True</property>
@@ -67,7 +56,6 @@
     <child>
       <object class="GtkRadioMenuItem" id="vert-layout">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Vertical layout</property>
         <property name="use-underline">True</property>
         <property name="draw-as-radio">True</property>
@@ -77,12 +65,10 @@
   </object>
   <object class="GtkBox" id="main">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox" id="buttons">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="margin-bottom">2</property>
         <property name="hexpand">True</property>
         <child>
@@ -94,11 +80,6 @@
             <property name="image">image1</property>
             <property name="relief">none</property>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkButton" id="new-text">
@@ -110,8 +91,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -125,8 +104,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -140,8 +117,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">3</property>
           </packing>
         </child>
@@ -155,8 +130,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">4</property>
           </packing>
         </child>
@@ -170,8 +143,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">5</property>
           </packing>
         </child>
@@ -185,8 +156,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">6</property>
           </packing>
         </child>
@@ -203,28 +172,18 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkImage" id="layout-img">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="icon-name">horizontal</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="icon-name">pan-down-symbolic</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -235,8 +194,6 @@
             </style>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="pack-type">end</property>
             <property name="position">7</property>
           </packing>
@@ -251,20 +208,10 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">8</property>
           </packing>
         </child>
-        <child>
-          <placeholder/>
-        </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkPaned" id="pane">
@@ -281,22 +228,14 @@
             <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
             <property name="overlay-scrolling">False</property>
-            <child>
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="resize">False</property>
             <property name="shrink">False</property>
           </packing>
         </child>
-        <child>
-          <placeholder/>
-        </child>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
         <property name="position">1</property>
       </packing>
     </child>

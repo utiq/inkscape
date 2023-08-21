@@ -151,16 +151,14 @@
   </object>
   <object class="GtkBox" id="content">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <child>
       <object class="GtkNotebook" id="import-type">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
+        <!-- n-columns=2 n-rows=8 -->
         <child>
-          <!-- n-columns=2 n-rows=8 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-start">8</property>
             <property name="margin-end">8</property>
             <property name="margin-bottom">8</property>
@@ -169,7 +167,6 @@
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">start</property>
                 <property name="margin-top">10</property>
                 <property name="margin-bottom">10</property>
@@ -291,7 +288,6 @@
                 <child type="label">
                   <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">List of all PDF Fonts</property>
                     <property name="use-markup">True</property>
                   </object>
@@ -308,7 +304,6 @@
                 <property name="label" translatable="yes">Embed Images</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
                 <property name="margin-start">8</property>
                 <property name="active">True</property>
                 <property name="draw-indicator">True</property>
@@ -322,7 +317,6 @@
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">start</property>
                 <property name="margin-start">8</property>
                 <property name="label" translatable="yes">Precision of approximating gradient meshes:</property>
@@ -353,7 +347,6 @@
             <child>
               <object class="GtkLabel" id="mesh-label">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">center</property>
                 <property name="valign">end</property>
                 <property name="label" translatable="yes">rough</property>
@@ -366,7 +359,6 @@
             <child>
               <object class="GtkComboBox" id="font-rendering">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="model">font-options</property>
                 <property name="active">0</property>
@@ -387,7 +379,6 @@
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">end</property>
                 <property name="margin-start">12</property>
                 <property name="margin-end">4</property>
@@ -402,7 +393,6 @@
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">end</property>
                 <property name="margin-start">12</property>
                 <property name="margin-end">4</property>
@@ -431,7 +421,6 @@
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="halign">end</property>
                 <property name="margin-start">12</property>
                 <property name="margin-end">4</property>
@@ -446,7 +435,6 @@
             <child>
               <object class="GtkComboBox" id="clip-to">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="model">clip_list</property>
                 <property name="active">0</property>
@@ -469,7 +457,6 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="label" translatable="yes">&lt;b&gt;Internal import&lt;/b&gt;</property>
             <property name="use-markup">True</property>
             <property name="xalign">0</property>
@@ -481,7 +468,6 @@
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
             <property name="margin-start">8</property>
@@ -501,7 +487,6 @@
         <child type="tab">
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="label" translatable="yes">&lt;b&gt;Cairo import&lt;/b&gt;</property>
             <property name="use-markup">True</property>
             <property name="xalign">0</property>
@@ -512,16 +497,10 @@
           </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="margin-start">10</property>
         <property name="margin-end">10</property>
         <property name="margin-top">10</property>
@@ -531,21 +510,17 @@
           <object class="GtkDrawingArea" id="preview-area">
             <property name="width-request">200</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">center</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">5</property>
           </object>
           <packing>
             <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">center</property>
             <property name="valign">start</property>
             <child>
@@ -557,21 +532,14 @@
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="icon-name">go-previous</property>
                   </object>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="current-page">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="margin-start">10</property>
                 <property name="margin-end">10</property>
                 <property name="label" translatable="no">1 / 10</property>
@@ -579,8 +547,6 @@
                 <property name="justify">center</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -593,28 +559,22 @@
                 <child>
                   <object class="GtkImage">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="icon-name">go-next</property>
                   </object>
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">2</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
       </object>
       <packing>
         <property name="expand">True</property>
-        <property name="fill">True</property>
         <property name="position">1</property>
       </packing>
     </child>

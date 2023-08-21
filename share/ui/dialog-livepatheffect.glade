@@ -6,7 +6,6 @@
     <property name="name">LPEContainer</property>
     <property name="width-request">250</property>
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <property name="orientation">vertical</property>
@@ -14,13 +13,11 @@
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <property name="baseline-position">top</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-left">5</property>
             <property name="margin-right">5</property>
             <property name="margin-start">5</property>
@@ -30,21 +27,11 @@
               <object class="GtkBox" id="LPEAddContainer">
                 <property name="name">LPEAddContainer</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <child>
-                  <placeholder/>
-                </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkButton" id="LPEGallery">
                 <property name="name">LPESelectorEffectEventFavShow</property>
-                <property name="can-focus">False</property>
                 <property name="no-show-all">True</property>
                 <property name="tooltip-text" translatable="yes">Open LPE Gallery</property>
                 <property name="halign">start</property>
@@ -57,7 +44,6 @@
                   <object class="GtkImage">
                     <property name="name">LPESelectorEffectFavShowImage</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="icon-name">arrange-grid</property>
@@ -68,46 +54,27 @@
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">3</property>
               </packing>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkBox" id="LPECurrentItem">
         <property name="name">LPECurrentItem</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="events"/>
+        <property name="events"></property>
         <property name="orientation">vertical</property>
-        <child>
-          <placeholder/>
-        </child>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
         <property name="position">1</property>
       </packing>
     </child>
     <child>
       <object class="GtkLabel" id="LPESelectionInfo">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="margin-left">5</property>
         <property name="margin-right">5</property>
         <property name="margin-start">5</property>
@@ -116,8 +83,6 @@
         <property name="width-chars">20</property>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
         <property name="position">2</property>
       </packing>
     </child>
@@ -125,15 +90,12 @@
       <object class="GtkListBox" id="LPEListBox">
         <property name="name">LPEListBox</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="selection-mode">none</property>
         <style>
           <class name="lpelistbox"/>
         </style>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
         <property name="position">4</property>
       </packing>
     </child>
@@ -141,12 +103,9 @@
       <object class="GtkListBox" id="LPEParentBox">
         <property name="name">LPEParentBox</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="selection-mode">none</property>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
         <property name="position">5</property>
       </packing>
     </child>

@@ -4,129 +4,102 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkImage" id="icon-select">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">tool-pointer</property>
   </object>
   <object class="GtkImage" id="icon-booleans">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-booleans</property>
   </object>
   <object class="GtkImage" id="icon-calligraphic">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-calligraphic</property>
   </object>
   <object class="GtkImage" id="image-text-tool">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-text</property>
   </object>
   <object class="GtkImage" id="icon-gradient">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">color-gradient</property>
   </object>
   <object class="GtkImage" id="icon-mesh-gradient">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">mesh-gradient</property>
   </object>
   <object class="GtkImage" id="icon-dropper">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">color-picker</property>
   </object>
   <object class="GtkImage" id="icon-bucket">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">color-fill</property>
   </object>
   <object class="GtkImage" id="icon-tweak">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">tool-tweak</property>
   </object>
   <object class="GtkImage" id="icon-spray">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">tool-spray</property>
   </object>
   <object class="GtkImage" id="icon-eraser">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-eraser</property>
   </object>
   <object class="GtkImage" id="icon-connector">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-connector</property>
   </object>
   <object class="GtkImage" id="icon-node">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">tool-node-editor</property>
   </object>
   <object class="GtkImage" id="icon-geometry">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-geometry</property>
   </object>
   <object class="GtkImage" id="icon-zoom">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">zoom</property>
   </object>
   <object class="GtkImage" id="icon-measure">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">tool-measure</property>
   </object>
   <object class="GtkImage" id="icon-rect">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-rectangle</property>
   </object>
   <object class="GtkImage" id="icon-ellipse">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-ellipse</property>
   </object>
   <object class="GtkImage" id="icon-star">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-polygon-star</property>
   </object>
   <object class="GtkImage" id="icon-threedee">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-cuboid</property>
   </object>
   <object class="GtkImage" id="icon-spiral">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-spiral</property>
   </object>
   <object class="GtkImage" id="icon-pen">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-path</property>
   </object>
   <object class="GtkImage" id="icon-pencil">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">draw-freehand</property>
   </object>
   <object class="GtkImage" id="icon-pages">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">tool-pages</property>
   </object>
   <object class="GtkScrolledWindow" id="tool-toolbar">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="shadow_type">none</property>
-    <property name="hexpand">False</property>
     <property name="vexpand">True</property>
     <property name="hscrollbar-policy">never</property>
     <property name="vscrollbar-policy">external</property>
@@ -134,33 +107,27 @@
       <object class="GtkBox">
         <property name="name">tool-toolbar</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <property name="halign">start</property>
-        <property name="valign">fill</property>
         <child>
           <object class="GtkFlowBox">
             <property name="homogeneous">True</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
-            <property name="orientation">horizontal</property>
-            <property name="max_children_per_line">2</property>
+            <property name="max-children-per-line">2</property>
             <style>
               <class name="tight-flowbox"/>
             </style>
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -177,14 +144,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton" id="toolsradio">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -201,14 +166,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -224,18 +187,14 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkSeparator">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">1</property>
           </packing>
@@ -244,25 +203,21 @@
           <object class="GtkFlowBox">
             <property name="homogeneous">True</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
-            <property name="orientation">horizontal</property>
-            <property name="max_children_per_line">5</property>
+            <property name="max-children-per-line">5</property>
             <style>
               <class name="tight-flowbox"/>
             </style>
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -279,14 +234,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -303,14 +256,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -327,14 +278,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -351,14 +300,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -374,7 +321,6 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">2</property>
           </packing>
@@ -382,10 +328,8 @@
         <child>
           <object class="GtkSeparator">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">3</property>
           </packing>
@@ -394,25 +338,21 @@
           <object class="GtkFlowBox">
             <property name="homogeneous">True</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
-            <property name="orientation">horizontal</property>
-            <property name="max_children_per_line">6</property>
+            <property name="max-children-per-line">6</property>
             <style>
               <class name="tight-flowbox"/>
             </style>
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -429,14 +369,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -453,14 +391,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -477,14 +413,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -500,7 +434,6 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">4</property>
           </packing>
@@ -508,10 +441,8 @@
         <child>
           <object class="GtkSeparator">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">5</property>
           </packing>
@@ -520,25 +451,21 @@
           <object class="GtkFlowBox">
             <property name="homogeneous">True</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
-            <property name="orientation">horizontal</property>
-            <property name="max_children_per_line">5</property>
+            <property name="max-children-per-line">5</property>
             <style>
               <class name="tight-flowbox"/>
             </style>
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -555,14 +482,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -579,14 +504,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -603,14 +526,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -626,7 +547,6 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">6</property>
           </packing>
@@ -634,10 +554,8 @@
         <child>
           <object class="GtkSeparator">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">7</property>
           </packing>
@@ -646,25 +564,21 @@
           <object class="GtkFlowBox">
             <property name="homogeneous">True</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
-            <property name="orientation">horizontal</property>
-            <property name="max_children_per_line">5</property>
+            <property name="max-children-per-line">5</property>
             <style>
               <class name="tight-flowbox"/>
             </style>
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -681,14 +595,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -705,14 +617,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -729,14 +639,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -753,14 +661,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -776,7 +682,6 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">8</property>
           </packing>
@@ -784,10 +689,8 @@
         <child>
           <object class="GtkSeparator">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">9</property>
           </packing>
@@ -796,25 +699,21 @@
           <object class="GtkFlowBox">
             <property name="homogeneous">True</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
-            <property name="orientation">horizontal</property>
-            <property name="max_children_per_line">5</property>
+            <property name="max-children-per-line">5</property>
             <style>
               <class name="tight-flowbox"/>
             </style>
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -831,14 +730,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -855,14 +752,12 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
-                    <property name="draw_indicator">False</property>
+                    <property name="draw-indicator">False</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="action-name">win.tool-switch</property>
@@ -878,7 +773,6 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">10</property>
           </packing>

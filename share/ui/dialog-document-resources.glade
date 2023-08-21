@@ -4,27 +4,22 @@
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkImage" id="image-select">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">object-select</property>
   </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">edit</property>
   </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">document-cleanup</property>
   </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">edit-delete</property>
   </object>
   <object class="GtkImage" id="image4">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">document-export</property>
   </object>
   <object class="GtkListStore" id="liststore">
@@ -127,14 +122,12 @@
   </object>
   <object class="GtkBox" id="main">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox" id="tbar">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="no-show-all">True</property>
         <property name="margin-start">3</property>
         <property name="margin-top">3</property>
@@ -143,14 +136,8 @@
         <child>
           <object class="GtkLabel" id="spacer">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="label"> </property>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkButton" id="edit">
@@ -162,8 +149,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -177,8 +162,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -192,8 +175,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">3</property>
           </packing>
         </child>
@@ -207,8 +188,6 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">4</property>
           </packing>
         </child>
@@ -222,8 +201,6 @@
             <property name="primary-icon-sensitive">False</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="pack-type">end</property>
             <property name="position">5</property>
           </packing>
@@ -239,18 +216,11 @@
             <property name="relief">none</property>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="pack-type">end</property>
             <property name="position">6</property>
           </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkPaned" id="paned">
@@ -302,7 +272,6 @@
           <object class="GtkStack" id="stack">
             <property name="width-request">50</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-start">1</property>
             <child>
               <object class="GtkScrolledWindow">
@@ -404,12 +373,10 @@
                 <child>
                   <object class="GtkViewport">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <!-- n-columns=2 n-rows=3 -->
                     <child>
-                      <!-- n-columns=2 n-rows=3 -->
                       <object class="GtkGrid" id="grid">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="valign">start</property>
                         <property name="margin-start">4</property>
                         <property name="margin-end">4</property>
@@ -417,24 +384,6 @@
                         <property name="margin-bottom">4</property>
                         <property name="row-spacing">4</property>
                         <property name="column-spacing">4</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
                       </object>
                     </child>
                   </object>
@@ -448,14 +397,12 @@
             </child>
           </object>
           <packing>
-            <property name="resize">True</property>
             <property name="shrink">False</property>
           </packing>
         </child>
       </object>
       <packing>
         <property name="expand">True</property>
-        <property name="fill">True</property>
         <property name="position">1</property>
       </packing>
     </child>

@@ -5,7 +5,6 @@
   <!-- n-columns=2 n-rows=3 -->
   <object class="GtkGrid" id="PaintServersContainerGrid">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="margin-start">3</property>
     <property name="margin-end">3</property>
     <property name="margin-top">3</property>
@@ -14,7 +13,6 @@
     <child>
       <object class="GtkLabel" id="ServerLabel">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Server:</property>
         <property name="justify">right</property>
       </object>
@@ -26,7 +24,6 @@
     <child>
       <object class="GtkComboBoxText" id="ServersDropdown">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="hexpand">True</property>
       </object>
       <packing>
@@ -37,7 +34,6 @@
     <child>
       <object class="GtkLabel" id="TargetLabel">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" translatable="yes">Change:</property>
         <property name="justify">right</property>
       </object>
@@ -49,22 +45,18 @@
     <child>
       <object class="GtkBox" id="TargetRadioContainer">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkRadioButton" id="TargetRadioFill">
             <property name="label" translatable="yes">Fill</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
             <property name="tooltip-text" translatable="yes">Apply the paint to the fill of objects</property>
             <property name="active">True</property>
             <property name="draw-indicator">True</property>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -72,14 +64,12 @@
             <property name="label" translatable="yes">Stroke</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
             <property name="tooltip-text" translatable="yes">Apply the paint to the stroke of objects</property>
             <property name="active">True</property>
             <property name="draw-indicator">True</property>
             <property name="group">TargetRadioFill</property>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">1</property>
           </packing>
@@ -105,7 +95,6 @@
             <property name="height-request">200</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="margin">6</property>
             <property name="vexpand">True</property>
             <property name="item-width">100</property>
             <property name="tooltip-column">0</property>

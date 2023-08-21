@@ -4,18 +4,15 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkImage" id="bug_icon">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">bug</property>
   </object>
   <object class="GtkImage" id="copy-icon">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="margin-end">3</property>
     <property name="icon-name">edit-copy</property>
   </object>
   <object class="GtkWindow" id="about-screen-window">
     <property name="name">about</property>
-    <property name="can-focus">False</property>
     <property name="title" translatable="yes">Inkscape. Draw freely.</property>
     <property name="resizable">False</property>
     <property name="window-position">center-always</property>
@@ -24,7 +21,6 @@
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
         <child>
@@ -39,19 +35,13 @@
                 <property name="width-request">750</property>
                 <property name="height-request">625</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <property name="yalign">0</property>
-                <child>
-                  <placeholder/>
-                </child>
               </object>
             </child>
             <child type="tab">
               <object class="GtkLabel" id="about-label">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="tooltip-text" translatable="yes">Official splash artwork of this version</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">About</property>
@@ -63,21 +53,16 @@
             <child>
               <object class="GtkBox" id="authors-box">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel" id="header-authors">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="margin-top">3</property>
                     <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;Do you want to get involved with Inkscape? &lt;a href="https://inkscape.org/contribute/"&gt;Check this page!&lt;/a&gt;&lt;/b&gt;&lt;/big&gt;</property>
                     <property name="use-markup">True</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="padding">10</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
@@ -101,7 +86,6 @@
                   </object>
                   <packing>
                     <property name="expand">True</property>
-                    <property name="fill">True</property>
                     <property name="padding">4</property>
                     <property name="position">1</property>
                   </packing>
@@ -114,7 +98,6 @@
             <child type="tab">
               <object class="GtkLabel" id="authors-label">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="tooltip-text" translatable="yes">List of authors who contributed to the code</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Authors</property>
@@ -127,21 +110,16 @@
             <child>
               <object class="GtkBox" id="translators-box">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel" id="header-translators">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="margin-top">3</property>
                     <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;Do you want to contribute to translation activities? &lt;a href="https://inkscape.org/contribute/translations/"&gt;Join us here!&lt;/a&gt;&lt;/b&gt;&lt;/big&gt;</property>
                     <property name="use-markup">True</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="padding">10</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
@@ -165,7 +143,6 @@
                   </object>
                   <packing>
                     <property name="expand">True</property>
-                    <property name="fill">True</property>
                     <property name="padding">4</property>
                     <property name="position">1</property>
                   </packing>
@@ -179,7 +156,6 @@
             <child type="tab">
               <object class="GtkLabel" id="translators-label">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="tooltip-text" translatable="yes">List of translators</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Translators</property>
@@ -192,7 +168,6 @@
             <child>
               <object class="GtkBox" id="license-box">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel" id="header-license">
@@ -203,24 +178,18 @@
                     <property name="use-markup">True</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="padding">10</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkViewport">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
                           <object class="GtkLabel" id="license-text">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="margin-start">50</property>
                             <property name="margin-end">50</property>
                             <property name="margin-top">20</property>
@@ -230,7 +199,6 @@
                             <property name="justify">center</property>
                             <property name="wrap">True</property>
                             <property name="selectable">True</property>
-                            <property name="xalign">0.5</property>
                             <property name="yalign">0</property>
                           </object>
                         </child>
@@ -239,7 +207,6 @@
                   </object>
                   <packing>
                     <property name="expand">True</property>
-                    <property name="fill">True</property>
                     <property name="padding">4</property>
                     <property name="position">1</property>
                   </packing>
@@ -253,7 +220,6 @@
             <child type="tab">
               <object class="GtkLabel" id="license-label">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="tooltip-text" translatable="yes">Inkscape license</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">License</property>
@@ -265,15 +231,12 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkBox" id="about-screen-footer">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-start">5</property>
             <property name="margin-end">5</property>
             <property name="margin-top">1</property>
@@ -281,16 +244,13 @@
             <child>
               <object class="GtkLabel" id="copyright">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="margin-start">10</property>
                 <property name="label" translatable="yes" context="Brief copyright notice at the footer of the About screen; the placeholder '%1' represents the year as a 4-digit number.">© %1 Inkscape Developers</property>
                 <property name="wrap">True</property>
                 <property name="wrap-mode">char</property>
               </object>
               <packing>
-                <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -311,15 +271,13 @@
                 <property name="position">1</property>
               </packing>
             </child>
+            <!-- n-columns=1 n-rows=1 -->
             <child>
-              <!-- n-columns=1 n-rows=1 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRevealer">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="transition-type">crossfade</property>
                     <property name="transition-duration">1000</property>
                     <property name="reveal-child">True</property>
@@ -343,13 +301,11 @@
                 <child>
                   <object class="GtkRevealer">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="transition-type">slide-right</property>
                     <property name="transition-duration">1000</property>
                     <child>
                       <object class="GtkLabel" id="version-copied">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Version Copied!</property>
                       </object>
                     </child>
@@ -362,13 +318,11 @@
                 <child>
                   <object class="GtkRevealer">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="transition-type">slide-right</property>
                     <property name="transition-duration">1000</property>
                     <child>
                       <object class="GtkLabel" id="debug-info-copied">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Debug Info Copied!</property>
                       </object>
                     </child>
@@ -380,8 +334,6 @@
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">3</property>
               </packing>
             </child>
@@ -396,15 +348,11 @@
                 <property name="always-show-image">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">3</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>

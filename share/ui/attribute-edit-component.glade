@@ -5,12 +5,10 @@
   <!-- interface-css-provider-path style.css -->
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="icon-name">rounding</property>
   </object>
   <object class="GtkBox" id="main-box">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkScrolledWindow" id="scrolled-wnd">
@@ -33,8 +31,6 @@
       </object>
       <packing>
         <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
       </packing>
     </child>
     <child>
@@ -42,28 +38,22 @@
         <property name="can-focus">True</property>
         <property name="no-show-all">True</property>
         <property name="shadow-type">in</property>
-        <child>
-          <placeholder/>
-        </child>
         <style>
           <class name="mono-font"/>
         </style>
       </object>
       <packing>
         <property name="expand">True</property>
-        <property name="fill">True</property>
         <property name="position">1</property>
       </packing>
     </child>
     <child>
       <object class="GtkBox" id="status-box">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <child>
           <object class="GtkLabel" id="status-label">
             <property name="width-request">1</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="valign">center</property>
             <property name="use-markup">True</property>
@@ -74,14 +64,10 @@
           </object>
           <packing>
             <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
         <property name="padding">2</property>
         <property name="pack-type">end</property>
         <property name="position">2</property>
@@ -90,12 +76,10 @@
   </object>
   <object class="GtkMenu" id="menu1">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="reserve-toggle-size">False</property>
     <child>
       <object class="GtkMenuItem" id="_0">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" context="Precision" comments="This symbolizes precision of 0 digits after the decimal separator." translatable="yes">N</property>
         <property name="use-underline">True</property>
       </object>
@@ -103,7 +87,6 @@
     <child>
       <object class="GtkMenuItem" id="_1">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" context="Precision" comments="This symbolizes precision of 1 digit after the decimal separator. Please adjust to your language's number format (e.g. N,N)." translatable="yes">N.N</property>
         <property name="use-underline">True</property>
       </object>
@@ -111,7 +94,6 @@
     <child>
       <object class="GtkMenuItem" id="_2">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" context="Precision" comments="This symbolizes precision of 2 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NN)." translatable="yes">N.NN</property>
         <property name="use-underline">True</property>
       </object>
@@ -119,7 +101,6 @@
     <child>
       <object class="GtkMenuItem" id="_3">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" context="Precision" comments="This symbolizes precision of 3 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NNN)." translatable="yes">N.NNN</property>
         <property name="use-underline">True</property>
       </object>
@@ -127,7 +108,6 @@
     <child>
       <object class="GtkMenuItem" id="_4">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" context="Precision" comments="This symbolizes precision of 4 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NNNN)." translatable="yes">N.NNNN</property>
         <property name="use-underline">True</property>
       </object>
@@ -135,20 +115,17 @@
     <child>
       <object class="GtkMenuItem" id="_5">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="label" context="Precision" comments="This symbolizes precision of 5 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NNNNN)." translatable="yes">N.NNNNN</property>
         <property name="use-underline">True</property>
       </object>
     </child>
   </object>
   <object class="GtkPopover" id="popup">
-    <property name="can-focus">False</property>
     <property name="relative-to">tree-view</property>
     <property name="position">bottom</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkScrolledWindow" id="scroll-wnd">
@@ -160,23 +137,14 @@
             <property name="margin-bottom">4</property>
             <property name="vexpand">True</property>
             <property name="propagate-natural-width">True</property>
-            <child>
-              <placeholder/>
-            </child>
             <style>
               <class name="mono-font"/>
             </style>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="margin-start">5</property>
             <property name="margin-end">5</property>
             <property name="margin-bottom">4</property>
@@ -184,7 +152,6 @@
             <child type="center">
               <object class="GtkBox" id="rounding-box">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="margin-end">5</property>
                 <child>
                   <object class="GtkButton" id="btn-truncate">
@@ -195,11 +162,6 @@
                     <property name="image">image1</property>
                     <property name="use-underline">True</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkMenuButton" id="btn-menu">
@@ -213,28 +175,18 @@
                     <child>
                       <object class="GtkBox">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
                         <child>
                           <object class="GtkLabel" id="precision">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes" context="Precision" comments="This symbolizes precision of 5 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NNNNN).">N.NNNNN</property>
                           </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="icon-name">pan-down-symbolic</property>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -245,33 +197,22 @@
                     </style>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="position">9</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="help">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Shift+Return to close</property>
                 <property name="justify">center</property>
                 <property name="wrap">True</property>
                 <property name="max-width-chars">2</property>
-                <property name="yalign">0.5</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkButton" id="btn-ok">
@@ -282,8 +223,6 @@
                 <property name="use-underline">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="pack-type">end</property>
                 <property name="position">1</property>
               </packing>
@@ -297,8 +236,6 @@
                 <property name="use-underline">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
                 <property name="pack-type">end</property>
                 <property name="position">2</property>
               </packing>
@@ -308,8 +245,6 @@
             </style>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
