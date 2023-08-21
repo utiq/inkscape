@@ -1,9 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** @file
+ * Widget for specifying a document's license; part of document
+ * preferences dialog.
+ */
 /*
  * Authors:
- *   Ralf Stephan <ralf@ark.in-berlin.de>
+ *   bulia byak <buliabyak@users.sf.net>
+ *   Bryce W. Harrington <bryce@bryceharrington.org>
+ *   Lauris Kaplinski <lauris@kaplinski.com>
+ *   Jon Phillips <jon@rejon.org>
+ *   Ralf Stephan <ralf@ark.in-berlin.de> (Gtkmm)
+ *   Abhishek Sharma
  *
- * Copyright (C) 2005 Authors
+ * Copyright (C) 2000 - 2005 Authors
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
@@ -11,37 +20,43 @@
 #ifndef INKSCAPE_UI_WIDGET_LICENSOR_H
 #define INKSCAPE_UI_WIDGET_LICENSOR_H
 
+#include <memory>
+#include <vector>
 #include <gtkmm/box.h>
 
 class SPDocument;
+struct rdf_license_t;
 
-namespace Inkscape {
-    namespace UI {
-        namespace Widget {
+namespace Gtk {
+class RadioButtonGroup;
+} // namespace Gtk
+
+namespace Inkscape::UI::Widget {
 
 class EntityEntry;
+class LicenseItem;
 class Registry;
-
 
 /**
  * Widget for specifying a document's license; part of document
  * preferences dialog.
  */
-class Licensor : public Gtk::Box {
+class Licensor final : public Gtk::Box {
 public:
     Licensor();
-    ~Licensor() override;
+    ~Licensor() final;
+
     void init (Registry&);
+    LicenseItem *add_item(Registry &wr, rdf_license_t const &license,
+                          Gtk::RadioButtonGroup *group);
     void update (SPDocument *doc);
 
-protected: 
-    EntityEntry          *_eentry;
+private:
+    std::unique_ptr<EntityEntry> _eentry;
+    std::vector<LicenseItem *> _items;
 };
 
-
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_LICENSOR_H
 

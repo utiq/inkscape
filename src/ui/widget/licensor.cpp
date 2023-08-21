@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** @file
+ * Widget for specifying a document's license; part of document
+ * preferences dialog.
+ */
 /*
  * Authors:
  *   bulia byak <buliabyak@users.sf.net>
@@ -15,21 +19,18 @@
 
 #include "licensor.h"
 
+#include <algorithm>
+#include <cassert>
 #include <gtkmm/entry.h>
 #include <gtkmm/radiobutton.h>
 
-#include "rdf.h"
-#include "inkscape.h"
 #include "document-undo.h"
-
+#include "inkscape.h"
+#include "rdf.h"
 #include "ui/widget/entity-entry.h"
 #include "ui/widget/registry.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
-
-//===================================================
+namespace Inkscape::UI::Widget {
 
 const struct rdf_license_t _proprietary_license = 
   {_("Proprietary"), "", nullptr};
@@ -37,11 +38,13 @@ const struct rdf_license_t _proprietary_license =
 const struct rdf_license_t _other_license = 
   {Q_("MetadataLicence|Other"), "", nullptr};
 
-class LicenseItem : public Gtk::RadioButton {
+class LicenseItem final : public Gtk::RadioButton {
 public:
     LicenseItem (struct rdf_license_t const* license, EntityEntry* entity, Registry &wr, Gtk::RadioButtonGroup *group);
-protected:
-    void on_toggled() override;
+    [[nodiscard]] rdf_license_t const *get_license() const { return _lic; }
+
+private:
+    void on_toggled() final;
     struct rdf_license_t const *_lic;
     EntityEntry                *_eep;
     Registry                   &_wr;
@@ -72,78 +75,72 @@ void LicenseItem::on_toggled()
     _eep->on_changed();
 }
 
-//---------------------------------------------------
-
 Licensor::Licensor()
-: Gtk::Box(Gtk::ORIENTATION_VERTICAL, 4),
-  _eentry (nullptr)
+: Gtk::Box{Gtk::ORIENTATION_VERTICAL, 4}
 {
 }
 
-Licensor::~Licensor()
-{
-    if (_eentry) delete _eentry;
-}
+Licensor::~Licensor() = default;
 
 void Licensor::init (Registry& wr)
 {
     /* add license-specific metadata entry areas */
     rdf_work_entity_t* entity = rdf_find_entity ( "license_uri" );
-    _eentry = EntityEntry::create (entity, wr);
+    _eentry.reset(EntityEntry::create(entity, wr));
 
-    LicenseItem *i;
     wr.setUpdating (true);
-    i = Gtk::make_managed<LicenseItem >(&_proprietary_license, _eentry, wr, nullptr);
-    Gtk::RadioButtonGroup group = i->get_group();
-    add (*i);
-    LicenseItem *pd = i;
 
-    for (struct rdf_license_t * license = rdf_licenses;
-             license && license->name;
-             license++) {
-        i = Gtk::make_managed<LicenseItem >(license, _eentry, wr, &group);
-        add(*i);
+    auto const item = add_item(wr, _proprietary_license, nullptr);
+    item->set_active(true);
+    auto group = item->get_group();
+
+    for (auto license = rdf_licenses; license && license->name; ++license) {
+        add_item(wr, *license, &group);
     }
-    // add Other at the end before the URI field for the confused ppl.
-    auto const io = Gtk::make_managed<LicenseItem>(&_other_license, _eentry, wr, &group);
-    add (*io);
 
-    pd->set_active();
+    // add Other at the end before the URI field for the confused ppl.
+    add_item(wr, _other_license, &group);
+
     wr.setUpdating (false);
 
     auto const box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     pack_start (*box, true, true, 0);
-
     box->pack_start (_eentry->_label, false, false, 5);
     box->pack_start (*_eentry->_packable, true, true, 0);
-
     show_all_children();
+}
+
+LicenseItem *Licensor::add_item(Registry &wr, rdf_license_t const &license,
+                                Gtk::RadioButtonGroup * const group)
+{
+    assert(_eentry);
+    auto const item = Gtk::make_managed<LicenseItem>(&license, _eentry.get(), wr, group);
+    add(*item);
+    _items.push_back(item);
+    return item;
 }
 
 void Licensor::update(SPDocument *doc)
 {
+    assert(_eentry);
+    assert(!_items.empty());
+
     /* identify the license info */
     constexpr bool read_only = false;
-    struct rdf_license_t * license = rdf_get_license(doc, read_only);
+    auto const license = rdf_get_license(doc, read_only);
 
-    if (license) {
-        int i;
-        for (i=0; rdf_licenses[i].name; i++) 
-            if (license == &rdf_licenses[i]) 
-                break;
-        static_cast<LicenseItem*>(get_children()[i+1])->set_active();
-    }
-    else {
-        static_cast<LicenseItem*>(get_children()[0])->set_active();
-    }
-    
+    // Set the active licenseʼs button to active/checked.
+    auto item = std::find_if(_items.begin(), _items.end(),
+                             [=](auto const item){ return item->get_license() == license; });
+    // If we canʼt match license, just activate 1st.
+    if (item == _items.end()) item = _items.begin();
+    (*item)->set_active(true);
+
     /* update the URI */
     _eentry->update(doc, read_only);
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:
