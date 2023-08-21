@@ -1122,7 +1122,7 @@ bool ColorWheelHSLuv::on_key_pressed(GtkEventControllerKey const * /*controller*
     }
 
     if (consumed) {
-        auto hsluv = Hsluv::luv_to_hsluv(luv[0], luv[1], luv[1]);
+        auto const hsluv = Hsluv::luv_to_hsluv(luv[0], luv[1], luv[2]);
         setHue(hsluv[0]);
         setSaturation(hsluv[1]);
 
