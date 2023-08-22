@@ -572,6 +572,9 @@ void Extension::set_environment(const SPDocument *doc) {
     // This is needed so extensions can interact with the user's profile, keep settings etc.
     Glib::setenv("INKSCAPE_PROFILE_DIR", Inkscape::IO::Resource::profile_path());
 
+    // This is needed if an extension calls inkscape itself
+    Glib::setenv("SELF_CALL", "true");
+
     // This is needed so files can be saved relative to their document location (see image-extract)
     if (doc) {
         auto path = doc->getDocumentFilename();

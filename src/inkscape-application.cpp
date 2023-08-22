@@ -1598,13 +1598,14 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         _auto_export = true;
     }
 
-    // If we are running in command-line mode (without gui) and we haven't explicitly changed the app_id,
+    // 1. If we are running in command-line mode (without gui) and we haven't explicitly changed the app_id,
     // change it here so that this instance of Inkscape is not merged with an existing instance (otherwise
     // unwanted windows will pop up and the command-line arguments will be ignored).
+    // 2. Set a new app id if we are calling a new inkscape instance (with a gui) through an extension
+    // when the extension author hasn't already done so
     bool use_active_window = options->contains("active-window");
-    if (_with_gui == false &&
-        use_active_window == false &&
-        !options->contains("app-id-tag")) {
+    if (!options->contains("app-id-tag") && ((_with_gui == false && use_active_window == false) ||
+                                             (Glib::getenv("SELF_CALL") != "" && _with_gui == true))) {
         Glib::ustring app_id = "org.inkscape.Inkscape.p" + std::to_string(getpid());
         _gio_application->set_id(app_id);
     }
