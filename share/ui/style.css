@@ -1168,6 +1168,12 @@ popover.menu.menuize > stack > box > modelbutton:first-child > * /* Affect child
 
 /* ColorSlider */
 #ColorSlider {
-  min-width : 96px;
-  min-height:  8px;
+    min-width : 96px;
+    min-height:  8px;
+}
+
+/* ColorPreview */
+#ColorPreview {
+    min-width : 32px;
+    min-height: 12px;
 }

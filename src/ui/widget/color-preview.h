@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_COLOR_PREVIEW_H
-#define SEEN_COLOR_PREVIEW_H
 /*
  * Authors:
  *   Lauris Kaplinski <lauris@kaplinski.com>
@@ -12,36 +10,41 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <gtkmm/widget.h>
+#ifndef SEEN_COLOR_PREVIEW_H
+#define SEEN_COLOR_PREVIEW_H
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+#include <cstdint>
+#include <cairomm/refptr.h>
+#include <gtkmm/box.h>
+
+namespace Cairo {
+class Context;
+} // namespace Cairo
+
+namespace Gtk {
+class DrawingArea;
+} // namespace Gtk
+
+namespace Inkscape::UI::Widget {
 
 /**
  * A simple color preview widget, mainly used within a picker button.
  */
-class ColorPreview : public Gtk::Widget {
+// Box because GTK3 does not bother applying CSS bits like min-width|height on DrawingArea
+// TODO: GTK4: Revisit whether that is still the case; hopefully it isnʼt, then just be DrawingArea
+class ColorPreview final : public Gtk::Box {
 public:
-    ColorPreview (guint32 rgba);
-    void setRgba32 (guint32 rgba);
-    GdkPixbuf* toPixbuf (int width, int height);
+    ColorPreview  (std::uint32_t rgba);
+    void setRgba32(std::uint32_t rgba);
 
-protected:
-    void on_size_allocate (Gtk::Allocation &all) override;
+private:
+    Gtk::DrawingArea * const _drawing_area;
+    std::uint32_t _rgba;
 
-    void get_preferred_height_vfunc(int& minimum_height, int& natural_height) const override;
-    void get_preferred_height_for_width_vfunc(int width, int& minimum_height, int& natural_height) const override;
-    void get_preferred_width_vfunc(int& minimum_width, int& natural_width) const override;
-    void get_preferred_width_for_height_vfunc(int height, int& minimum_width, int& natural_width) const override;
-    bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override;
-
-    guint32 _rgba;
+    bool on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr);
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // SEEN_COLOR_PREVIEW_H
 

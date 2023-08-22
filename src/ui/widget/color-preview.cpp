@@ -11,76 +11,49 @@
  */
 
 #include "ui/widget/color-preview.h"
+
+#include <cairomm/context.h>
+#include <sigc++/functors/mem_fun.h>
+#include <gtkmm/drawingarea.h>
+
 #include "display/cairo-utils.h"
-#include <cairo.h>
 
-#define SPCP_DEFAULT_WIDTH 32
-#define SPCP_DEFAULT_HEIGHT 12
+namespace Inkscape::UI::Widget {
 
-namespace Inkscape {
-    namespace UI {
-        namespace Widget {
-
-ColorPreview::ColorPreview (guint32 rgba)
+ColorPreview::ColorPreview(std::uint32_t const rgba)
+    : _drawing_area{Gtk::make_managed<Gtk::DrawingArea>()}
+    , _rgba{rgba}
 {
-    _rgba = rgba;
-    set_has_window(false);
     set_name("ColorPreview");
+
+    _drawing_area->set_visible(true);
+    _drawing_area->signal_draw().connect(sigc::mem_fun(*this, &ColorPreview::on_drawing_area_draw));
+    _drawing_area->property_expand() = true; // DrawingArea fills self Box,
+    property_expand() = false;               // but the Box doesnʼt expand.
+    add(*_drawing_area);
 }
 
 void
-ColorPreview::on_size_allocate (Gtk::Allocation &all)
+ColorPreview::setRgba32(std::uint32_t const rgba)
 {
-    set_allocation (all);
-    if (get_is_drawable())
-        queue_draw();
-}
+    if (_rgba == rgba) return;
 
-void
-ColorPreview::get_preferred_height_vfunc(int& minimum_height, int& natural_height) const
-{
-    minimum_height = natural_height = SPCP_DEFAULT_HEIGHT;
-}
-
-void
-ColorPreview::get_preferred_height_for_width_vfunc(int /* width */, int& minimum_height, int& natural_height) const
-{
-    minimum_height = natural_height = SPCP_DEFAULT_HEIGHT;
-}
-
-void
-ColorPreview::get_preferred_width_vfunc(int& minimum_width, int& natural_width) const
-{
-    minimum_width = natural_width = SPCP_DEFAULT_WIDTH;
-}
-
-void
-ColorPreview::get_preferred_width_for_height_vfunc(int /* height */, int& minimum_width, int& natural_width) const
-{
-    minimum_width = natural_width = SPCP_DEFAULT_WIDTH;
-}
-
-void
-ColorPreview::setRgba32 (guint32 rgba)
-{
     _rgba = rgba;
-
-    if (get_is_drawable())
-        queue_draw();
+    _drawing_area->queue_draw();
 }
 
 bool
-ColorPreview::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
+ColorPreview::on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr)
 {
-    double x, y, width, height;
-    const Gtk::Allocation& allocation = get_allocation();
-    x = 0;
-    y = 0;
-    width = allocation.get_width()/2.0;
-    height = allocation.get_height() - 1;
+    auto const width  = _drawing_area->get_width () / 2.0;
+    auto const height = _drawing_area->get_height() - 1.0;
+
+    auto x = 0.0;
+    auto y = 0.0;
 
     double radius = height / 7.5;
     double degrees = M_PI / 180.0;
+
     cairo_new_sub_path (cr->cobj());
     cairo_line_to(cr->cobj(), width, 0);
     cairo_line_to(cr->cobj(), width, height);
@@ -89,9 +62,7 @@ ColorPreview::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     cairo_close_path (cr->cobj());
 
     /* Transparent area */
-
     cairo_pattern_t *checkers = ink_cairo_pattern_create_checkerboard();
-
     cairo_set_source(cr->cobj(), checkers);
     cr->fill_preserve();
     ink_cairo_set_source_rgba32(cr->cobj(), _rgba);
@@ -99,9 +70,7 @@ ColorPreview::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     cairo_pattern_destroy(checkers);
 
     /* Solid area */
-
     x = width;
-
     cairo_new_sub_path (cr->cobj());
     cairo_arc (cr->cobj(), x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
     cairo_arc (cr->cobj(), x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
@@ -114,51 +83,7 @@ ColorPreview::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     return true;
 }
 
-GdkPixbuf*
-ColorPreview::toPixbuf (int width, int height)
-{
-    GdkRectangle carea;
-    gint w2;
-    w2 = width / 2;
-
-    cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    cairo_t *ct = cairo_create(s);
-
-    /* Transparent area */
-    carea.x = 0;
-    carea.y = 0;
-    carea.width = w2;
-    carea.height = height;
-
-    cairo_pattern_t *checkers = ink_cairo_pattern_create_checkerboard();
-
-   //  cairo_rectangle(ct, carea.x, carea.y, carea.width, carea.height);
-    cairo_arc(ct, carea.x + carea.width / 2, carea.y + carea.height / 2, carea.width / 2, 0, 2 * M_PI);
-    cairo_set_source(ct, checkers);
-    cairo_fill_preserve(ct);
-    ink_cairo_set_source_rgba32(ct, _rgba);
-    cairo_fill(ct);
-
-    cairo_pattern_destroy(checkers);
-
-    /* Solid area */
-    carea.x = w2;
-    carea.y = 0;
-    carea.width = width - w2;
-    carea.height = height;
-
-    cairo_rectangle(ct, carea.x, carea.y, carea.width, carea.height);
-    ink_cairo_set_source_rgba32(ct, _rgba | 0xff);
-    cairo_fill(ct);
-
-    cairo_destroy(ct);
-    cairo_surface_flush(s);
-
-    GdkPixbuf* pixbuf = ink_pixbuf_create_from_cairo_surface(s);
-    return pixbuf;
-}
-
-}}}
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:
