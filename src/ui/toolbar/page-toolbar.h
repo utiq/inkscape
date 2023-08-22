@@ -20,6 +20,7 @@
 #include "toolbar.h"
 
 #include "ui/widget/spinbutton.h"
+#include "helper/auto-connection.h"
 
 class SPDesktop;
 class SPDocument;
@@ -65,11 +66,13 @@ private:
     void on_parent_changed(Gtk::Widget *prev) override;
     void populate_sizes();
 
-    sigc::connection _ec_connection;
-    sigc::connection _doc_connection;
-    sigc::connection _pages_changed;
-    sigc::connection _page_selected;
-    sigc::connection _page_modified;
+    Inkscape::auto_connection _ec_connection;
+    Inkscape::auto_connection _doc_connection;
+    Inkscape::auto_connection _pages_changed;
+    Inkscape::auto_connection _page_selected;
+    Inkscape::auto_connection _page_modified;
+    Inkscape::auto_connection _label_edited;
+    Inkscape::auto_connection _size_edited;
 
     bool was_referenced;
     Gtk::ComboBoxText *combo_page_sizes;

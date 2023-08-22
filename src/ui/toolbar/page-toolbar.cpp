@@ -87,7 +87,7 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
     builder->get_widget_derived("margin_left", margin_left);
 
     if (text_page_label) {
-        text_page_label->signal_changed().connect(sigc::mem_fun(*this, &PageToolbar::labelEdited));
+        _label_edited = text_page_label->signal_changed().connect(sigc::mem_fun(*this, &PageToolbar::labelEdited));
     }
     if (sizes_searcher) {
         sizes_searcher->signal_match_selected().connect([=](const Gtk::TreeModel::iterator &iter) {
@@ -120,7 +120,7 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
 
     if (combo_page_sizes) {
         combo_page_sizes->set_id_column(2);
-        combo_page_sizes->signal_changed().connect([=] {
+        _size_edited = combo_page_sizes->signal_changed().connect([=] {
             std::string preset_key = combo_page_sizes->get_active_id();
             sizeChoose(preset_key);
         });
@@ -208,17 +208,11 @@ void PageToolbar::on_parent_changed(Gtk::Widget *)
 
 PageToolbar::~PageToolbar()
 {
-    _ec_connection.disconnect();
-    _doc_connection.disconnect();
     toolChanged(nullptr, nullptr);
 }
 
 void PageToolbar::toolChanged(SPDesktop *desktop, Inkscape::UI::Tools::ToolBase *ec)
 {
-    // Disconnect previous page changed signal
-    _page_selected.disconnect();
-    _pages_changed.disconnect();
-    _page_modified.disconnect();
     _document = nullptr;
 
     if (dynamic_cast<Inkscape::UI::Tools::PagesTool *>(ec)) {
@@ -254,8 +248,6 @@ void PageToolbar::bleedsEdited()
     if (auto page = pm.getSelected()) {
         page->setBleed(text);
         DocumentUndo::maybeDone(_document, "page-bleed", _("Edit page bleed"), INKSCAPE_ICON("tool-pages"));
-
-        auto bleed = page->getBleed();
         text_page_bleeds->set_text(page->getBleedLabel());
     }
 }
@@ -390,6 +382,7 @@ void PageToolbar::sizeChanged()
  */
 void PageToolbar::setSizeText(SPPage *page, bool display_only)
 {
+    _size_edited.block();
     SearchCols cols;
 
     if (!page)
@@ -423,6 +416,7 @@ void PageToolbar::setSizeText(SPPage *page, bool display_only)
             entry_page_sizes->select_region(0, -1);
         }
     }
+    _size_edited.unblock();
 }
 
 void PageToolbar::setMarginText(SPPage *page)
@@ -438,6 +432,7 @@ void PageToolbar::pagesChanged()
 
 void PageToolbar::selectionChanged(SPPage *page)
 {
+    _label_edited.block();
     _page_modified.disconnect();
     auto &page_manager = _document->getPageManager();
     text_page_label->set_tooltip_text(_("Page label"));
@@ -497,6 +492,7 @@ void PageToolbar::selectionChanged(SPPage *page)
         btn_move_toggle->set_sensitive(true);
     }
     setSizeText(page);
+    _label_edited.unblock();
 }
 
 GtkWidget *PageToolbar::create(SPDesktop *desktop)
