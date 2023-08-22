@@ -137,7 +137,8 @@ Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio);
 // Create the same color, but with a different opacity (alpha)
 Gdk::RGBA change_alpha(const Gdk::RGBA& color, double new_alpha);
 
-// Calculate luminance of an RGBA color from its RGB, in range 0 to 1 inclusive.
+/// Calculate luminance of an RGBA color from its RGB in range 0 to 1 inclusive.
+/// This uses the perceived brightness formula given at: https://www.w3.org/TR/AERT/#color-contrast
 double get_luminance(const Gdk::RGBA &color);
 
 // Get the foreground / CSS color for a StyleContext based on its current state.

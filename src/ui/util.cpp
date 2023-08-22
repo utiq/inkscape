@@ -191,6 +191,7 @@ Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio) {
 
 double get_luminance(Gdk::RGBA const &rgba)
 {
+    // This formula is recommended at https://www.w3.org/TR/AERT/#color-contrast
     return 0.299 * rgba.get_red  ()
          + 0.587 * rgba.get_green()
          + 0.114 * rgba.get_blue ();
@@ -212,19 +213,19 @@ Gdk::RGBA get_color_with_class(Glib::RefPtr<Gtk::StyleContext> const &context,
 
 guint32 to_guint32(Gdk::RGBA const &rgba)
 {
-        return guint32(0xff * rgba.get_red  ()) << 24 |
-               guint32(0xff * rgba.get_green()) << 16 |
-               guint32(0xff * rgba.get_blue ()) <<  8 |
-               guint32(0xff * rgba.get_alpha());
+        return static_cast<guint32>(0xFF * rgba.get_red  () + 0.5) << 24 |
+               static_cast<guint32>(0xFF * rgba.get_green() + 0.5) << 16 |
+               static_cast<guint32>(0xFF * rgba.get_blue () + 0.5) <<  8 |
+               static_cast<guint32>(0xFF * rgba.get_alpha() + 0.5);
 }
 
 Gdk::RGBA to_rgba(guint32 const u32)
 {
     auto rgba = Gdk::RGBA{};
-    rgba.set_red  ((u32 & 0xFF000000 >> 24) / 255.0);
-    rgba.set_green((u32 & 0x00FF0000 >> 16) / 255.0);
-    rgba.set_blue ((u32 & 0x0000FF00 >>  8) / 255.0);
-    rgba.set_alpha((u32 & 0x000000FF      ) / 255.0);
+    rgba.set_red  (((u32 & 0xFF000000) >> 24) / 255.0);
+    rgba.set_green(((u32 & 0x00FF0000) >> 16) / 255.0);
+    rgba.set_blue (((u32 & 0x0000FF00) >>  8) / 255.0);
+    rgba.set_alpha(((u32 & 0x000000FF)      ) / 255.0);
     return rgba;
 }
 
