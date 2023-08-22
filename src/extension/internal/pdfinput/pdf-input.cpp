@@ -307,7 +307,7 @@ void PdfImportDialog::_setFonts(const FontList &fonts)
 
         row[_font_col->id] = font->getID()->num;
         row[_font_col->em] = false;
-        row[_font_col->family] = data.family;
+        row[_font_col->family] = !data.family.empty() ? data.family : data.name + " -> " + data.getSubstitute();
         row[_font_col->style] = data.style;
         row[_font_col->weight] = data.weight;
         row[_font_col->stretch] = data.stretch;

@@ -761,6 +761,38 @@ size_t FontFactory::Hash::operator()(PangoFontDescription const *x) const
     return hash;
 }
 
+/**
+ * Use font config to parse the postscript name found in pdf/ps files and return
+ * font config family and style information.
+ */
+PangoFontDescription *FontFactory::parsePostscriptName(std::string const &name, bool substitute)
+{
+    PangoFontDescription *ret = nullptr;
+
+    // Use our local inkscape font-config setup, to include custom font dirs
+    FcConfig *conf = pango_fc_font_map_get_config(PANGO_FC_FONT_MAP(fontServer));
+    FcPattern *pat = FcNameParse(reinterpret_cast<const unsigned char *>((std::string(":postscriptname=") + name).c_str()));
+
+    // These must be called before FcFontMatch, see FontConfig docs.
+    FcConfigSubstitute(conf, pat, FcMatchPattern);
+    FcDefaultSubstitute(pat);
+
+    // We match the pattern and return the results
+    FcResult result;
+    FcPattern *match = FcFontMatch(conf, pat, &result);
+    if (match) {
+        // To block mis-matching we check the postscript name matches itself
+        FcChar8 *output;
+        FcPatternGetString(match, FC_POSTSCRIPT_NAME, 0, &output);
+        if (substitute || (output && name == (char *)output)) {
+            ret = pango_fc_font_description_from_pattern(match, false);
+        }
+        FcPatternDestroy(match);
+    }
+    FcPatternDestroy(pat);
+    return ret;
+}
+
 /*
   Local Variables:
   mode:c++

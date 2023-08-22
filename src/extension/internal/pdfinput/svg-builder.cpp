@@ -1268,12 +1268,13 @@ void SvgBuilder::updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_fo
     // Font family
     _cairo_font = nullptr;
     _css_font = sp_repr_css_attr_new();
-    if (font->getFamily()) { // if font family is explicitly given use it.
-        sp_repr_css_set_property(_css_font, "font-family", font->getFamily()->getCString());
-    } else if (font_strategy == FontFallback::AS_SUB && !font_data.found) {
+    if (font_data.found) {
+        sp_repr_css_set_property(_css_font, "font-family", font_data.family.c_str());
+    } else if (font_strategy == FontFallback::AS_SUB) {
         sp_repr_css_set_property(_css_font, "font-family", font_data.getSubstitute().c_str());
     } else {
-        sp_repr_css_set_property(_css_font, "font-family", font_data.family.c_str());
+        auto keep_name = font_data.family.size() ? font_data.family : font_data.name;
+        sp_repr_css_set_property(_css_font, "font-family", keep_name.c_str());
     }
 
     // Set the font data
@@ -1658,14 +1659,15 @@ void SvgBuilder::endString(GfxState *state)
 void SvgBuilder::addChar(GfxState *state, double x, double y, double dx, double dy, double originX, double originY,
                          CharCode code, int /*nBytes*/, Unicode const *u, int uLen)
 {
-    if (_aria_space) {
+    if (_aria_space && !_glyphs.empty()) {
         const SvgGlyph& prev_glyph = _glyphs.back();
         // This helps reconstruct the aria text, though it could be made better
         if (prev_glyph.position[Geom::Y] != (y - originY)) {
             _aria_label += "\n";
         }
-        _aria_space = false;
     }
+    _aria_space = false;
+
     static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv1;
     if (u) {
         _aria_label += conv1.to_bytes(*u);

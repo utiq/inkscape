@@ -149,10 +149,6 @@ public:
     void loadColorSpaceProfile(GfxColorSpace *space, Object *obj);
     GfxPattern *lookupPattern(Object *obj, GfxState *state);
 
-    static void debug_array(const Array *array, int depth = 0, XRef *xref = nullptr);
-    static void debug_dict(const Dict *dict, int depth = 0, XRef *xref = nullptr);
-    static void debug_object(const Object *obj, int depth = 0, XRef *xref = nullptr);
-
     std::shared_ptr<CairoFontEngine> getFontEngine();
 private:
     std::shared_ptr<PDFDoc> _pdf_doc;

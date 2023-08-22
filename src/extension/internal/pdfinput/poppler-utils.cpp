@@ -289,30 +289,34 @@ FontData::FontData(FontPtr font)
     // Use this when min-poppler version is newer:
     // name = font->getNameWithoutSubsetTag();
 
-    // Embeded CID Fonts don't have family names
-    if (!font->getFamily())
-        return;
+    PangoFontDescription *desc = FontFactory::get().parsePostscriptName(name, false);
 
-    family = font->getFamily()->c_str();
-
-    // Level two parsing, we break off the font description part of the name
-    // which often contains font data and use it as a pango font description.
-    auto desc_str = family;
-    auto pos = name.find("-");
-    if (pos != std::string::npos) {
-        // Insert spaces where we see capital letters.
-        std::stringstream ret;
-        auto str = name.substr(pos + 1, name.size());
-        for (char l : str) {
-            if (l >= 'A' && l <= 'Z')
-                ret << " ";
-            ret << l;
+    if (!desc && font->getFamily()) {
+        // Level two parsing, we break off the font description part of the name
+        // which often contains font data and use it as a pango font description.
+        std::string pdf_family = font->getFamily()->c_str();
+        std::string desc_str = pdf_family;
+        auto pos = name.find("-");
+        if (pos != std::string::npos) {
+            // Insert spaces where we see capital letters.
+            std::stringstream ret;
+            auto str = name.substr(pos + 1, name.size());
+            for (char l : str) {
+                if (l >= 'A' && l <= 'Z')
+                    ret << " ";
+                ret << l;
+            }
+            desc_str = desc_str + ret.str();
         }
-        desc_str = desc_str + ret.str();
+        desc = pango_font_description_from_string(desc_str.c_str());
+        if (!desc) {
+            // Sometimes it's possible to match the description string directly.
+            desc = pango_font_description_from_string(pdf_family.c_str());
+        }
     }
 
-    // Now we pull data out of the description.
-    if (auto desc = pango_font_description_from_string(desc_str.c_str())) {
+    if (desc) {
+        // Now we pull data out of the description.
         auto new_family = pango_font_description_get_family(desc);
         if (FontFactory::get().hasFontFamily(new_family)) {
             family = new_family;
@@ -367,17 +371,7 @@ FontData::FontData(FontPtr font)
             // All information has been processed, don't over-write with level three.
             return;
         }
-        // Sometimes it's possible to match the description string directly.
-        if (auto desc = pango_font_description_from_string(family.c_str())) {
-            auto new_family = pango_font_description_get_family(desc);
-            if (FontFactory::get().hasFontFamily(new_family)) {
-                family = new_family;
-            }
-        }
     }
-
-    found = FontFactory::get().hasFontFamily(family);
-    // TODO: If !found we could suggest a substitute
 
     // Level three parsing, we take our name and attempt to match known style names
     // Copy id-name stored in PDF and make it lower case and strip whitespaces
@@ -439,33 +433,6 @@ FontData::FontData(FontPtr font)
 }
 
 /*
-    MatchingChars
-    Count for how many characters s1 matches sp taking into account
-    that a space in sp may be removed or replaced by some other tokens
-    specified in the code. (Bug LP #179589)
-*/
-static size_t MatchingChars(std::string s1, std::string sp)
-{
-    size_t is = 0;
-    size_t ip = 0;
-
-    while (is < s1.length() && ip < sp.length()) {
-        if (s1[is] == sp[ip]) {
-            is++;
-            ip++;
-        } else if (sp[ip] == ' ') {
-            ip++;
-            if (s1[is] == '_') { // Valid matches to spaces in sp.
-                is++;
-            }
-        } else {
-            break;
-        }
-    }
-    return ip;
-}
-
-/*
  * Scan the available fonts to find the font name that best match.
  *
  * If nothing can be matched, returns an empty string.
@@ -475,26 +442,13 @@ std::string FontData::getSubstitute() const
     if (found)
         return "";
 
-    double bestMatch = 0;
-    std::string bestFontname = "";
-
-    for (auto fontname : FontFactory::get().GetAllFontNames()) {
-        // At least the first word of the font name should match.
-        size_t minMatch = fontname.find(" ");
-        if (minMatch == std::string::npos) {
-            minMatch = fontname.length();
-        }
-
-        size_t Match = MatchingChars(family, fontname);
-        if (Match >= minMatch) {
-            double relMatch = (float)Match / (fontname.length() + family.length());
-            if (relMatch > bestMatch) {
-                bestMatch = relMatch;
-                bestFontname = fontname;
-            }
+    if (auto desc = FontFactory::get().parsePostscriptName(name, true)) {
+        auto new_family = pango_font_description_get_family(desc);
+        if (FontFactory::get().hasFontFamily(new_family)) {
+            return new_family;
         }
     }
-    return bestFontname.empty() ? "Arial" : bestFontname;
+    return "sans";
 }
 
 std::string FontData::getSpecification() const
@@ -606,4 +560,69 @@ std::string getString(const GooString *value)
     return value->toStr();
 }
 
+void pdf_debug_array(const Array *array, int depth, XRef *xref)
+{
+    if (depth > 20) {
+        std::cout << "[ ... ]";
+        return;
+    }
+    std::cout << "[\n";
+    for (int i = 0; i < array->getLength(); ++i) {
+        for (int x = depth; x > -1; x--)
+            std::cout << " ";
+        std::cout << i << ": ";
+        Object obj = array->get(i);
+        pdf_debug_object(&obj, depth + 1, xref);
+        std::cout << ",\n";
+    }
+    for (int x = depth; x > 0; x--)
+        std::cout << " ";
+    std::cout << "]";
+}
+
+void pdf_debug_dict(const Dict *dict, int depth, XRef *xref)
+{
+    if (depth > 20) {
+        std::cout << "{ ... }";
+        return;
+    }
+    std::cout << "{\n";
+    for (auto j = 0; j < dict->getLength(); j++) {
+        auto key = dict->getKey(j);
+        auto val = dict->getVal(j);
+        for (int x = depth; x > -1; x--)
+            std::cout << " ";
+        std::cout << key << ": ";
+        pdf_debug_object(&val, depth + 1, xref);
+        std::cout << ",\n";
+    }
+    for (int x = depth; x > 0; x--)
+        std::cout << " ";
+    std::cout << "}";
+}
+
+void pdf_debug_object(const Object *obj, int depth, XRef *xref)
+{
+    if (obj->isRef()) {
+        std::cout << " > REF(" << obj->getRef().num << "):";
+        if (xref) {
+            auto ref = obj->fetch(xref);
+            pdf_debug_object(&ref, depth + 1, xref);
+        }
+    } else if (obj->isDict()) {
+        pdf_debug_dict(obj->getDict(), depth, xref);
+    } else if (obj->isArray()) {
+        pdf_debug_array(obj->getArray(), depth, xref);
+    } else if (obj->isString()) {
+        std::cout << " STR '" << obj->getString()->getCString() << "'";
+    } else if (obj->isName()) {
+        std::cout << " NAME '" << obj->getName() << "'";
+    } else if (obj->isBool()) {
+        std::cout << " BOOL " << (obj->getBool() ? "true" : "false");
+    } else if (obj->isNum()) {
+        std::cout << " NUM " << obj->getNum();
+    } else {
+        std::cout << " > ? " << obj->getType() << "";
+    }
+}
 

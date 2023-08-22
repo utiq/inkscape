@@ -24,6 +24,7 @@
 namespace Geom {
 class Affine;
 }
+class Array;
 class Dict;
 class FNVHash;
 class GfxFont;
@@ -39,6 +40,10 @@ Geom::Affine ctmToAffine(const double *ctm);
 
 void ctmout(const char *label, const double *ctm);
 void affout(const char *label, Geom::Affine affine);
+
+void pdf_debug_array(const Array *array, int depth = 0, XRef *xref = nullptr);
+void pdf_debug_dict(const Dict *dict, int depth = 0, XRef *xref = nullptr);
+void pdf_debug_object(const Object *obj, int depth = 0, XRef *xref = nullptr);
 
 #if POPPLER_CHECK_VERSION(22, 4, 0)
 typedef std::shared_ptr<GfxFont> FontPtr;
