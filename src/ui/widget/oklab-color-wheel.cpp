@@ -19,7 +19,6 @@
 
 #include "display/cairo-utils.h"
 #include "oklab.h"
-#include "ui/controller.h"
 
 namespace Inkscape::UI::Widget {
 
@@ -29,25 +28,33 @@ OKWheel::OKWheel()
     _values[H] = 0;
     _values[S] = 0;
     _values[L] = 0;
-
-    Controller::add_click(*this, sigc::mem_fun(*this, &OKWheel::on_click_pressed ),
-                                 sigc::mem_fun(*this, &OKWheel::on_click_released));
-    Controller::add_motion<nullptr, &OKWheel::on_motion, nullptr>
-                          (*this, *this);
 }
 
-void OKWheel::setRgb(double r, double g, double b, bool)
+bool OKWheel::setRgb(double r, double g, double b,
+                     bool /*overrideHue*/, bool const emit)
 {
     using namespace Oklab;
+
     auto [h, s, l] = oklab_to_okhsl(rgb_to_oklab({ r, g, b }));
-    _values[H] = h * 2.0 * M_PI;
+
+    auto const h2 = h * 2.0 * M_PI;
+    bool const changed_hue = _values[H] != h2;
+    _values[H] = h2;
+
+    bool const changed_saturation = _values[S] != s;
     _values[S] = s;
+
     bool const changed_lightness = _values[L] != l;
     _values[L] = l;
+
     if (changed_lightness) {
         _updateChromaBounds();
         _redrawDisc();
     }
+
+    bool const changed = changed_hue || changed_saturation || changed_lightness;
+    if (changed && emit) color_changed();
+    return changed;
 }
 
 void OKWheel::getRgb(double *red, double *green, double *blue) const
@@ -94,7 +101,7 @@ void OKWheel::_updateChromaBounds()
  */
 bool OKWheel::_updateDimensions()
 {
-    auto allocation = get_allocation();
+    auto const &allocation = get_drawing_area_allocation();
     auto width = allocation.get_width();
     auto height = allocation.get_height();
     double new_radius = 0.5 * std::min(width, height);
@@ -163,7 +170,7 @@ Geom::Point OKWheel::_curColorWheelCoords() const
 }
 
 /** @brief Draw the widget into the Cairo context. */
-bool OKWheel::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
+bool OKWheel::on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr)
 {
     if(_updateDimensions()) {
         _redrawDisc();
@@ -248,13 +255,20 @@ Geom::Point OKWheel::_event2abstract(Geom::Point const &event_pt) const
  * @param pt A point in the abstract coordinate system in which the picker
  * disc is the unit disc and the y-axis points up.
  */
-void OKWheel::_setColor(Geom::Point const &pt)
+bool OKWheel::_setColor(Geom::Point const &pt, bool const emit)
 {
-    _values[S] = std::clamp(pt.length(), 0.0, 1.0);
+    auto const s = std::clamp(pt.length(), 0.0, 1.0);
+
     Geom::Angle clicked_hue = _values[S] ? Geom::atan2(pt) : 0.0;
-    _values[H] = clicked_hue.radians0();
-    _signal_color_changed.emit();
-    queue_draw();
+    auto const h = clicked_hue.radians0();
+
+    bool const changed = _values[S] != s || _values[H] != h;
+    if (changed) {
+        _values[S] = s;
+        _values[H] = h;
+        if (emit) color_changed();
+    }
+    return changed;
 }
 
 /** @brief Handle a left mouse click on the widget.

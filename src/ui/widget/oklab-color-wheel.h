@@ -26,20 +26,20 @@ class OKWheel : public ColorWheel
 {
 public:
     OKWheel();
-    ~OKWheel() override = default;
 
     /** @brief Set the displayed color to the specified gamma-compressed sRGB color. */
-    void setRgb(double r, double g, double b, bool overrideHue = true) override;
+    /// See base doc & N.B. that overrideHue is unused by this class
+    bool setRgb(double r, double g, double b,
+                bool overrideHue = true, bool emit = true) override;
 
     /** @brief Get the gamma-compressed sRGB color from the picker wheel. */
     void getRgb(double *r, double *g, double *b) const override;
     void getRgbV(double *rgb) const override { getRgb(rgb, rgb + 1, rgb + 2); }
     guint32 getRgb() const override;
 
-protected:
-    bool on_draw(Cairo::RefPtr<Cairo::Context> const &cr) override;
-
 private:
+    bool on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr) final;
+
     static unsigned constexpr H = 0, S = 1, L = 2; ///< Indices into _values
 
     /** How many samples for the chroma bounds to use for the color disc.
@@ -53,17 +53,17 @@ private:
     uint32_t _discColor(Geom::Point const &point) const;
     Geom::Point _event2abstract(Geom::Point const &point) const;
     void _redrawDisc();
-    void _setColor(Geom::Point const &pt);
+    bool _setColor(Geom::Point const &pt, bool emit = true);
     void _updateChromaBounds();
     bool _updateDimensions();
 
     // Event handlers
     bool _onClick(Geom::Point const &unit_pos);
     Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &click,
-                                              int n_press, double x, double y);
+                                              int n_press, double x, double y) final;
     Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress const &click,
-                                              int n_press, double x, double y);
-    void on_motion(GtkEventControllerMotion const *motion, double x, double y);
+                                              int n_press, double x, double y) final;
+    void on_motion(GtkEventControllerMotion const *motion, double x, double y) final;
 
     double _disc_radius = 1.0;
     Geom::Point _margin;

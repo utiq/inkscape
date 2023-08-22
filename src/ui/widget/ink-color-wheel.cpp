@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
+//   SPDX-License-Identifier: GPL-2.0-or-later
 /**
  * @file
  * HSLuv color wheel widget, based on the web implementation at
@@ -20,12 +20,15 @@
 #include <sigc++/functors/mem_fun.h>
 #include <gdkmm/display.h>
 #include <gdkmm/general.h>
+#include <gtkmm/drawingarea.h>
 #include <gtkmm/stylecontext.h>
 
 #include "ui/controller.h"
 #include "ui/dialog/color-item.h"
 #include "ui/util.h"
 #include "ui/widget/ink-color-wheel.h"
+
+namespace Inkscape::UI::Widget {
 
 // Sizes in pixels
 constexpr static int const SIZE = 400;
@@ -42,28 +45,6 @@ constexpr static double marker_radius = 4.0;
 constexpr static double focus_line_width = 0.5;
 constexpr static double focus_padding = 3.0;
 static auto const focus_dash = std::vector{1.5};
-
-struct ColorPoint final
-{
-    ColorPoint();
-    ColorPoint(double x, double y, double r, double g, double b);
-    ColorPoint(double x, double y, guint color);
-
-    guint32 get_color() const;
-
-    void set_color(Hsluv::Triplet const &rgb)
-    {
-        r = rgb[0];
-        g = rgb[1];
-        b = rgb[2];
-    }
-
-    double x;
-    double y;
-    double r;
-    double g;
-    double b;
-};
 
 /** Represents a vertex of the Luv color polygon (intersection of bounding lines). */
 struct Intersection final
@@ -101,32 +82,54 @@ static std::vector<Geom::Point> to_pixel_coordinate(std::vector<Geom::Point> con
 static void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding, bool pad_upwards, guint32 *buffer,
                                   int height, int stride);
 
-namespace Inkscape::UI::Widget {
-
 /* Base Color Wheel */
 
 ColorWheel::ColorWheel()
     : _adjusting(false)
+    , _drawing_area{Gtk::make_managed<Gtk::DrawingArea>()}
 {
     set_name("ColorWheel");
-    set_can_focus();
+    set(0.5, 0.5, 1.0, false);
+    set_shadow_type(Gtk::SHADOW_NONE);
 
-    Controller::add_key<nullptr, &ColorWheel::on_key_released>(*this, *this);
+    _drawing_area->set_visible(true);
+    _drawing_area->set_can_focus(true);
+    _drawing_area->property_expand() = true;
+    _drawing_area->signal_size_allocate().connect(sigc::mem_fun(*this, &ColorWheel::on_drawing_area_size ));
+    _drawing_area->signal_draw         ().connect(sigc::mem_fun(*this, &ColorWheel::on_drawing_area_draw ));
+    _drawing_area->signal_focus        ().connect(sigc::mem_fun(*this, &ColorWheel::on_drawing_area_focus));
+    add(*_drawing_area);
+
+    Controller::add_click(*_drawing_area, sigc::mem_fun(*this, &ColorWheel::on_click_pressed ),
+                                          sigc::mem_fun(*this, &ColorWheel::on_click_released));
+    Controller::add_motion<nullptr, &ColorWheel::on_motion, nullptr>
+                          (*_drawing_area, *this);
+    Controller::add_key<&ColorWheel::on_key_pressed, &ColorWheel::on_key_released>
+                       (*_drawing_area, *this);
 }
 
-void ColorWheel::setHue(double h)
+bool ColorWheel::setHue(double h, bool const emit)
 {
-    _values[0] = std::clamp(h, MIN_HUE, MAX_HUE);
+    h = std::clamp(h, MIN_HUE, MAX_HUE);
+    bool const changed = std::exchange(_values[0], h) != h;
+    if (changed && emit) color_changed();
+    return changed;
 }
 
-void ColorWheel::setSaturation(double s)
+bool ColorWheel::setSaturation(double s, bool const emit)
 {
-    _values[1] = std::clamp(s, MIN_SATURATION, MAX_SATURATION);
+    s = std::clamp(s, MIN_SATURATION, MAX_SATURATION);
+    bool const changed = std::exchange(_values[1], s) != s;
+    if (changed && emit) color_changed();
+    return changed;
 }
 
-void ColorWheel::setLightness(double l)
+bool ColorWheel::setLightness(double l, bool const emit)
 {
-    _values[2] = std::clamp(l, MIN_LIGHTNESS, MAX_LIGHTNESS);
+    l = std::clamp(l, MIN_LIGHTNESS, MAX_LIGHTNESS);
+    bool const changed = std::exchange(_values[2], l) != l;
+    if (changed && emit) color_changed();
+    return changed;
 }
 
 void ColorWheel::getValues(double *a, double *b, double *c) const
@@ -134,6 +137,32 @@ void ColorWheel::getValues(double *a, double *b, double *c) const
     if (a) *a = _values[0];
     if (b) *b = _values[1];
     if (c) *c = _values[2];
+}
+
+sigc::connection ColorWheel::connect_color_changed(sigc::slot<void ()> slot)
+{
+    return _signal_color_changed.connect(std::move(slot));
+}
+
+void ColorWheel::color_changed()
+{
+    _signal_color_changed.emit();
+    _drawing_area->queue_draw();
+}
+
+Gtk::Allocation ColorWheel::get_drawing_area_allocation() const
+{
+    return _drawing_area->get_allocation();
+}
+
+bool ColorWheel::drawing_area_has_focus() const
+{
+    return _drawing_area->has_focus();
+}
+
+void ColorWheel::focus_drawing_area()
+{
+    _drawing_area->grab_focus();
 }
 
 bool ColorWheel::on_key_released(GtkEventControllerKey const * /*controller*/,
@@ -161,25 +190,13 @@ bool ColorWheel::on_key_released(GtkEventControllerKey const * /*controller*/,
     return false;
 }
 
-sigc::signal<void ()> ColorWheel::signal_color_changed()
-{
-    return _signal_color_changed;
-}
-
 /* HSL Color Wheel */
 
-ColorWheelHSL::ColorWheelHSL()
+bool ColorWheelHSL::setRgb(double r, double g, double b,
+                           bool const overrideHue, bool const emit)
 {
-    Controller::add_click(*this, sigc::mem_fun(*this, &ColorWheelHSL::on_click_pressed ),
-                                 sigc::mem_fun(*this, &ColorWheelHSL::on_click_released));
-    Controller::add_motion<nullptr, &ColorWheelHSL::on_motion, nullptr>(*this, *this);
-    Controller::add_key   <&ColorWheelHSL::on_key_pressed, nullptr    >(*this, *this);
-}
-
-void ColorWheelHSL::setRgb(double r, double g, double b, bool overrideHue)
-{
-    double min = std::min({r, g, b});
-    double max = std::max({r, g, b});
+    auto const old_values = _values;
+    auto const [min, max] = std::minmax({r, g, b});
 
     _values[2] = max;
 
@@ -206,6 +223,21 @@ void ColorWheelHSL::setRgb(double r, double g, double b, bool overrideHue)
     } else {
         _values[1] = (max - min) / max;
     }
+
+    bool changed = false;
+
+    if (_values[0] != old_values[0]) {
+        changed = true;
+        _triangle_corners.reset();
+    }
+
+    if (_values[1] != old_values[1] || _values[2] != old_values[2]) {
+        changed = true;
+        _marker_point.reset();
+    }
+
+    if (changed && emit) color_changed();
+    return changed;
 }
 
 void ColorWheelHSL::getRgb(double *r, double *g, double *b) const
@@ -229,31 +261,51 @@ guint32 ColorWheelHSL::getRgb() const
     return hsv_to_rgb(_values[0], _values[1], _values[2]);
 }
 
+bool ColorWheelHSL::setHue(double const h, bool const emit)
+{
+    bool const changed = ColorWheel::setHue(h, emit);
+    if (changed) _triangle_corners.reset();
+    return changed;
+}
+
+bool ColorWheelHSL::setSaturation(double const s, bool const emit)
+{
+    bool const changed = ColorWheel::setSaturation(s, emit);
+    if (changed) _marker_point.reset();
+    return changed;
+}
+
+bool ColorWheelHSL::setLightness(double const l, bool const emit)
+{
+    bool const changed = ColorWheel::setLightness(l, emit);
+    if (changed) _marker_point.reset();
+    return changed;
+}
+
 void ColorWheelHSL::getHsl(double *h, double *s, double *l) const
 {
     getValues(h, s, l);
 }
 
-bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
+void ColorWheelHSL::update_ring_source()
 {
-    int const width = get_width();
-    int const height = get_height();
+    if (_radii && _source_ring) return;
 
-    int const cx = width/2;
-    int const cy = height/2;
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
+    auto const cx = width  / 2.0;
+    auto const cy = height / 2.0;
 
-    int const stride = Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_RGB24, width);
+    auto const stride = Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_RGB24, width);
+    _buffer_ring.resize(height * stride / 4);
 
-    // Paint ring
-    guint32* buffer_ring = g_new (guint32, height * stride / 4);
-    double r_max = std::min(width, height)/2.0 - 2 * (focus_line_width + focus_padding);
-    double r_min = r_max * (1.0 - _ring_width);
+    auto const &[r_min, r_max] = get_radii();
     double r2_max = (r_max+2) * (r_max+2); // Must expand a bit to avoid edge effects.
     double r2_min = (r_min-2) * (r_min-2); // Must shrink a bit to avoid edge effects.
 
     for (int i = 0; i < height; ++i) {
-        guint32* p = buffer_ring + i * width;
+        auto p = _buffer_ring.data() + i * width;
         double dy = (cy - i);
+
         for (int j = 0; j < width; ++j) {
             double dx = (j - cx);
             double r2 = dx * dx + dy * dy;
@@ -265,42 +317,29 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
                     angle += 2.0 * M_PI;
                 }
                 double hue = angle/(2.0 * M_PI);
-
                 *p++ = hsv_to_rgb(hue, 1.0, 1.0);
             }
         }
     }
 
-    Cairo::RefPtr<::Cairo::ImageSurface> source_ring =
-        ::Cairo::ImageSurface::create((unsigned char *)buffer_ring,
-                                      Cairo::FORMAT_RGB24,
-                                      width, height, stride);
+    auto const data = reinterpret_cast<unsigned char *>(_buffer_ring.data());
+    _source_ring = Cairo::ImageSurface::create(data,
+                                               Cairo::FORMAT_RGB24,
+                                               width, height, stride);
+}
 
-    cr->set_antialias(Cairo::ANTIALIAS_SUBPIXEL);
+ColorWheelHSL::TriangleCorners
+ColorWheelHSL::update_triangle_source()
+{
+    bool const source_is_stale = !_triangle_corners.has_value();
 
-    // Paint line on ring in source (so it gets clipped by stroke).
-    double l = 0.0;
-    guint32 color_on_ring = hsv_to_rgb(_values[0], 1.0, 1.0);
-    if (luminance(color_on_ring) < 0.5) l = 1.0;
-    Cairo::RefPtr<::Cairo::Context> cr_source_ring = ::Cairo::Context::create(source_ring);
-    cr_source_ring->set_source_rgb(l, l, l);
-    cr_source_ring->move_to (cx, cy);
-    cr_source_ring->line_to (cx + cos(_values[0] * M_PI * 2.0) * r_max+1,
-                             cy - sin(_values[0] * M_PI * 2.0) * r_max+1);
-    cr_source_ring->stroke();
+    // Reorder so we paint from top down.
+    auto ps = get_triangle_corners();
+    std::sort(ps.begin(), ps.end(), [](auto const &l, auto const &r){ return l.y < r.y; });
+    auto const &[p0, p1, p2] = ps;
 
-    // Paint with ring surface, clipping to ring.
-    cr->save();
-    cr->set_source(source_ring, 0, 0);
-    cr->set_line_width (r_max - r_min);
-    cr->begin_new_path();
-    cr->arc(cx, cy, (r_max + r_min)/2.0, 0, 2.0 * M_PI);
-    cr->stroke();
-    cr->restore();
+    if (_source_triangle && !source_is_stale) return {p0, p1, p2};
 
-    g_free(buffer_ring);
-
-    // Paint triangle.
     /* The triangle is painted by first finding color points on the
      * edges of the triangle at the same y value via linearly
      * interpolating between corner values, and then interpolating along
@@ -312,37 +351,14 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
      * White corner: v = 1, s = 0
      * Color corner; v = 1, s = 1
      */
-    const int padding = 3; // Avoid edge artifacts.
-    double x0, y0, x1, y1, x2, y2;
-    _triangle_corners(x0, y0, x1, y1, x2, y2);
-    guint32 color0 = hsv_to_rgb(_values[0], 1.0, 1.0);
-    guint32 color1 = hsv_to_rgb(_values[0], 1.0, 0.0);
-    guint32 color2 = hsv_to_rgb(_values[0], 0.0, 1.0);
+    constexpr int padding = 3; // Avoid edge artifacts.
 
-    ColorPoint p0 (x0, y0, color0);
-    ColorPoint p1 (x1, y1, color1);
-    ColorPoint p2 (x2, y2, color2);
-
-    // Reorder so we paint from top down.
-    if (p1.y > p2.y) {
-        std::swap(p1, p2);
-    }
-
-    if (p0.y > p2.y) {
-        std::swap(p0, p2);
-    }
-
-    if (p0.y > p1.y) {
-        std::swap(p0, p1);
-    }
-
-    guint32* buffer_triangle = g_new(guint32, height * stride / 4);
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
+    auto const stride = Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_RGB24, width);
+    _buffer_triangle.resize(height * stride / 4);
 
     for (int y = 0; y < height; ++y) {
-        guint32 *p = buffer_triangle + y * (stride / 4);
-
-        if (p0.y <= y+padding && y-padding < p2.y) {
-
+        if (p0.y <= y + padding && y - padding < p2.y) {
             // Get values on side at position y.
             ColorPoint side0;
             double y_inter = std::clamp(static_cast<double>(y), p0.y, p2.y);
@@ -351,6 +367,7 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
             } else {
                 side0 = lerp(p1, p2, p1.y, p2.y, y_inter);
             }
+
             ColorPoint side1 = lerp(p0, p2, p0.y, p2.y, y_inter);
 
             // side0 should be on left
@@ -358,42 +375,92 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
                 std::swap (side0, side1);
             }
 
-            int x_start = std::max(0, int(side0.x));
-            int x_end   = std::min(int(side1.x), width);
+            int const x_start = std::max(0, static_cast<int>(side0.x));
+            int const x_end   = std::min(static_cast<int>(side1.x), width);
 
-            for (int x = 0; x < width; ++x) {
-                if (x <= x_start) {
-                    *p++ = side0.get_color();
-                } else if (x < x_end) {
-                    *p++ = lerp(side0, side1, side0.x, side1.x, x).get_color();
-                } else {
-                    *p++ = side1.get_color();
-                }
+            auto p = _buffer_triangle.data() + y * (stride / 4);
+            int x = 0;
+            for (; x <= x_start; ++x) {
+                *p++ = side0.get_color();
+            }
+            for (; x < x_end; ++x) {
+                *p++ = lerp(side0, side1, side0.x, side1.x, x).get_color();
+            }
+            for (; x < width; ++x) {
+                *p++ = side1.get_color();
             }
         }
     }
 
     // add vertical padding to each side separately
+
     ColorPoint temp_point = lerp(p0, p1, p0.x, p1.x, (p0.x + p1.x) / 2.0);
     bool pad_upwards = _is_in_triangle(temp_point.x, temp_point.y + 1);
-    draw_vertical_padding(p0, p1, padding, pad_upwards, buffer_triangle, height, stride / 4);
+    draw_vertical_padding(p0, p1, padding, pad_upwards, _buffer_triangle.data(), height, stride / 4);
 
     temp_point = lerp(p0, p2, p0.x, p2.x, (p0.x + p2.x) / 2.0);
     pad_upwards = _is_in_triangle(temp_point.x, temp_point.y + 1);
-    draw_vertical_padding(p0, p2, padding, pad_upwards, buffer_triangle, height, stride / 4);
+    draw_vertical_padding(p0, p2, padding, pad_upwards, _buffer_triangle.data(), height, stride / 4);
 
     temp_point = lerp(p1, p2, p1.x, p2.x, (p1.x + p2.x) / 2.0);
     pad_upwards = _is_in_triangle(temp_point.x, temp_point.y + 1);
-    draw_vertical_padding(p1, p2, padding, pad_upwards, buffer_triangle, height, stride / 4);
+    draw_vertical_padding(p1, p2, padding, pad_upwards, _buffer_triangle.data(), height, stride / 4);
 
-    Cairo::RefPtr<::Cairo::ImageSurface> source_triangle =
-        ::Cairo::ImageSurface::create((unsigned char *)buffer_triangle,
-                                      Cairo::FORMAT_RGB24,
-                                      width, height, stride);
+    auto const data = reinterpret_cast<unsigned char *>(_buffer_triangle.data());
+    _source_triangle = Cairo::ImageSurface::create(data,
+                                                   Cairo::FORMAT_RGB24,
+                                                   width, height, stride);
+
+    return {p0, p1, p2};
+}
+
+void ColorWheelHSL::on_drawing_area_size(Gtk::Allocation const &allocation)
+{
+    auto const width = allocation.get_width(), height = allocation.get_height();
+    if (width == _cache_width && height == _cache_height) return;
+
+    _cache_width  = width ;
+    _cache_height = height;
+    _radii.reset();
+}
+
+bool ColorWheelHSL::on_drawing_area_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
+{
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
+    auto const cx = width  / 2.0;
+    auto const cy = height / 2.0;
+
+    cr->set_antialias(Cairo::ANTIALIAS_SUBPIXEL);
+
+    // Update caches
+    update_ring_source();
+    auto const &[p0, p1, p2] = update_triangle_source();
+    auto const &[r_min, r_max] = get_radii();
+
+    // Paint with ring surface, clipping to ring.
+    cr->save();
+    cr->set_source(_source_ring, 0, 0);
+    cr->set_line_width (r_max - r_min);
+    cr->begin_new_path();
+    cr->arc(cx, cy, (r_max + r_min)/2.0, 0, 2.0 * M_PI);
+    cr->stroke();
+    cr->restore();
+    // Paint line on ring
+    double l = 0.0;
+    guint32 color_on_ring = hsv_to_rgb(_values[0], 1.0, 1.0);
+    if (luminance(color_on_ring) < 0.5) l = 1.0;
+    cr->save();
+    cr->set_source_rgb(l, l, l);
+    cr->move_to(cx + cos(_values[0] * M_PI * 2.0) * (r_min + 1),
+                cy - sin(_values[0] * M_PI * 2.0) * (r_min + 1));
+    cr->line_to(cx + cos(_values[0] * M_PI * 2.0) * (r_max - 1),
+                cy - sin(_values[0] * M_PI * 2.0) * (r_max - 1));
+    cr->stroke();
+    cr->restore();
 
     // Paint with triangle surface, clipping to triangle.
     cr->save();
-    cr->set_source(source_triangle, 0, 0);
+    cr->set_source(_source_triangle, 0, 0);
     cr->move_to(p0.x, p0.y);
     cr->line_to(p1.x, p1.y);
     cr->line_to(p2.x, p2.y);
@@ -401,11 +468,8 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     cr->fill();
     cr->restore();
 
-    g_free(buffer_triangle);
-
     // Draw marker
-    double mx = x1 + (x2-x1) * _values[2] + (x0-x2) * _values[1] * _values[2];
-    double my = y1 + (y2-y1) * _values[2] + (y0-y2) * _values[1] * _values[2];
+    auto const &[mx, my] = get_marker_point();
     double a = 0.0;
     guint32 color_at_marker = getRgb();
     if (luminance(color_at_marker) < 0.5) a = 1.0;
@@ -415,7 +479,7 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     cr->stroke();
 
     // Draw focus
-    if (has_focus()) {
+    if (drawing_area_has_focus()) {
         cr->set_dash(focus_dash, 0);
         cr->set_line_width(0.5);
 
@@ -423,7 +487,7 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
             auto const rgba = change_alpha(get_foreground_color(get_style_context()), 0.7);
             Gdk::Cairo::set_source_rgba(cr, rgba);
             cr->begin_new_path();
-            cr->arc(cx, cy, r_max + focus_padding, 0, 2.0 * M_PI);
+            cr->rectangle(0, 0, width, height);
         } else {
             cr->set_source_rgb(1 - a, 1 - a, 1 - a);
             cr->begin_new_path();
@@ -436,51 +500,50 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     return true;
 }
 
-bool ColorWheelHSL::on_focus(Gtk::DirectionType direction)
+bool ColorWheelHSL::on_drawing_area_focus(Gtk::DirectionType const direction)
 {
     // In forward direction, focus passes from no focus to ring focus to triangle
     // focus to no focus.
-    if (!has_focus()) {
+    if (!drawing_area_has_focus()) {
         _focus_on_ring = (direction == Gtk::DIR_TAB_FORWARD);
-        grab_focus();
+        focus_drawing_area();
+        queue_draw();
         return true;
     }
 
     // Already have focus
-    bool keep_focus = false;
+    bool keep_focus = true;
 
     switch (direction) {
-        case Gtk::DIR_UP:
-        case Gtk::DIR_LEFT:
         case Gtk::DIR_TAB_BACKWARD:
             if (!_focus_on_ring) {
                 _focus_on_ring = true;
-                keep_focus = true;
+            } else {
+                keep_focus = false;
             }
             break;
 
-        case Gtk::DIR_DOWN:
-        case Gtk::DIR_RIGHT:
         case Gtk::DIR_TAB_FORWARD:
             if (_focus_on_ring) {
                 _focus_on_ring = false;
-                keep_focus = true;
+            } else {
+                keep_focus = false;
             }
-            break;
     }
 
-    queue_draw();  // Update focus indicators.
+    if (!keep_focus) {
+        queue_draw();  // Update focus indicators.
+    }
 
     return keep_focus;
 }
 
-void ColorWheelHSL::_set_from_xy(double const x, double const y)
+bool ColorWheelHSL::_set_from_xy(double const x, double const y)
 {
-    int const width = get_width();
-    int const height = get_height();
-
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
     double const cx = width/2.0;
     double const cy = height/2.0;
+
     double const r = std::min(cx, cy) * (1 - _ring_width);
 
     // We calculate RGB value under the cursor by rotating the cursor
@@ -502,20 +565,24 @@ void ColorWheelHSL::_set_from_xy(double const x, double const y)
     ColorPoint c0(0, 0, yt, yt, yt);                    // Grey point along base.
     ColorPoint c1(0, 0, hsv_to_rgb(_values[0], 1, 1));  // Hue point at apex
     ColorPoint c = lerp(c0, c1, 0, 1, xt);
+    return setRgb(c.r, c.g, c.b, false); // Don't override previous hue.
+}
 
-    setRgb(c.r, c.g, c.b, false); // Don't override previous hue.
+bool ColorWheelHSL::set_from_xy_delta(double const dx, double const dy)
+{
+    auto [mx, my] = get_marker_point();
+    mx += dx;
+    my += dy;
+    return _set_from_xy(mx, my);
 }
 
 bool ColorWheelHSL::_is_in_ring(double x, double y)
 {
-    int const width  = get_width();
-    int const height = get_height();
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
+    auto const cx = width  / 2.0;
+    auto const cy = height / 2.0;
 
-    int const cx = width/2;
-    int const cy = height/2;
-
-    double r_max = std::min( width, height)/2.0 - 2 * (focus_line_width + focus_padding);
-    double r_min = r_max * (1.0 - _ring_width);
+    auto const &[r_min, r_max] = get_radii();
     double r2_max = r_max * r_max;
     double r2_min = r_min * r_min;
 
@@ -528,81 +595,54 @@ bool ColorWheelHSL::_is_in_ring(double x, double y)
 
 bool ColorWheelHSL::_is_in_triangle(double x, double y)
 {
-    double x0, y0, x1, y1, x2, y2;
-    _triangle_corners(x0, y0, x1, y1, x2, y2);
+    auto const &[p0, p1, p2] = get_triangle_corners();
+    auto const &[x0, y0] = p0.get_xy();
+    auto const &[x1, y1] = p1.get_xy();
+    auto const &[x2, y2] = p2.get_xy();
 
     double det = (x2 - x1) * (y0 - y1) - (y2 - y1) * (x0 - x1);
     double s = ((x - x1) * (y0 - y1) - (y - y1) * (x0 - x1)) / det;
+    if (s < 0.0) return false;
+
     double t = ((x2 - x1) * (y - y1) - (y2 - y1) * (x - x1)) / det;
-
-    return (s >= 0.0 && t >= 0.0 && s + t <= 1.0);
-}
-
-void ColorWheelHSL::_update_triangle_color(double x, double y)
-{
-    _set_from_xy(x, y);
-    _signal_color_changed.emit();
-    queue_draw();
-}
-
-void ColorWheelHSL::_triangle_corners(double &x0, double &y0, double &x1, double &y1,
-        double &x2, double &y2)
-{
-    int const width  = get_width();
-    int const height = get_height();
-
-    int const cx = width / 2;
-    int const cy = height / 2;
-
-    double r_max = std::min(width, height) / 2.0 - 2 * (focus_line_width + focus_padding);
-    double r_min = r_max * (1.0 - _ring_width);
-
-    double angle = _values[0] * 2.0 * M_PI;
-
-    x0 = cx + std::cos(angle) * r_min;
-    y0 = cy - std::sin(angle) * r_min;
-    x1 = cx + std::cos(angle + 2.0 * M_PI / 3.0) * r_min;
-    y1 = cy - std::sin(angle + 2.0 * M_PI / 3.0) * r_min;
-    x2 = cx + std::cos(angle + 4.0 * M_PI / 3.0) * r_min;
-    y2 = cy - std::sin(angle + 4.0 * M_PI / 3.0) * r_min;
+    return (t >= 0.0 && s + t <= 1.0);
 }
 
 void ColorWheelHSL::_update_ring_color(double x, double y)
 {
-    int const width  = get_width();
-    int const height = get_height();
-
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
     double cx = width / 2.0;
     double cy = height / 2.0;
-    double angle = -atan2(y - cy, x - cx);
 
+    double angle = -atan2(y - cy, x - cx);
     if (angle < 0) {
         angle += 2.0 * M_PI;
     }
-    _values[0] = angle / (2.0 * M_PI);
+    angle /= 2.0 * M_PI;
 
-    queue_draw();
-    _signal_color_changed.emit();
+    bool const changed = std::exchange(_values[0], angle) != angle;
+    if (changed) {
+        _triangle_corners.reset();
+        color_changed();
+    }
 }
 
 Gtk::EventSequenceState ColorWheelHSL::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
                                                         int /*n_press*/, double const x, double const y)
 {
-    // Seat is automatically grabbed.
-
     if (_is_in_ring(x, y) ) {
         _adjusting = true;
         _mode = DragMode::HUE;
-        grab_focus();
+        focus_drawing_area();
         _focus_on_ring = true;
         _update_ring_color(x, y);
         return Gtk::EVENT_SEQUENCE_CLAIMED;
     } else if (_is_in_triangle(x, y)) {
         _adjusting = true;
         _mode = DragMode::SATURATION_VALUE;
-        grab_focus();
+        focus_drawing_area();
         _focus_on_ring = false;
-        _update_triangle_color(x, y);
+        _set_from_xy(x, y);
         return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
 
@@ -625,7 +665,7 @@ void ColorWheelHSL::on_motion(GtkEventControllerMotion const * /*motion*/,
     if (_mode == DragMode::HUE) {
         _update_ring_color(x, y);
     } else if (_mode == DragMode::SATURATION_VALUE) {
-        _update_triangle_color(x, y);
+        _set_from_xy(x, y);
     }
 }
 
@@ -633,78 +673,121 @@ bool ColorWheelHSL::on_key_pressed(GtkEventControllerKey const * /*controller*/,
                                    unsigned /*keyval*/, unsigned const keycode,
                                    GdkModifierType const state)
 {
-    bool consumed = false;
-
     unsigned int key = 0;
     gdk_keymap_translate_keyboard_state(Gdk::Display::get_default()->get_keymap(),
                                         keycode, state,
                                         0, &key, nullptr, nullptr, nullptr);
 
-    double x0, y0, x1, y1, x2, y2;
-    _triangle_corners(x0, y0, x1, y1, x2, y2);
-
-    // Marker position
-    double mx = x1 + (x2 - x1) * _values[2] + (x0 - x2) * _values[1] * _values[2];
-    double my = y1 + (y2 - y1) * _values[2] + (y0 - y2) * _values[1] * _values[2];
-
     static constexpr double delta_hue = 2.0 / MAX_HUE;
+    auto const old_hue = _values[0];
+    auto dx = 0.0, dy = 0.0;
 
     switch (key) {
         case GDK_KEY_Up:
         case GDK_KEY_KP_Up:
-            if (_focus_on_ring) {
-                _values[0] += delta_hue;
-            } else {
-                my -= 1.0;
-                _set_from_xy(mx, my);
-            }
-            consumed = true;
+            dy = -1.0;
             break;
+
         case GDK_KEY_Down:
         case GDK_KEY_KP_Down:
-            if (_focus_on_ring) {
-                _values[0] -= delta_hue;
-            } else {
-                my += 1.0;
-                _set_from_xy(mx, my);
-            }
-            consumed = true;
+            dy = +1.0;
             break;
+
         case GDK_KEY_Left:
         case GDK_KEY_KP_Left:
-            if (_focus_on_ring) {
-                _values[0] += delta_hue;
-            } else {
-                mx -= 1.0;
-                _set_from_xy(mx, my);
-            }
-            consumed = true;
+            dx = -1.0;
             break;
+
         case GDK_KEY_Right:
         case GDK_KEY_KP_Right:
-            if (_focus_on_ring) {
-                _values[0] -= delta_hue;
-            } else {
-                mx += 1.0;
-                _set_from_xy(mx, my);
-            }
-            consumed = true;
-            break;
+            dx = +1.0;
     }
 
-    if (consumed) {
-        if (_values[0] >= 1.0) {
-            _values[0] -= 1.0;
-        } else if (_values[0] <  0.0) {
-            _values[0] += 1.0;
-        }
+    if (dx == 0.0 && dy == 0.0) return false;
 
-        _signal_color_changed.emit();
-        queue_draw();
+    if (_focus_on_ring) {
+        _values[0] += -(dx != 0 ? dx : dy) * delta_hue;
+    } else {
+        set_from_xy_delta(dx, dy);
     }
 
-    return consumed;
+    if (_values[0] >= 1.0) {
+        _values[0] -= 1.0;
+    } else if (_values[0] <  0.0) {
+        _values[0] += 1.0;
+    }
+
+    bool const changed = _values[0] != old_hue;
+    if (changed) {
+        _triangle_corners.reset();
+        color_changed();
+    }
+    return changed;
 }
+
+ColorWheelHSL::MinMax const &ColorWheelHSL::get_radii()
+{
+    if (_radii) return *_radii;
+
+    // Force calc others, too.
+    _triangle_corners.reset();
+
+    _radii.emplace();
+    auto &[r_min, r_max] = *_radii;
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
+    r_max = std::min(width, height) / 2.0 - 2 * (focus_line_width + focus_padding);
+    r_min = r_max * (1.0 - _ring_width);
+    return *_radii;
+}
+
+std::array<ColorPoint, 3> const &ColorWheelHSL::get_triangle_corners()
+{
+    if (_triangle_corners) return *_triangle_corners;
+
+    auto const &width = _cache_width.value(), &height = _cache_height.value();
+    double const cx = width  / 2.0;
+    double const cy = height / 2.0;
+
+    auto const &[r_min, r_max] = get_radii();
+    double angle = _values[0] * 2.0 * M_PI;
+    auto const add2 = 2.0 * M_PI / 3.0;
+    auto const angle2 = angle  + add2;
+    auto const angle4 = angle2 + add2;
+
+    // Force calc this too
+    _marker_point.reset();
+
+    _triangle_corners.emplace();
+    auto &[p0, p1, p2] = *_triangle_corners;
+    auto const x0 = cx + std::cos(angle ) * r_min;
+    auto const y0 = cy - std::sin(angle ) * r_min;
+    auto const x1 = cx + std::cos(angle2) * r_min;
+    auto const y1 = cy - std::sin(angle2) * r_min;
+    auto const x2 = cx + std::cos(angle4) * r_min;
+    auto const y2 = cy - std::sin(angle4) * r_min;
+    p0 = {x0, y0, hsv_to_rgb(_values[0], 1.0, 1.0)};
+    p1 = {x1, y1, hsv_to_rgb(_values[0], 1.0, 0.0)};
+    p2 = {x2, y2, hsv_to_rgb(_values[0], 0.0, 1.0)};
+    return *_triangle_corners;
+}
+
+Geom::Point const &ColorWheelHSL::get_marker_point()
+{
+    if (_marker_point) return *_marker_point;
+
+    auto const &[p0, p1, p2] = get_triangle_corners();
+    auto const &[x0, y0] = p0.get_xy();
+    auto const &[x1, y1] = p1.get_xy();
+    auto const &[x2, y2] = p2.get_xy();
+
+    _marker_point.emplace();
+    auto &[mx, my] = *_marker_point;
+    auto const v1v2 = _values[1] * _values[2];
+    mx = x1 + (x2 - x1) * _values[2] + (x0 - x2) * v1v2;
+    my = y1 + (y2 - y1) * _values[2] + (y0 - y2) * v1v2;
+    return *_marker_point;
+}
+
 
 /* HSLuv Color Wheel */
 
@@ -712,19 +795,18 @@ ColorWheelHSLuv::ColorWheelHSLuv()
 {
     _picker_geometry = std::make_unique<Hsluv::PickerGeometry>();
     setHsluv(MIN_HUE, MAX_SATURATION, 0.5 * MAX_LIGHTNESS);
-
-    Controller::add_click(*this, sigc::mem_fun(*this, &ColorWheelHSLuv::on_click_pressed ),
-                                 sigc::mem_fun(*this, &ColorWheelHSLuv::on_click_released));
-    Controller::add_motion<nullptr, &ColorWheelHSLuv::on_motion, nullptr>(*this, *this);
-    Controller::add_key   <&ColorWheelHSLuv::on_key_pressed, nullptr    >(*this, *this);
 }
 
-void ColorWheelHSLuv::setRgb(double r, double g, double b, bool /*overrideHue*/)
+bool ColorWheelHSLuv::setRgb(double r, double g, double b,
+                             bool /*overrideHue*/, bool const emit)
 {
     auto hsl = Hsluv::rgb_to_hsluv(r, g, b);
-    setHue(hsl[0]);
-    setSaturation(hsl[1]);
-    setLightness(hsl[2]);
+    bool changed = false;
+    changed |= setHue       (hsl[0], false);
+    changed |= setSaturation(hsl[1], false);
+    changed |= setLightness (hsl[2], false);
+    if (changed && emit) color_changed();
+    return changed;
 }
 
 void ColorWheelHSLuv::getRgb(double *r, double *g, double *b) const
@@ -753,11 +835,14 @@ guint32 ColorWheelHSLuv::getRgb() const
     );
 }
 
-void ColorWheelHSLuv::setHsluv(double h, double s, double l)
+bool ColorWheelHSLuv::setHsluv(double h, double s, double l)
 {
-    setHue(h);
-    setSaturation(s);
-    setLightness(l);
+    bool changed = false;
+    changed |= setHue       (h, false);
+    changed |= setSaturation(s, false);
+    changed |= setLightness (l, false);
+    if (changed) color_changed();
+    return changed;
 }
 
 /**
@@ -787,9 +872,9 @@ void ColorWheelHSLuv::updateGeometry()
     auto const nearest_time = closest_line->nearestTime(Geom::Point(0, 0));
     Geom::Angle start_angle{closest_line->pointAt(nearest_time)};
 
+    constexpr auto num_lines = 6;
+    constexpr auto max_intersections = num_lines * (num_lines - 1) / 2;
     std::vector<Intersection> intersections;
-    unsigned const num_lines = 6;
-    unsigned const max_intersections = num_lines * (num_lines - 1) / 2;
     intersections.reserve(max_intersections);
 
     for (int i = 0; i < num_lines - 1; i++) {
@@ -808,6 +893,7 @@ void ColorWheelHSLuv::updateGeometry()
 
     // Find the relevant vertices of the polygon, in the counter-clockwise order.
     std::vector<Geom::Point> ordered_vertices;
+    ordered_vertices.reserve(intersections.size());
     double circumradius = 0.0;
     unsigned current_index = closest_line - &lines[0];
 
@@ -828,16 +914,15 @@ void ColorWheelHSLuv::updateGeometry()
     _picker_geometry->inner_circle_radius = closest_distance;
 }
 
-void ColorWheelHSLuv::setLightness(double l)
+bool ColorWheelHSLuv::setLightness(double const l, bool const emit)
 {
-    _values[2] = std::clamp(l, MIN_LIGHTNESS, MAX_LIGHTNESS);
-
-    // Update polygon
-    updateGeometry();
-    _scale = OUTER_CIRCLE_RADIUS / _picker_geometry->outer_circle_radius;
-    _updatePolygon();
-
-    queue_draw();
+    bool const changed = ColorWheel::setLightness(l, emit);
+    if (changed) {
+        updateGeometry();
+        _scale = OUTER_CIRCLE_RADIUS / _picker_geometry->outer_circle_radius;
+        _updatePolygon();
+    }
+    return changed;
 }
 
 void ColorWheelHSLuv::getHsluv(double *h, double *s, double *l) const
@@ -870,9 +955,9 @@ bool ColorWheelHSLuv::_vertex() const
     return _values[2] < VERTEX_EPSILON || _values[2] > MAX_LIGHTNESS - VERTEX_EPSILON;
 }
 
-bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
+bool ColorWheelHSLuv::on_drawing_area_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
 {
-    Gtk::Allocation allocation = get_allocation();
+    auto const &allocation = get_drawing_area_allocation();
     auto dimensions = _getAllocationDimensions(allocation);
     auto center = (0.5 * (Geom::Point)dimensions).floor();
 
@@ -944,7 +1029,7 @@ bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     cr->fill();
 
     // Draw marker
-    auto luv = Hsluv::hsluv_to_luv(_values);
+    auto luv = Hsluv::hsluv_to_luv(_values.data());
     auto mp = to_pixel_coordinate({luv[1], luv[2]}, _scale, resize) + margin;
 
     cr->set_line_width(inner_stroke_width);
@@ -953,7 +1038,7 @@ bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     cr->stroke();
 
     // Focus
-    if (has_focus()) {
+    if (drawing_area_has_focus()) {
         cr->set_dash(focus_dash, 0);
         cr->set_line_width(focus_line_width);
         cr->set_source_rgb(1 - gray, 1 - gray, 1 - gray);
@@ -965,9 +1050,9 @@ bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     return true;
 }
 
-void ColorWheelHSLuv::_set_from_xy(double const x, double const y)
+bool ColorWheelHSLuv::_set_from_xy(double const x, double const y)
 {
-    Gtk::Allocation allocation = get_allocation();
+    auto const allocation = get_drawing_area_allocation();
     int const width = allocation.get_width();
     int const height = allocation.get_height();
 
@@ -975,16 +1060,16 @@ void ColorWheelHSLuv::_set_from_xy(double const x, double const y)
     auto const p = from_pixel_coordinate(Geom::Point(x, y) - _getMargin(allocation), _scale, resize);
 
     auto hsluv = Hsluv::luv_to_hsluv(_values[2], p[Geom::X], p[Geom::Y]);
-    setHue(hsluv[0]);
-    setSaturation(hsluv[1]);
-
-    _signal_color_changed.emit();
-    queue_draw();
+    bool changed = false;
+    changed |= setHue       (hsluv[0], false);
+    changed |= setSaturation(hsluv[1], false);
+    if (changed) color_changed();
+    return changed;
 }
 
 void ColorWheelHSLuv::_updatePolygon()
 {
-    Gtk::Allocation allocation = get_allocation();
+    auto const allocation = get_drawing_area_allocation();
     auto allocation_size = _getAllocationDimensions(allocation);
     int const size = std::min(allocation_size[Geom::X], allocation_size[Geom::Y]);
 
@@ -1016,8 +1101,7 @@ void ColorWheelHSLuv::_updatePolygon()
     int const stride = Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_RGB24, _cache_width);
 
     _buffer_polygon.resize(_cache_height * stride / 4);
-    std::vector<guint32> buffer_line;
-    buffer_line.resize(stride / 4);
+    std::vector<guint32> buffer_line(stride / 4);
 
     ColorPoint clr;
     auto const square_center = Geom::IntPoint(_square_size / 2, _square_size / 2);
@@ -1053,13 +1137,13 @@ Gtk::EventSequenceState ColorWheelHSLuv::on_click_pressed(Gtk::GestureMultiPress
                                                           int /*n_press*/, double const x, double const y)
 {
     auto const event_pt = Geom::Point(x, y);
-    Gtk::Allocation allocation = get_allocation();
+    auto const allocation = get_drawing_area_allocation();
     int const size = _getAllocationSize(allocation);
     auto const region = Geom::IntRect::from_xywh(_getMargin(allocation), {size, size});
 
     if (region.contains(event_pt.round())) {
         _adjusting = true;
-        grab_focus();
+        focus_drawing_area();
         _setFromPoint(event_pt);
         return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
@@ -1094,7 +1178,7 @@ bool ColorWheelHSLuv::on_key_pressed(GtkEventControllerKey const * /*controller*
                                         0, &key, nullptr, nullptr, nullptr);
 
     // Get current point
-    auto luv = Hsluv::hsluv_to_luv(_values);
+    auto luv = Hsluv::hsluv_to_luv(_values.data());
 
     double const marker_move = 1.0 / _scale;
 
@@ -1118,23 +1202,20 @@ bool ColorWheelHSLuv::on_key_pressed(GtkEventControllerKey const * /*controller*
         case GDK_KEY_KP_Right:
             luv[1] += marker_move;
             consumed = true;
-            break;
     }
 
-    if (consumed) {
-        auto const hsluv = Hsluv::luv_to_hsluv(luv[0], luv[1], luv[2]);
-        setHue(hsluv[0]);
-        setSaturation(hsluv[1]);
+    if (!consumed) return false;
 
-        _adjusting = true;
-        _signal_color_changed.emit();
-        queue_draw();
-    }
+    _adjusting = true;
 
-    return consumed;
+    auto const hsluv = Hsluv::luv_to_hsluv(luv[0], luv[1], luv[2]);
+    bool changed = false;
+    changed |= setHue       (hsluv[0], false);
+    changed |= setSaturation(hsluv[1], false);
+    if (changed) color_changed();
+
+    return true;
 }
-
-} // namespace Inkscape::UI::Widget
 
 /* ColorPoint */
 ColorPoint::ColorPoint()
@@ -1160,6 +1241,11 @@ guint32 ColorPoint::get_color() const
             static_cast<int>(b * 255)
     );
 };
+
+std::pair<double const &, double const &> ColorPoint::get_xy() const
+{
+    return {x, y};
+}
 
 static double lerp(double v0, double v1, double t0, double t1, double t)
 {
@@ -1333,6 +1419,8 @@ void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding, bool pad_u
         }
     }
 }
+
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

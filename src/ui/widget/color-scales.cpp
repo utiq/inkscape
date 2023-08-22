@@ -216,7 +216,7 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
         _wheel->set_size_request(-1, 130); // minimal size
 
         /* Signal */
-        _wheel->signal_color_changed().connect([this](){ _wheelChanged(); });
+        _wheel->connect_color_changed([this](){ _wheelChanged(); });
 
         /* Expander */
         // Label icon
@@ -388,13 +388,14 @@ void ColorScales<MODE>::_updateDisplay(bool update_wheel)
         SPColor::rgb_to_hsl_floatv(c, tmp[0], tmp[1], tmp[2]);
         c[3] = _color.alpha();
         c[4] = 0.0;
-        if (update_wheel) { _wheel->setRgb(tmp[0], tmp[1], tmp[2]); }
+        // N.B. We setRgb() with emit = false, to avoid a warning from PaintSelector.
+        if (update_wheel) { _wheel->setRgb(tmp[0], tmp[1], tmp[2], true, false); }
     } else if constexpr (MODE == SPColorScalesMode::HSV) {
         color.get_rgb_floatv(tmp);
         SPColor::rgb_to_hsv_floatv(c, tmp[0], tmp[1], tmp[2]);
         c[3] = _color.alpha();
         c[4] = 0.0;
-        if (update_wheel) { _wheel->setRgb(tmp[0], tmp[1], tmp[2]); }
+        if (update_wheel) { _wheel->setRgb(tmp[0], tmp[1], tmp[2], true, false); }
     } else if constexpr (MODE == SPColorScalesMode::CMYK) {
         color.get_cmyk_floatv(c);
         c[4] = _color.alpha();
@@ -403,7 +404,7 @@ void ColorScales<MODE>::_updateDisplay(bool update_wheel)
         SPColor::rgb_to_hsluv_floatv(c, tmp[0], tmp[1], tmp[2]);
         c[3] = _color.alpha();
         c[4] = 0.0;
-        if (update_wheel) { _wheel->setRgb(tmp[0], tmp[1], tmp[2]); }
+        if (update_wheel) { _wheel->setRgb(tmp[0], tmp[1], tmp[2], true, false); }
     } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
         color.get_rgb_floatv(tmp);
         // OKLab color space is more sensitive to numerical errors; use doubles.
@@ -417,7 +418,7 @@ void ColorScales<MODE>::_updateDisplay(bool update_wheel)
         _updateSliders(CSC_CHANNELS_ALL);
         _updating = false;
         if (update_wheel) {
-            _wheel->setRgb(tmp[0], tmp[1], tmp[2]);
+            _wheel->setRgb(tmp[0], tmp[1], tmp[2], true, false);
         }
         return;
     } else {
