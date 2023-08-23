@@ -197,16 +197,9 @@ void Inkscape::DocumentUndo::cancel(SPDocument *doc)
 {
     g_assert (doc != nullptr);
     g_assert (doc->sensitive);
-	sp_repr_rollback (doc->rdoc);
-
-	if (doc->partial) {
-		sp_repr_undo_log (doc->partial);
-        doc->emitReconstructionFinish();
-		sp_repr_free_log (doc->partial);
-		doc->partial = nullptr;
-	}
-
-	sp_repr_begin_transaction (doc->rdoc);
+    done(doc, "undozone", "");
+    undo(doc);
+    clearRedo(doc);
 }
 
 // Member function for friend access to SPDocument privates.
