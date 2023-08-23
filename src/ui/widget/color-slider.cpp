@@ -232,12 +232,12 @@ bool ColorSlider::on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr)
 {
     // padding/carea are no longer used/useful, just kept to minimise code diff
     static Gtk::Border const padding{};
-    Gdk::Rectangle const carea{0, 0, _drawing_area->get_width(), _drawing_area->get_height()};
-
-    cr->save();
+    auto const scale = _drawing_area->get_scale_factor();
+    Gdk::Rectangle const carea{0, 0, _drawing_area->get_width () * scale,
+                                     _drawing_area->get_height() * scale};
 
     // changing scale to draw pixmap at display resolution
-    auto const scale = _drawing_area->get_scale_factor();
+    cr->save();
     cr->scale(1.0 / scale, 1.0 / scale);
 
     if (_map) {
