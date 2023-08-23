@@ -447,6 +447,15 @@ Geom::OptRect ObjectSet::documentBounds(SPItem::BBoxType type) const
     return bbox;
 }
 
+Geom::OptRect ObjectSet::documentPreferredBounds() const
+{
+    if (Inkscape::Preferences::get()->getInt("/tools/bounding_box") == 0) {
+        return documentBounds(SPItem::VISUAL_BBOX);
+    } else {
+        return documentBounds(SPItem::GEOMETRIC_BBOX);
+    }
+}
+
 // If we have a selection of multiple items, then the center of the first item
 // will be returned; this is also the case in SelTrans::centerRequest()
 std::optional<Geom::Point> ObjectSet::center() const {

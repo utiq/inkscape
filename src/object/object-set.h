@@ -382,6 +382,12 @@ public:
     Geom::OptRect documentBounds(SPItem::BBoxType type) const;
 
     /**
+     * Returns either the visual or geometric bounding rectangle of selection in document
+     * coordinates based on preferences specified for the selector tool
+     */
+    Geom::OptRect documentPreferredBounds() const;
+
+    /**
      * Returns the rotation/skew center of the selection.
      */
     std::optional<Geom::Point> center() const;
