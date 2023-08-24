@@ -116,18 +116,24 @@ std::string os_version() {
  */
 std::string debug_info() {
     std::stringstream ss;
-
+    gtkmm_major_version;
     ss << inkscape_version() << std::endl;
     ss << std::endl;
-    ss << "    GLib version:     " << glib_major_version   << "." << glib_minor_version   << "." << glib_micro_version   << std::endl;
-    ss << "    GTK version:      " << gtk_major_version    << "." << gtk_minor_version    << "." << gtk_micro_version    << std::endl;
-    ss << "    glibmm version:   " << GLIBMM_MAJOR_VERSION << "." << GLIBMM_MINOR_VERSION << "." << GLIBMM_MICRO_VERSION << std::endl;
-    ss << "    gtkmm version:    " << GTKMM_MAJOR_VERSION  << "." << GTKMM_MINOR_VERSION  << "." << GTKMM_MICRO_VERSION  << std::endl;
+
+    ss << "                      Compile  (Run)" << std::endl;
+    ss << "    GLib version:     " << GLIB_MAJOR_VERSION      << "." << GLIB_MINOR_VERSION      << "." << GLIB_MICRO_VERSION      << std::endl;
+    ss << "    GTK version:      " << GTK_MAJOR_VERSION       << "." << GTK_MINOR_VERSION       << "." << GTK_MICRO_VERSION
+       << " ("                     << gtk_get_major_version() << "." << gtk_get_minor_version() << "." << gtk_get_micro_version() << ")" << std::endl;
+    ss << "    glibmm version:   " << GLIBMM_MAJOR_VERSION    << "." << GLIBMM_MINOR_VERSION    << "." << GLIBMM_MICRO_VERSION    << std::endl;
+    ss << "    gtkmm version:    " << GTKMM_MAJOR_VERSION     << "." << GTKMM_MINOR_VERSION     << "." << GTKMM_MICRO_VERSION     << std::endl;
     ss << "    libxml2 version:  " << LIBXML_DOTTED_VERSION << std::endl;
     ss << "    libxslt version:  " << LIBXSLT_DOTTED_VERSION << std::endl;
-    ss << "    Cairo version:    " << cairo_version_string() << std::endl;
-    ss << "    Pango version:    " << pango_version_string() << std::endl;
-    ss << "    HarfBuzz version: " << hb_version_string() << std::endl;
+    ss << "    Cairo version:    " << CAIRO_VERSION_MAJOR     << "." << CAIRO_VERSION_MINOR     << "." << CAIRO_VERSION_MICRO
+       << " (" << cairo_version_string() << ")" << std::endl;
+    ss << "    Pango version:    " << PANGO_VERSION_MAJOR     << "." << PANGO_VERSION_MINOR     << "." << PANGO_VERSION_MICRO
+       << " (" << pango_version_string() << ")" << std::endl;
+    ss << "    HarfBuzz version: " << HB_VERSION_MAJOR        << "." << HB_VERSION_MINOR        << "." << HB_VERSION_MICRO
+       << " (" << hb_version_string() << ")" << std::endl;
 #ifdef HAVE_POPPLER
     ss << "    Poppler version:  " << POPPLER_VERSION << std::endl;
 #endif
