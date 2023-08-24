@@ -319,7 +319,7 @@ bool SelectTool::item_handler(SPItem *local_item, CanvasEvent const &event)
         [&] (CanvasEvent const &event) {}
     );
 
-    return ret || ToolBase::root_handler(event);
+    return ret || ToolBase::item_handler(item, event);
 }
 
 void SelectTool::sp_select_context_cycle_through_items(Selection *selection, ScrollEvent const &scroll_event)
