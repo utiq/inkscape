@@ -213,6 +213,10 @@ PageToolbar::~PageToolbar()
 
 void PageToolbar::toolChanged(SPDesktop *desktop, Inkscape::UI::Tools::ToolBase *ec)
 {
+    // Disconnect previous page changed signal
+    _page_selected.disconnect();
+    _pages_changed.disconnect();
+    _page_modified.disconnect();
     _document = nullptr;
 
     if (dynamic_cast<Inkscape::UI::Tools::PagesTool *>(ec)) {
