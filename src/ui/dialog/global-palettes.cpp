@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** @file
+ * @brief Global color palette information.
+ */
+/* Authors: PBS <pbs3141@gmail.com>
+ * Copyright (C) 2022 PBS
+ * Released under GNU GPL v2+, read the file 'COPYING' for more information.
+ */
+
 #include "global-palettes.h"
 
-#include <array>
+#include <iomanip>
 #include <giomm/file.h>
 #include <giomm/fileinputstream.h>
 #include <giomm/inputstream.h>
@@ -10,7 +18,6 @@
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/window.h>
-#include <iomanip>
 
 // Using Glib::regex because
 //  - std::regex is too slow in debug mode.
@@ -443,7 +450,7 @@ PaletteResult load_palette(Glib::ustring path) {
     return {std::nullopt, msg};
 }
 
-Inkscape::UI::Dialog::GlobalPalettes::GlobalPalettes()
+GlobalPalettes::GlobalPalettes()
 {
     // Load the palettes.
     for (auto &path : Inkscape::IO::Resource::get_filenames(Inkscape::IO::Resource::PALETTES, {".gpl", ".acb", ".ase"})) {
@@ -472,9 +479,8 @@ const PaletteFileData* GlobalPalettes::find_palette(const Glib::ustring& id) con
 }
 
 std::string choose_palette_file(Gtk::Window* window) {
-    bool loaded = false;
     static std::string current_folder;
-    std::vector<std::pair<Glib::ustring, Glib::ustring>> filters = {
+    static std::vector<std::pair<Glib::ustring, Glib::ustring>> const filters{
         {_("Gimp Color Palette"), "*.gpl"},
         {_("Adobe Color Book"), "*.acb"},
         {_("Adobe Swatch Exchange"), "*.ase"}
@@ -482,10 +488,21 @@ std::string choose_palette_file(Gtk::Window* window) {
     return choose_file_open(_("Load color palette"), window, filters, current_folder);
 }
 
-Inkscape::UI::Dialog::GlobalPalettes const &Inkscape::UI::Dialog::GlobalPalettes::get()
+GlobalPalettes const &GlobalPalettes::get()
 {
     static GlobalPalettes instance;
     return instance;
 }
 
-} // namespace
+} // namespace Inkscape::UI::Dialog
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:

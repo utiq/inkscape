@@ -11,12 +11,16 @@
 #define INKSCAPE_UI_DIALOG_GLOBAL_PALETTES_H
 
 #include <array>
-#include <gtkmm/window.h>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <glibmm/ustring.h>
+
+namespace Gtk {
+class Window;
+} // namespace Gtk
 
 namespace Inkscape::UI::Dialog {
 
@@ -135,6 +139,17 @@ PaletteResult load_palette(Glib::ustring path);
 // Show file chooser and select color palette file
 std::string choose_palette_file(Gtk::Window* window);
 
-} // namespace
+} // namespace Inkscape::UI::Dialog
 
 #endif // INKSCAPE_UI_DIALOG_GLOBAL_PALETTES_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:

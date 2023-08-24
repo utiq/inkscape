@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "choose-file.h"
-#include "ui/dialog-run.h"
+
 #include <glib/gi18n.h>
 #include <gtkmm/filechooser.h>
 #include <gtkmm/filechooserdialog.h>
 #include <glibmm/miscutils.h>
-#include <string>
+
+#include "ui/dialog-run.h"
 
 namespace Inkscape {
 
-std::string choose_file_save(Glib::ustring title, Gtk::Window* parent, Glib::ustring mime_type, Glib::ustring file_name, std::string& current_folder) {
+std::string choose_file_save(Glib::ustring const &title, Gtk::Window *parent,
+                             Glib::ustring const &mime_type,
+                             Glib::ustring const &file_name,
+                             std::string &current_folder)
+{
     if (!parent) return {};
 
     if (current_folder.empty()) {
@@ -40,13 +45,11 @@ std::string choose_file_save(Glib::ustring title, Gtk::Window* parent, Glib::ust
     return fname;
 }
 
-std::string _choose_file_open(
-    Glib::ustring title,
-    Gtk::Window* parent,
-    std::vector<std::pair<Glib::ustring, Glib::ustring>> filters,
-    std::vector<Glib::ustring> mime_types,
-    std::string& current_folder
-) {
+std::string _choose_file_open(Glib::ustring const &title, Gtk::Window *parent,
+                              std::vector<std::pair<Glib::ustring, Glib::ustring>> const &filters,
+                              std::vector<Glib::ustring> const &mime_types,
+                              std::string &current_folder)
+{
 
     if (!parent) return {};
 
@@ -65,7 +68,7 @@ std::string _choose_file_open(
         all_supported->set_name(_("All Supported Formats"));
         if (filters.size() > 1) dlg.add_filter(all_supported);
 
-        for (auto&& f : filters) {
+        for (auto const &f : filters) {
             auto filter = Gtk::FileFilter::create();
             filter->set_name(f.first);
             filter->add_pattern(f.second);
@@ -75,7 +78,7 @@ std::string _choose_file_open(
     }
     else {
         auto filter = Gtk::FileFilter::create();
-        for (auto&& t : mime_types) {
+        for (auto const &t : mime_types) {
             filter->add_mime_type(t);
         }
         dlg.set_filter(filter);
@@ -94,12 +97,29 @@ std::string _choose_file_open(
     return fname;
 }
 
-std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vector<Glib::ustring> mime_types, std::string& current_folder) {
+std::string choose_file_open(Glib::ustring const &title, Gtk::Window *parent,
+                             std::vector<Glib::ustring> const &mime_types,
+                             std::string &current_folder)
+{
     return _choose_file_open(title, parent, {}, mime_types, current_folder);
 }
 
-std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vector<std::pair<Glib::ustring, Glib::ustring>> filters, std::string& current_folder) {
+std::string choose_file_open(Glib::ustring title, Gtk::Window *parent,
+                             std::vector<std::pair<Glib::ustring, Glib::ustring>> const &filters,
+                             std::string &current_folder)
+{
     return _choose_file_open(title, parent, filters, {}, current_folder);
 }
 
 } // namespace Inkscape
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:
