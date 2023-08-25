@@ -27,7 +27,7 @@ namespace UI {
 namespace Widget {
 
 /**
- * A labelled text box, with spin buttons and optional icon or suffix, for
+ * A labelled text box, with spin buttons and optional icon, for
  * entering arbitrary coordinate values.
  */
 class Point : public Labelled
@@ -39,16 +39,14 @@ public:
      * Construct a Point Widget.
      *
      * @param label     Label.
-     * @param suffix    Suffix, placed after the widget (defaults to "").
-     * @param icon      Icon filename, placed before the label (defaults to "").
+     * @param icon      Icon filename, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the label
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to false).
      */
     Point( Glib::ustring const &label,
            Glib::ustring const &tooltip,
-           Glib::ustring const &suffix = "",
-           Glib::ustring const &icon = "",
+           Glib::ustring const &icon = {},
            bool mnemonic = true);
 
     /**
@@ -56,8 +54,7 @@ public:
      *
      * @param label     Label.
      * @param digits    Number of decimal digits to display.
-     * @param suffix    Suffix, placed after the widget (defaults to "").
-     * @param icon      Icon filename, placed before the label (defaults to "").
+     * @param icon      Icon filename, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the label
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to false).
@@ -65,8 +62,7 @@ public:
     Point( Glib::ustring const &label,
            Glib::ustring const &tooltip,
            unsigned digits,
-           Glib::ustring const &suffix = "",
-           Glib::ustring const &icon = "",
+           Glib::ustring const &icon = {},
            bool mnemonic = true);
 
     /**
@@ -75,8 +71,7 @@ public:
      * @param label     Label.
      * @param adjust    Adjustment to use for the SpinButton.
      * @param digits    Number of decimal digits to display (defaults to 0).
-     * @param suffix    Suffix, placed after the widget (defaults to "").
-     * @param icon      Icon filename, placed before the label (defaults to "").
+     * @param icon      Icon filename, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the label
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to true).
@@ -85,8 +80,7 @@ public:
            Glib::ustring const &tooltip,
 	   Glib::RefPtr<Gtk::Adjustment> &adjust,
            unsigned digits = 0,
-           Glib::ustring const &suffix = "",
-           Glib::ustring const &icon = "",
+           Glib::ustring const &icon = {},
            bool mnemonic = true);
 
     /**

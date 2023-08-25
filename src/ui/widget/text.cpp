@@ -10,43 +10,39 @@
  */
 
 #include "text.h"
+
 #include <gtkmm/entry.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 Text::Text(Glib::ustring const &label, Glib::ustring const &tooltip,
-               Glib::ustring const &suffix,
-               Glib::ustring const &icon,
-               bool mnemonic)
-    : Labelled(label, tooltip, new Gtk::Entry(), suffix, icon, mnemonic),
+           Glib::ustring const &icon,
+           bool mnemonic)
+    : Labelled{label, tooltip, new Gtk::Entry{}, icon, mnemonic},
       setProgrammatically(false)
 {
 }
 
 Glib::ustring const Text::getText() const
 {
-    g_assert(_widget != nullptr);
-    return static_cast<Gtk::Entry*>(_widget)->get_text();
+    g_assert(_widget);
+    return dynamic_cast<Gtk::Entry const &>(*_widget).get_text();
 }
 
 void Text::setText(Glib::ustring const text)
 {
-    g_assert(_widget != nullptr);
+    g_assert(_widget);
     setProgrammatically = true; // callback is supposed to reset back, if it cares
-    static_cast<Gtk::Entry*>(_widget)->set_text(text); // FIXME: set correctly
+    dynamic_cast<Gtk::Entry &>(*_widget).set_text(text); // FIXME: set correctly
 }
 
 Glib::SignalProxy<void> Text::signal_activate()
 {
-    return static_cast<Gtk::Entry*>(_widget)->signal_activate();
+    g_assert(_widget);
+    return dynamic_cast<Gtk::Entry &>(*_widget).signal_activate();
 }
 
-
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

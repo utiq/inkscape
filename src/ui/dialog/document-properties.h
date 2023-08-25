@@ -26,6 +26,7 @@
 #include "config.h" // only include where actually required!
 #endif
 
+#include <memory>
 #include <vector>
 #include <glibmm/refptr.h>
 #include <gtkmm/box.h>
@@ -66,13 +67,10 @@ class PageProperties;
 
 namespace Dialog {
 
-using RDEList = std::vector<UI::Widget::EntityEntry *>;
-
 class DocumentProperties : public DialogBase
 {
 public:
     DocumentProperties();
-    ~DocumentProperties() override;
 
     void  update_widgets();
     static DocumentProperties &getInstance();
@@ -221,7 +219,8 @@ protected:
     Gtk::Label      _grids_label_def;
     //---------------------------------------------------------------
 
-    RDEList _rdflist;
+    using RDFList = std::vector<std::unique_ptr<UI::Widget::EntityEntry>>;
+    RDFList _rdflist;
     UI::Widget::Licensor _licensor;
 
     Gtk::Box& _createPageTabLabel(const Glib::ustring& label, const char *label_image);
@@ -240,7 +239,9 @@ private:
         WatchConnection(DocumentProperties *dialog)
             : _dialog(dialog)
         {}
+
         ~WatchConnection() override { disconnect(); }
+
         void connect(Inkscape::XML::Node *node);
         void disconnect();
 
@@ -260,7 +261,9 @@ private:
 };
 
 } // namespace Dialog
+
 } // namespace UI
+
 } // namespace Inkscape
 
 #endif // INKSCAPE_UI_DIALOG_DOCUMENT_PREFERENCES_H

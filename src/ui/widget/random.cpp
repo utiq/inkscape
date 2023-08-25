@@ -11,21 +11,19 @@
  */
 
 #include "random.h"
-#include "ui/icon-loader.h"
-#include <glibmm/i18n.h>
 
+#include <glibmm/i18n.h>
 #include <gtkmm/button.h>
 #include <gtkmm/image.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+#include "ui/icon-loader.h"
+
+namespace Inkscape::UI::Widget {
 
 Random::Random(Glib::ustring const &label, Glib::ustring const &tooltip,
-               Glib::ustring const &suffix,
                Glib::ustring const &icon,
                bool mnemonic)
-    : Scalar(label, tooltip, suffix, icon, mnemonic)
+    : Scalar(label, tooltip, icon, mnemonic)
 {
     startseed = 0;
     addReseedButton();
@@ -33,22 +31,20 @@ Random::Random(Glib::ustring const &label, Glib::ustring const &tooltip,
 
 Random::Random(Glib::ustring const &label, Glib::ustring const &tooltip,
                unsigned digits,
-               Glib::ustring const &suffix,
                Glib::ustring const &icon,
                bool mnemonic)
-    : Scalar(label, tooltip, digits, suffix, icon, mnemonic)
+    : Scalar(label, tooltip, digits, icon, mnemonic)
 {
     startseed = 0;
     addReseedButton();
 }
 
 Random::Random(Glib::ustring const &label, Glib::ustring const &tooltip,
-               Glib::RefPtr<Gtk::Adjustment> &adjust,
+               Glib::RefPtr<Gtk::Adjustment> adjust,
                unsigned digits,
-               Glib::ustring const &suffix,
                Glib::ustring const &icon,
                bool mnemonic)
-    : Scalar(label, tooltip, adjust, digits, suffix, icon, mnemonic)
+    : Scalar(label, tooltip, std::move(adjust), digits, icon, mnemonic)
 {
     startseed = 0;
     addReseedButton();
@@ -85,9 +81,7 @@ Random::onReseedButtonClick()
     signal_reseeded.emit();
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

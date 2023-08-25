@@ -10,87 +10,48 @@
  */
 
 #include "labelled.h"
-#include "ui/icon-loader.h"
+
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+#include "ui/icon-loader.h"
+
+namespace Inkscape::UI::Widget {
 
 Labelled::Labelled(Glib::ustring const &label, Glib::ustring const &tooltip,
                    Gtk::Widget *widget,
-                   Glib::ustring const &suffix,
                    Glib::ustring const &icon,
                    bool mnemonic)
-    : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL),
-      _widget(widget),
-      _label(Gtk::make_managed<Gtk::Label>(label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, mnemonic)),
-      _suffix(nullptr)
+    : Gtk::Box{Gtk::ORIENTATION_HORIZONTAL, 6}
+    , _widget{widget}
+    , _label{Gtk::make_managed<Gtk::Label>(label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, mnemonic)}
 {
-    _widget->drag_dest_unset();
+    g_assert(widget);
     g_assert(g_utf8_validate(icon.c_str(), -1, nullptr));
-    if (icon != "") {
+
+    _widget->drag_dest_unset();
+
+    g_assert(g_utf8_validate(icon.c_str(), -1, nullptr));
+    if (!icon.empty()) {
         _icon = Gtk::manage(sp_get_icon_image(icon, Gtk::ICON_SIZE_LARGE_TOOLBAR));
         pack_start(*_icon, Gtk::PACK_SHRINK);
     }
 
-    set_spacing(6);
-    // Setting margins separately allows for more control over them
-    // set_margin_start(6);
-    // set_margin_end(6);
     pack_start(*_label, Gtk::PACK_SHRINK);
     pack_start(*Gtk::manage(_widget), Gtk::PACK_SHRINK);
     if (mnemonic) {
         _label->set_mnemonic_widget(*_widget);
     }
-    widget->set_tooltip_markup(tooltip);
+
+    set_tooltip_markup(tooltip);
 }
 
-
-void Labelled::setWidgetSizeRequest(int width, int height)
+bool Labelled::on_mnemonic_activate(bool const group_cycling)
 {
-    if (_widget)
-        _widget->set_size_request(width, height);
+    return _widget->mnemonic_activate(group_cycling);
 }
 
-Gtk::Label const *
-Labelled::getLabel() const
-{
-    return _label;
-}
-
-void
-Labelled::setLabelText(const Glib::ustring &str)
-{
-    _label->set_text(str);
-}
-
-void
-Labelled::setTooltipText(const Glib::ustring &tooltip)
-{
-    _label->set_tooltip_text(tooltip);
-    _widget->set_tooltip_text(tooltip);
-}
-
-bool Labelled::on_mnemonic_activate ( bool group_cycling )
-{
-    return _widget->mnemonic_activate ( group_cycling );
-}
-
-void
-Labelled::set_hexpand(bool expand)
-{
-    // should only have 2 children, but second child may not be _widget
-    child_property_pack_type(*get_children().back()) = expand ? Gtk::PACK_END
-                                                              : Gtk::PACK_START;
-    
-    Gtk::Box::set_hexpand(expand);
-}
-
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

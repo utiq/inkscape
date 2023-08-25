@@ -17,24 +17,23 @@
 //#define DEBUG_GRID_ARRANGE 1
 
 #include "ui/dialog/grid-arrange-tab.h"
-#include <numeric>
-#include <glibmm/i18n.h>
 
+#include <algorithm>
+#include <iterator>
+#include <numeric>
+#include <vector>
+#include <glibmm/i18n.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/sizegroup.h>
-
 #include <2geom/transforms.h>
 
 #include "preferences.h"
 #include "inkscape.h"
-
 #include "document.h"
 #include "document-undo.h"
 #include "desktop.h"
-
 #include "ui/icon-names.h"
 #include "ui/dialog/tile.h" // for Inkscape::UI::Dialog::ArrangeDialog
-
 
 /**
  * Sort ObjectSet by an existing grid arrangement
@@ -99,167 +98,159 @@ static std::vector<SPItem *> grid_item_sort(Inkscape::ObjectSet *items)
     return results;
 }
 
-    namespace Inkscape {
-    namespace UI {
-    namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
-
-    //#########################################################################
-    //## E V E N T S
-    //#########################################################################
-
-    /*
-     *
-     * This arranges the selection in a grid pattern.
-     *
-     */
-
-    void GridArrangeTab::arrange()
-    {
-        // check for correct numbers in the row- and col-spinners
-        on_col_spinbutton_changed();
-        on_row_spinbutton_changed();
-
-        // set padding to manual values
-        double paddingx = XPadding.getValue("px");
-        double paddingy = YPadding.getValue("px");
-        int NoOfCols = NoOfColsSpinner.get_value_as_int();
-        int NoOfRows = NoOfRowsSpinner.get_value_as_int();
-
-        SPDesktop *desktop = Parent->getDesktop();
-        desktop->getDocument()->ensureUpToDate();
-        Inkscape::Selection *selection = desktop->getSelection();
-        if (!selection || selection->isEmpty()) return;
-
-        auto sel_box = selection->documentBounds(SPItem::VISUAL_BBOX);
-        if (sel_box.empty()) return;
-        double grid_left = sel_box->min()[Geom::X];
-        double grid_top = sel_box->min()[Geom::Y];
-
-        // require the sorting done before we can calculate row heights etc.
-        auto sorted = grid_item_sort(selection);
-
-        // Calculate individual Row and Column sizes if necessary
-        auto row_heights = std::vector<double>(NoOfRows, 0.0);
-        auto col_widths = std::vector<double>(NoOfCols, 0.0);
-        for(int i = 0; i < sorted.size(); i++) {
-            if (Geom::OptRect box = sorted[i]->documentVisualBounds()) {
-                double width = box->dimensions()[Geom::X];
-                double height = box->dimensions()[Geom::Y];
-                if (width > col_widths[(i % NoOfCols)]) {
-                    col_widths[(i % NoOfCols)] = width;
-                }
-                if (height > row_heights[(i / NoOfCols)]) {
-                    row_heights[(i / NoOfCols)] = height;
-                }
-            }
-        }
-
-        double col_width = *std::max_element(std::begin(col_widths), std::end(col_widths));
-        double row_height = *std::max_element(std::begin(row_heights), std::end(row_heights));
-
-        /// Make sure the top and left of the grid don't move by compensating for align values.
-        if (RowHeightButton.get_active()){
-            grid_top = grid_top - (((row_height - row_heights[0]) / 2)*(VertAlign));
-        }
-        if (ColumnWidthButton.get_active()){
-            grid_left = grid_left - (((col_width - col_widths[0]) /2)*(HorizAlign));
-        }
-
-        // Calculate total widths and heights, allowing for columns and rows non uniformly sized.
-        double last_col_padding = 0.0;
-        double total_col_width = 0.0;
-        if (ColumnWidthButton.get_active()){
-            total_col_width = col_width * NoOfCols;
-            // Remember the amount of padding the box will lose on the right side
-            last_col_padding = (col_width - col_widths[NoOfCols-1]) / 2;
-            std::fill(col_widths.begin(), col_widths.end(), col_width);
-        } else {
-            total_col_width = std::accumulate(col_widths.begin(), col_widths.end(), 0);
-        }
-
-        double last_row_padding = 0.0;
-        double total_row_height = 0.0;
-        if (RowHeightButton.get_active()){
-            total_row_height = row_height * NoOfRows;
-            // Remember the amount of padding the box will lose on the bottom side
-            last_row_padding = (row_height - row_heights[NoOfRows-1]) / 2;
-            std::fill(row_heights.begin(), row_heights.end(), row_height);
-        } else {
-            total_row_height = std::accumulate(row_heights.begin(), row_heights.end(), 0);
-        }
-
-        // Fit to bbox, calculate padding between rows accordingly.
-        if (SpaceByBBoxRadioButton.get_active()) {
-            paddingx = (sel_box->width() - total_col_width + last_col_padding) / (NoOfCols -1);
-            paddingy = (sel_box->height() - total_row_height + last_row_padding) / (NoOfRows -1);
-        }
+//#########################################################################
+//## E V E N T S
+//#########################################################################
 
 /*
-    Horizontal align  - Left    = 0
-                        Centre  = 1
-                        Right   = 2
+ *
+ * This arranges the selection in a grid pattern.
+ *
+ */
+void GridArrangeTab::arrange()
+{
+    // check for correct numbers in the row- and col-spinners
+    on_col_spinbutton_changed();
+    on_row_spinbutton_changed();
 
-    Vertical align    - Top     = 0
-                        Middle  = 1
-                        Bottom  = 2
+    // set padding to manual values
+    double paddingx = XPadding.getValue("px");
+    double paddingy = YPadding.getValue("px");
+    int NoOfCols = NoOfColsSpinner.get_value_as_int();
+    int NoOfRows = NoOfRowsSpinner.get_value_as_int();
 
-    X position is calculated by taking the grids left co-ord, adding the distance to the column,
-   then adding 1/2 the spacing multiplied by the align variable above,
-   Y position likewise, takes the top of the grid, adds the y to the current row then adds the padding in to align it.
+    SPDesktop *desktop = Parent->getDesktop();
+    desktop->getDocument()->ensureUpToDate();
+    Inkscape::Selection *selection = desktop->getSelection();
+    if (!selection || selection->isEmpty()) return;
 
-*/
+    auto sel_box = selection->documentBounds(SPItem::VISUAL_BBOX);
+    if (sel_box.empty()) return;
+    double grid_left = sel_box->min()[Geom::X];
+    double grid_top = sel_box->min()[Geom::Y];
+
+    // require the sorting done before we can calculate row heights etc.
+    auto sorted = grid_item_sort(selection);
+
+    // Calculate individual Row and Column sizes if necessary
+    auto row_heights = std::vector<double>(NoOfRows, 0.0);
+    auto col_widths = std::vector<double>(NoOfCols, 0.0);
+    for(int i = 0; i < sorted.size(); i++) {
+        if (Geom::OptRect box = sorted[i]->documentVisualBounds()) {
+            double width = box->dimensions()[Geom::X];
+            double height = box->dimensions()[Geom::Y];
+            if (width > col_widths[(i % NoOfCols)]) {
+                col_widths[(i % NoOfCols)] = width;
+            }
+            if (height > row_heights[(i / NoOfCols)]) {
+                row_heights[(i / NoOfCols)] = height;
+            }
+        }
+    }
+
+    double col_width = *std::max_element(std::begin(col_widths), std::end(col_widths));
+    double row_height = *std::max_element(std::begin(row_heights), std::end(row_heights));
+
+    /// Make sure the top and left of the grid don't move by compensating for align values.
+    if (RowHeightButton.get_active()){
+        grid_top = grid_top - (((row_height - row_heights[0]) / 2)*(VertAlign));
+    }
+    if (ColumnWidthButton.get_active()){
+        grid_left = grid_left - (((col_width - col_widths[0]) /2)*(HorizAlign));
+    }
+
+    // Calculate total widths and heights, allowing for columns and rows non uniformly sized.
+    double last_col_padding = 0.0;
+    double total_col_width = 0.0;
+    if (ColumnWidthButton.get_active()){
+        total_col_width = col_width * NoOfCols;
+        // Remember the amount of padding the box will lose on the right side
+        last_col_padding = (col_width - col_widths[NoOfCols-1]) / 2;
+        std::fill(col_widths.begin(), col_widths.end(), col_width);
+    } else {
+        total_col_width = std::accumulate(col_widths.begin(), col_widths.end(), 0);
+    }
+
+    double last_row_padding = 0.0;
+    double total_row_height = 0.0;
+    if (RowHeightButton.get_active()){
+        total_row_height = row_height * NoOfRows;
+        // Remember the amount of padding the box will lose on the bottom side
+        last_row_padding = (row_height - row_heights[NoOfRows-1]) / 2;
+        std::fill(row_heights.begin(), row_heights.end(), row_height);
+    } else {
+        total_row_height = std::accumulate(row_heights.begin(), row_heights.end(), 0);
+    }
+
+    // Fit to bbox, calculate padding between rows accordingly.
+    if (SpaceByBBoxRadioButton.get_active()) {
+        paddingx = (sel_box->width() - total_col_width + last_col_padding) / (NoOfCols -1);
+        paddingy = (sel_box->height() - total_row_height + last_row_padding) / (NoOfRows -1);
+    }
+
+    /*
+        Horizontal align  - Left    = 0
+                            Centre  = 1
+                            Right   = 2
+
+        Vertical align    - Top     = 0
+                            Middle  = 1
+                            Bottom  = 2
+
+       X position is calculated by taking the grids left co-ord, adding the distance to the column,
+       then adding 1/2 the spacing multiplied by the align variable above,
+       Y position likewise, takes the top of the grid, adds the y to the current row then adds the padding in to align it.
+    */
 
     // Calculate row and column x and y coords required to allow for columns and rows which are non uniformly sized.
-        std::vector<double> col_xs = {0.0};
-        for (int col=1; col < NoOfCols; col++) {
-            col_xs.push_back(col_widths[col-1] + paddingx + col_xs[col-1]);
-        }
+    std::vector<double> col_xs(NoOfCols);
+    for (int col=1; col < NoOfCols; col++) {
+        col_xs[col] = col_widths[col - 1] + paddingx + col_xs[col - 1];
+    }
 
-        std::vector<double> row_ys = {0.0};
-        for (int row=1; row < NoOfRows; row++) {
-            row_ys.push_back(row_heights[row-1] + paddingy + row_ys[row-1]);
-        }
+    std::vector<double> row_ys(NoOfRows);
+    for (int row=1; row < NoOfRows; row++) {
+        row_ys[row] = row_heights[row - 1] + paddingy + row_ys[row - 1];
+    }
 
     int cnt = 0;
     std::vector<SPItem*>::iterator it = sorted.begin();
     for (int row_cnt=0; ((it != sorted.end()) && (row_cnt<NoOfRows)); ++row_cnt) {
+         std::vector<SPItem *> current_row;
+         int col_cnt = 0;
+         for(;it!=sorted.end()&&col_cnt<NoOfCols;++it) {
+             current_row.push_back(*it);
+             col_cnt++;
+         }
 
-             std::vector<SPItem *> current_row;
-             int col_cnt = 0;
-             for(;it!=sorted.end()&&col_cnt<NoOfCols;++it) {
-                 current_row.push_back(*it);
-                 col_cnt++;
+         for (auto item:current_row) {
+             auto min = Geom::Point(0, 0);
+             double width = 0, height = 0;
+             if (auto vbox = item->documentVisualBounds()) {
+                 width = vbox->dimensions()[Geom::X];
+                 height = vbox->dimensions()[Geom::Y];
+                 min = vbox->min();
              }
 
-             for (auto item:current_row) {
-                 auto min = Geom::Point(0, 0);
-                 double width = 0, height = 0;
-                 if (auto vbox = item->documentVisualBounds()) {
-                     width = vbox->dimensions()[Geom::X];
-                     height = vbox->dimensions()[Geom::Y];
-                     min = vbox->min();
-                 }
+             int row = cnt / NoOfCols;
+             int col = cnt % NoOfCols;
 
-                 int row = cnt / NoOfCols;
-                 int col = cnt % NoOfCols;
+             double new_x = grid_left + (((col_widths[col] - width)/2)*HorizAlign) + col_xs[col];
+             double new_y = grid_top + (((row_heights[row] - height)/2)*VertAlign) + row_ys[row];
 
-                 double new_x = grid_left + (((col_widths[col] - width)/2)*HorizAlign) + col_xs[col];
-                 double new_y = grid_top + (((row_heights[row] - height)/2)*VertAlign) + row_ys[row];
-
-                 Geom::Point move = Geom::Point(new_x, new_y) - min;
-                 Geom::Affine const affine = Geom::Affine(Geom::Translate(move));
-                 item->set_i2d_affine(item->i2doc_affine() * affine * item->document->doc2dt());
-                 item->doWriteTransform(item->transform);
-                 item->updateRepr();
-                 cnt +=1;
-             }
+             Geom::Point move = Geom::Point(new_x, new_y) - min;
+             Geom::Affine const affine = Geom::Affine(Geom::Translate(move));
+             item->set_i2d_affine(item->i2doc_affine() * affine * item->document->doc2dt());
+             item->doWriteTransform(item->transform);
+             item->updateRepr();
+             cnt +=1;
+         }
     }
 
     DocumentUndo::done(desktop->getDocument(), _("Arrange in a grid"), INKSCAPE_ICON("dialog-align-and-distribute"));
-
 }
-
 
 //#########################################################################
 //## E V E N T S
@@ -313,7 +304,6 @@ void GridArrangeTab::on_ypad_spinbutton_changed()
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     prefs->setDouble("/dialogs/gridtiler/YPad", YPadding.getValue("px"));
 }
-
 
 /**
  * checked/unchecked autosize Rows button.
@@ -462,7 +452,6 @@ void GridArrangeTab::setDesktop(SPDesktop *desktop)
     }
 }
 
-
 //#########################################################################
 //## C O N S T R U C T O R    /    D E S T R U C T O R
 //#########################################################################
@@ -471,8 +460,8 @@ void GridArrangeTab::setDesktop(SPDesktop *desktop)
  */
 GridArrangeTab::GridArrangeTab(ArrangeDialog *parent)
     : Parent(parent),
-      XPadding(_("X:"), _("Horizontal spacing between columns."), UNIT_TYPE_LINEAR, "", "object-columns", &PaddingUnitMenu),
-      YPadding(_("Y:"), _("Vertical spacing between rows."), XPadding, "", "object-rows"),
+      XPadding{_("X:"), _("Horizontal spacing between columns"), UNIT_TYPE_LINEAR, "object-columns", &PaddingUnitMenu},
+      YPadding(_("Y:"), _("Vertical spacing between rows"), XPadding, "object-rows"),
       PaddingTable(Gtk::make_managed<Gtk::Grid>())
 {
      // bool used by spin button callbacks to stop loops where they change each other.
@@ -638,14 +627,11 @@ GridArrangeTab::GridArrangeTab(ArrangeDialog *parent)
     show_all_children();
 }
 
-
 GridArrangeTab::~GridArrangeTab() {
     setDesktop(nullptr);
 }
 
-} //namespace Dialog
-} //namespace UI
-} //namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

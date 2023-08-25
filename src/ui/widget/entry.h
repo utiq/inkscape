@@ -15,11 +15,9 @@
 
 namespace Gtk {
 class Entry;
-}
+} // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
  * Helperclass for Gtk::Entry widgets.
@@ -29,8 +27,7 @@ class Entry : public Labelled
 public:
     Entry( Glib::ustring const &label,
            Glib::ustring const &tooltip,
-           Glib::ustring const &suffix = "",
-           Glib::ustring const &icon = "",
+           Glib::ustring const &icon = {},
            bool mnemonic = true);
 
     // TO DO: add methods to access Gtk::Entry widget
@@ -38,8 +35,17 @@ public:
     Gtk::Entry*  getEntry() {return (Gtk::Entry*)(_widget);};    
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // SEEN_INKSCAPE_UI_WIDGET_ENTRY_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

@@ -11,68 +11,58 @@
  */
 
 #include "scalar-unit.h"
+
+#include <utility>
+
 #include "spinbutton.h"
 
 using Inkscape::Util::unit_table;
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 ScalarUnit::ScalarUnit(Glib::ustring const &label, Glib::ustring const &tooltip,
                        UnitType unit_type,
-                       Glib::ustring const &suffix,
                        Glib::ustring const &icon,
                        UnitMenu *unit_menu,
                        bool mnemonic)
-    : Scalar(label, tooltip, suffix, icon, mnemonic),
+    : Scalar(label, tooltip, icon, mnemonic),
       _unit_menu(unit_menu),
       _hundred_percent(0),
       _absolute_is_increment(false),
       _percentage_is_increment(false)
 {
-    if (_unit_menu == nullptr) {
+    if (!_unit_menu) {
         _unit_menu = Gtk::make_managed<UnitMenu>();
-        g_assert(_unit_menu);
         _unit_menu->setUnitType(unit_type);
 
+        g_assert(_widget);
         remove(*_widget);
         auto const widget_holder = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 6);
         widget_holder->pack_start(*_widget, Gtk::PACK_SHRINK);
         widget_holder->pack_start(*_unit_menu, Gtk::PACK_SHRINK);
         pack_start(*widget_holder, Gtk::PACK_SHRINK);
     }
+
+    g_assert(_unit_menu);
+
     _unit_menu->signal_changed()
             .connect_notify(sigc::mem_fun(*this, &ScalarUnit::on_unit_changed));
 
-    static_cast<SpinButton*>(_widget)->setUnitMenu(_unit_menu);
+    dynamic_cast<SpinButton &>(*_widget).setUnitMenu(_unit_menu);
 
     lastUnits = _unit_menu->getUnitAbbr();
 }
 
 ScalarUnit::ScalarUnit(Glib::ustring const &label, Glib::ustring const &tooltip,
                        ScalarUnit &take_unitmenu,
-                       Glib::ustring const &suffix,
                        Glib::ustring const &icon,
                        bool mnemonic)
-    : Scalar(label, tooltip, suffix, icon, mnemonic),
-      _unit_menu(take_unitmenu._unit_menu),
-      _hundred_percent(0),
-      _absolute_is_increment(false),
-      _percentage_is_increment(false)
+    : ScalarUnit{label, tooltip, UnitType{}, icon, take_unitmenu._unit_menu, mnemonic}
 {
-    _unit_menu->signal_changed()
-            .connect_notify(sigc::mem_fun(*this, &ScalarUnit::on_unit_changed));
-
-    static_cast<SpinButton*>(_widget)->setUnitMenu(_unit_menu);
-
-    lastUnits = _unit_menu->getUnitAbbr();
 }
-
 
 void ScalarUnit::initScalar(double min_value, double max_value)
 {
-    g_assert(_unit_menu != nullptr);
     Scalar::setDigits(_unit_menu->getDefaultDigits());
     Scalar::setIncrements(_unit_menu->getDefaultStep(),
                           _unit_menu->getDefaultPage());
@@ -81,7 +71,6 @@ void ScalarUnit::initScalar(double min_value, double max_value)
 
 bool ScalarUnit::setUnit(Glib::ustring const &unit)
 {
-    g_assert(_unit_menu != nullptr);
     // First set the unit
     if (!_unit_menu->setUnit(unit)) {
         return false;
@@ -92,41 +81,35 @@ bool ScalarUnit::setUnit(Glib::ustring const &unit)
 
 void ScalarUnit::setUnitType(UnitType unit_type)
 {
-    g_assert(_unit_menu != nullptr);
     _unit_menu->setUnitType(unit_type);
     lastUnits = _unit_menu->getUnitAbbr();
 }
 
 void ScalarUnit::resetUnitType(UnitType unit_type)
 {
-    g_assert(_unit_menu != nullptr);
     _unit_menu->resetUnitType(unit_type);
     lastUnits = _unit_menu->getUnitAbbr();
 }
 
 Unit const * ScalarUnit::getUnit() const
 {
-    g_assert(_unit_menu != nullptr);
     return _unit_menu->getUnit();
 }
 
 UnitType ScalarUnit::getUnitType() const
 {
-    g_assert(_unit_menu);
     return _unit_menu->getUnitType();
 }
 
 void ScalarUnit::setValue(double number, Glib::ustring const &units)
 {
-    g_assert(_unit_menu != nullptr);
     _unit_menu->setUnit(units);
     Scalar::setValue(number);
 }
 
 void ScalarUnit::setValueKeepUnit(double number, Glib::ustring const &units)
 {
-    g_assert(_unit_menu != nullptr);
-    if (units == "") {
+    if (units.empty()) {
         // set the value in the default units
         Scalar::setValue(number);
     } else {
@@ -142,8 +125,7 @@ void ScalarUnit::setValue(double number)
 
 double ScalarUnit::getValue(Glib::ustring const &unit_name) const
 {
-    g_assert(_unit_menu != nullptr);
-    if (unit_name == "") {
+    if (unit_name.empty()) {
         // Return the value in the default units
         return Scalar::getValue();
     } else {
@@ -155,13 +137,13 @@ double ScalarUnit::getValue(Glib::ustring const &unit_name) const
 void ScalarUnit::grabFocusAndSelectEntry()
 {
     _widget->grab_focus();
-    static_cast<SpinButton*>(_widget)->select_region(0, 20);
+    dynamic_cast<SpinButton &>(*_widget).select_region(0, 20);
 }
 
 void ScalarUnit::setAlignment(double xalign)
 {
     xalign = std::clamp(xalign,0.0,1.0);
-    static_cast<Gtk::Entry*>(_widget)->set_alignment(xalign);
+    dynamic_cast<Gtk::Entry &>(*_widget).set_alignment(xalign);
 }
 
 void ScalarUnit::setHundredPercent(double number)
@@ -220,24 +202,15 @@ double ScalarUnit::getAsPercentage()
     return convertedVal;
 }
 
-
-void  ScalarUnit::setFromPercentage(double value)
+void ScalarUnit::setFromPercentage(double value)
 {
     double absolute = PercentageToAbsolute(value);
     Scalar::setValue(absolute);
 }
 
-
 void ScalarUnit::on_unit_changed()
 {
-    g_assert(_unit_menu != nullptr);
-
     Glib::ustring abbr = _unit_menu->getUnitAbbr();
-
-    if (_suffix) {
-        _suffix->set_label(abbr);
-    }
-
     Inkscape::Util::Unit const *new_unit = unit_table.getUnit(abbr);
     Inkscape::Util::Unit const *old_unit = unit_table.getUnit(lastUnits);
 
@@ -252,12 +225,10 @@ void ScalarUnit::on_unit_changed()
     }
     Scalar::setValue(convertedVal);
 
-    lastUnits = abbr;
+    lastUnits = std::move(abbr);
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

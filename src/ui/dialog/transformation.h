@@ -17,18 +17,16 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiobutton.h>
 
+#include "helper/auto-connection.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/notebook-page.h"
 #include "ui/widget/scalar-unit.h"
 
 namespace Gtk {
 class Button;
-}
+} // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
-
+namespace Inkscape::UI::Dialog {
 
 /**
  * Transformation dialog.
@@ -37,7 +35,7 @@ namespace Dialog {
  * 5 transformation operations are currently possible: move, scale,
  * rotate, skew and matrix.
  */
-class Transformation : public DialogBase
+class Transformation final : public DialogBase
 {
 public:
     /**
@@ -60,11 +58,6 @@ public:
      * we use the ScalarUnit class for this.
      */
     Transformation();
-
-    /**
-     * Cleanup
-     */
-    ~Transformation() override;
 
     /**
      * Show the Move panel
@@ -99,7 +92,7 @@ public:
         { presentPage(PAGE_TRANSFORM); }
 
 
-    int getCurrentPage()
+    int getCurrentPage() const
         { return _notebook.get_current_page(); }
 
     enum PageType {
@@ -112,7 +105,6 @@ public:
     void updateSelection(PageType page, Inkscape::Selection *selection);
 
 protected:
-
     Gtk::Notebook     _notebook;
 
     UI::Widget::NotebookPage      _page_move;
@@ -208,16 +200,12 @@ private:
     Gtk::Button *applyButton;
     Gtk::Button *resetButton;
 
-    sigc::connection _selChangeConn;
-    sigc::connection _selModifyConn;
-    sigc::connection _tabSwitchConn;
+    auto_connection _tabSwitchConn;
 };
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
-#endif //INKSCAPE_UI_DIALOG_TRANSFORMATION_H
+#endif // INKSCAPE_UI_DIALOG_TRANSFORMATION_H
 
 /*
   Local Variables:

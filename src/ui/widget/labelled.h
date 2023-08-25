@@ -14,65 +14,54 @@
 
 #include <gtkmm/box.h>
 
+namespace Glib {
+class ustring;
+} // namespace Glib
+
 namespace Gtk {
 class Image;
 class Label;
-}
+} // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
- * Adds a label with optional icon or suffix to another widget.
+ * Adds a label with optional icon to another widget.
  */
 class Labelled : public Gtk::Box
 {
 protected:
     Gtk::Widget  *_widget;
     Gtk::Label   *_label;
-    Gtk::Label   *_suffix;
     Gtk::Image   *_icon;
 
 public:
-    /**
-     * Construct a Labelled Widget.
-     *
+    /** Construct a Labelled Widget.
      * @param label     Label.
+     * @param tooltip   Tooltip markup to set on this Box.
      * @param widget    Widget to label; should be allocated with new, as it will
      *                  be passed to Gtk::manage().
-     * @param suffix    Suffix, placed after the widget (defaults to "").
-     * @param icon      Icon filename, placed before the label (defaults to "").
+     * @param icon      Icon filename, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the text
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to true).
      */
     Labelled(Glib::ustring const &label, Glib::ustring const &tooltip,
              Gtk::Widget *widget,
-             Glib::ustring const &suffix = "",
-             Glib::ustring const &icon = "",
+             Glib::ustring const &icon = {},
              bool mnemonic = true);
 
-    /**
-     * Allow the setting of the width of the labelled widget
-     */
-    void setWidgetSizeRequest(int width, int height);
+    inline Gtk::Widget const *getWidget() const { return _widget; }
+    inline Gtk::Widget       *getWidget()       { return _widget; }
 
-    inline decltype(_widget) getWidget() const { return _widget; }
-    Gtk::Label const *getLabel() const;
-
-    void setLabelText(const Glib::ustring &str);
-    void setTooltipText(const Glib::ustring &tooltip);
-
-    void set_hexpand(bool expand = true);
+    inline Gtk::Label  const *getLabel () const { return _label ; }
+    inline Gtk::Label        *getLabel ()       { return _label ; }
 
 private:
-    bool on_mnemonic_activate( bool group_cycling ) override;
+    bool on_mnemonic_activate(bool group_cycling) final;
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_LABELLED_H
 

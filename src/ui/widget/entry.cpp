@@ -12,19 +12,24 @@
 
 #include <gtkmm/entry.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 Entry::Entry(  Glib::ustring const &label, Glib::ustring const &tooltip,
-               Glib::ustring const &suffix,
                Glib::ustring const &icon,
                bool mnemonic)
-    : Labelled(label, tooltip, new Gtk::Entry(), suffix, icon, mnemonic)
+    : Labelled{label, tooltip, new Gtk::Entry{}, icon, mnemonic}
 {    
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

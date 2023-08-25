@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef INKSCAPE_LIVEPATHEFFECT_PARAMETER_ENUM_H
-#define INKSCAPE_LIVEPATHEFFECT_PARAMETER_ENUM_H
-
 /*
  * Inkscape::LivePathEffectParameters
  *
@@ -10,17 +7,17 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_LIVEPATHEFFECT_PARAMETER_ENUM_H
+#define INKSCAPE_LIVEPATHEFFECT_PARAMETER_ENUM_H
+
 #include <glibmm/ustring.h>
 
 #include "live_effects/effect.h"
 #include "live_effects/parameter/parameter.h"
-
 #include "ui/icon-names.h"
 #include "ui/widget/registered-enums.h"
 
-namespace Inkscape {
-
-namespace LivePathEffect {
+namespace Inkscape::LivePathEffect {
 
 template<typename E> class EnumParam : public Parameter {
 public:
@@ -40,7 +37,6 @@ public:
         sorted = sort;
     };
 
-    ~EnumParam() override = default;
     EnumParam(const EnumParam&) = delete;
     EnumParam& operator=(const EnumParam&) = delete;
 
@@ -106,9 +102,17 @@ private:
     const Util::EnumDataConverter<E> * enumdataconv;
 };
 
+}; // namespace Inkscape::LivePathEffect
 
-}; //namespace LivePathEffect
+#endif // INKSCAPE_LIVEPATHEFFECT_PARAMETER_ENUM_H
 
-}; //namespace Inkscape
-
-#endif
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

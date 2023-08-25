@@ -36,7 +36,7 @@ public:
                 Inkscape::XML::Node* repr_in = nullptr,
                 SPDocument *doc_in = nullptr,
                 bool sorted = true )
-        : RegisteredWidget< LabelledComboBoxEnum<E> >(label, tip, c, (const Glib::ustring &)"", (const Glib::ustring &)"", true, sorted)
+        : RegisteredWidget< LabelledComboBoxEnum<E> >(label, tip, c, Glib::ustring{}, true, sorted)
     {
         RegisteredWidget< LabelledComboBoxEnum<E> >::init_parent(key, wr, repr_in, doc_in);
         _changed_connection = combobox()->signal_changed().connect (sigc::mem_fun (*this, &RegisteredEnum::on_changed));

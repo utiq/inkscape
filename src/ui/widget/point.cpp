@@ -19,10 +19,9 @@ namespace UI {
 namespace Widget {
 
 Point::Point(Glib::ustring const &label, Glib::ustring const &tooltip,
-               Glib::ustring const &suffix,
                Glib::ustring const &icon,
                bool mnemonic)
-    : Labelled(label, tooltip, new Gtk::Box(Gtk::ORIENTATION_VERTICAL), suffix, icon, mnemonic),
+    : Labelled(label, tooltip, new Gtk::Box(Gtk::ORIENTATION_VERTICAL), icon, mnemonic),
       xwidget("X:",""),
       ywidget("Y:","")
 {
@@ -35,10 +34,9 @@ Point::Point(Glib::ustring const &label, Glib::ustring const &tooltip,
 
 Point::Point(Glib::ustring const &label, Glib::ustring const &tooltip,
                unsigned digits,
-               Glib::ustring const &suffix,
                Glib::ustring const &icon,
                bool mnemonic)
-    : Labelled(label, tooltip, new Gtk::Box(Gtk::ORIENTATION_VERTICAL), suffix, icon, mnemonic),
+    : Labelled(label, tooltip, new Gtk::Box(Gtk::ORIENTATION_VERTICAL), icon, mnemonic),
       xwidget("X:","", digits),
       ywidget("Y:","", digits)
 {
@@ -52,10 +50,9 @@ Point::Point(Glib::ustring const &label, Glib::ustring const &tooltip,
 Point::Point(Glib::ustring const &label, Glib::ustring const &tooltip,
                Glib::RefPtr<Gtk::Adjustment> &adjust,
                unsigned digits,
-               Glib::ustring const &suffix,
                Glib::ustring const &icon,
                bool mnemonic)
-    : Labelled(label, tooltip, new Gtk::Box(Gtk::ORIENTATION_VERTICAL), suffix, icon, mnemonic),
+    : Labelled(label, tooltip, new Gtk::Box(Gtk::ORIENTATION_VERTICAL), icon, mnemonic),
       xwidget("X:","", adjust, digits),
       ywidget("Y:","", adjust, digits)
 {

@@ -9,16 +9,14 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <gtkmm.h>
-
-#include "preferences.h"
 #include "rendering-options.h"
-#include "util/units.h"
+
 #include <glibmm/i18n.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+#include "preferences.h"
+#include "util/units.h"
+
+namespace Inkscape::UI::Widget {
 
 void RenderingOptions::_toggled()
 {
@@ -35,7 +33,7 @@ RenderingOptions::RenderingOptions () :
             Glib::ustring(_("Preferred resolution of rendering, "
                             "in dots per inch.")),
             1,
-            Glib::ustring(""), Glib::ustring(""),
+            Glib::ustring{},
             false)
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -106,9 +104,7 @@ RenderingOptions::bitmap_dpi ()
     return _dpi.getValue();
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

@@ -14,12 +14,11 @@
 
 #include "scalar.h"
 
+#include <gtkmm/box.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/radiobutton.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
  * A container for selecting rendering options.
@@ -50,9 +49,7 @@ protected:
     void _toggled();
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_RENDERING_OPTIONS_H
 

@@ -19,9 +19,7 @@
 #include "util/enums.h"
 #include <glibmm/i18n.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
  * Simplified management of enumerations in the UI as combobox.
@@ -201,11 +199,10 @@ public:
     LabelledComboBoxEnum( Glib::ustring const &label,
                           Glib::ustring const &tooltip,
                           const Util::EnumDataConverter<E>& c,
-                          Glib::ustring const &suffix = "",
-                          Glib::ustring const &icon = "",
+                          Glib::ustring const &icon = {},
                           bool mnemonic = true,
                           bool sorted = true)
-        : Labelled(label, tooltip, new ComboBoxEnum<E>(c, SPAttr::INVALID, sorted), suffix, icon, mnemonic)
+        : Labelled{label, tooltip, new ComboBoxEnum<E>{c, SPAttr::INVALID, sorted}, icon, mnemonic}
     { 
     }
 
@@ -214,11 +211,9 @@ public:
     }
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Widget
 
-#endif
+#endif // INKSCAPE_UI_WIDGET_COMBO_ENUMS_H
 
 /*
   Local Variables:

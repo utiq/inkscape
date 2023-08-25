@@ -23,7 +23,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <list>
 #include <optional>
 #include <set>
 #include <string>
@@ -97,7 +96,7 @@ private:
     RegisteredScalar *_rsu_az = nullptr;
     RegisteredColorPicker *_rcp_gcol = nullptr;
     RegisteredColorPicker *_rcp_gmcol = nullptr;
-    RegisteredSuffixedInteger *_rsi = nullptr;
+    RegisteredInteger *_rsi = nullptr;
     RegisteredScalarUnit* _rsu_gx = nullptr;
     RegisteredScalarUnit* _rsu_gy = nullptr;
     RegisteredScalarUnit* _rsu_mx = nullptr;
@@ -185,7 +184,6 @@ DocumentProperties::DocumentProperties()
     , _namedview_connection(this)
     , _root_connection(this)
 {
-    set_spacing (0);
     pack_start(_notebook, true, true);
 
     _notebook.append_page(*_page_page,      _("Display"));
@@ -216,12 +214,6 @@ DocumentProperties::DocumentProperties()
     _grids_button_remove.signal_clicked().connect([=](){ onRemoveGrid(); });
 
     show_all_children();
-}
-
-DocumentProperties::~DocumentProperties()
-{
-    for (auto &it : _rdflist)
-        delete it;
 }
 
 //========================================================================
@@ -1054,8 +1046,7 @@ void DocumentProperties::build_metadata()
     int row = 1;
     for (entity = rdf_work_entities; entity && entity->name; entity++, row++) {
         if ( entity->editable == RDF_EDIT_GENERIC ) {
-            EntityEntry *w = EntityEntry::create (entity, _wr);
-            _rdflist.push_back(w);
+            auto w = std::unique_ptr<EntityEntry>{EntityEntry::create(entity, _wr)};
 
             w->_label.set_halign(Gtk::ALIGN_START);
             w->_label.set_valign(Gtk::ALIGN_CENTER);
@@ -1064,6 +1055,8 @@ void DocumentProperties::build_metadata()
             w->_packable->set_hexpand();
             w->_packable->set_valign(Gtk::ALIGN_CENTER);
             _page_metadata1->table().attach(*w->_packable, 1, row, 1, 1);
+
+            _rdflist.push_back(std::move(w));
         }
     }
 
@@ -1072,9 +1065,7 @@ void DocumentProperties::build_metadata()
     auto const button_load = Gtk::make_managed<Gtk::Button>(_("Use _default"),true);
     button_load->set_tooltip_text(_("Use the previously saved default metadata here"));
 
-    auto const box_buttons = Gtk::make_managed<Gtk::Box>();
-
-    box_buttons->set_spacing(4);
+    auto const box_buttons = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
     box_buttons->pack_end(*button_save, true, true, 6);
     box_buttons->pack_end(*button_load, true, true, 6);
     _page_metadata1->pack_end(*box_buttons, false, false, 0);
@@ -1544,7 +1535,7 @@ void DocumentProperties::update_widgets()
     //-----------------------------------------------------------meta pages
     // update the RDF entities; note that this may modify document, maybe doc-undo should be called?
     if (auto document = getDocument()) {
-        for (auto &it : _rdflist) {
+        for (auto const &it : _rdflist) {
             bool read_only = false;
             it->update(document, read_only);
         }
@@ -1570,7 +1561,7 @@ void DocumentProperties::on_response (int id)
 void DocumentProperties::load_default_metadata()
 {
     /* Get the data RDF entities data from preferences*/
-    for (auto &it : _rdflist) {
+    for (auto const &it : _rdflist) {
         it->load_from_preferences ();
     }
 }
@@ -1579,7 +1570,7 @@ void DocumentProperties::save_default_metadata()
 {
     /* Save these RDF entities to preferences*/
     if (auto document = getDocument()) {
-        for (auto &it : _rdflist) {
+        for (auto const &it : _rdflist) {
             it->save_to_preferences(document);
         }
     }
@@ -1704,10 +1695,9 @@ GridWidget::GridWidget(SPGrid *grid)
 
     // Tab label is constructed here and passed back to parent widget for display to
     // reduce the number of watchers that have to keep tabs on the properties
-    _tab = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
+    _tab = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
     _tab_img = Gtk::make_managed<Gtk::Image>();
     _tab_lbl = Gtk::make_managed<Gtk::Label>("-", true);
-    _tab->set_spacing(4);
     _tab->pack_start(*_tab_img);
     _tab->pack_start(*_tab_lbl);
     _tab->show_all();
@@ -1787,9 +1777,9 @@ GridWidget::GridWidget(SPGrid *grid)
                 *_rumg, _wr, repr, doc, RSU_y);
 
     _rsu_ax = Gtk::make_managed<RegisteredScalar>(
-                _("Angle X:"), _("Angle of x-axis"), "gridanglex", _wr, repr, doc);
+                _("An_gle X:"), _("Angle of x-axis"), "gridanglex", _wr, repr, doc);
     _rsu_az = Gtk::make_managed<RegisteredScalar>(
-                _("Angle Z:"), _("Angle of z-axis"), "gridanglez", _wr, repr, doc);
+                _("Ang_le Z:"), _("Angle of z-axis"), "gridanglez", _wr, repr, doc);
     _rcp_gcol = Gtk::make_managed<RegisteredColorPicker>(
                 _("Minor grid line _color:"), _("Minor grid line color"), _("Color of the minor grid lines"),
                 "color", "opacity", _wr, repr, doc);
@@ -1797,8 +1787,9 @@ GridWidget::GridWidget(SPGrid *grid)
                 _("Ma_jor grid line color:"), _("Major grid line color"),
                 _("Color of the major (highlighted) grid lines"),
                 "empcolor", "empopacity", _wr, repr, doc);
-    _rsi = Gtk::make_managed<RegisteredSuffixedInteger>(
-                _("_Major grid line every:"), "", _("lines"), "empspacing", _wr, repr, doc);
+    _rsi = Gtk::make_managed<RegisteredInteger>(
+                _("Major grid line e_very:"), _("Number of lines"),
+                "empspacing", _wr, repr, doc);
 
     _rumg->set_hexpand();
     _rsu_ax->set_hexpand();
@@ -1842,14 +1833,11 @@ GridWidget::GridWidget(SPGrid *grid)
     pack_start(*inner, false, false);
     property_margin().set_value(4);
 
-    std::list<Gtk::Widget*> slaves;
-    for (auto &item : left->get_children()) {
-        if (item != _grid_rcb_enabled) {
-            slaves.push_back(item);
-        }
-    }
-    slaves.push_back(column);
-    _grid_rcb_enabled->setSlaveWidgets(slaves);
+    auto widgets = left->get_children();
+    widgets.erase(std::remove(widgets.begin(), widgets.end(), _grid_rcb_enabled), widgets.end());
+    widgets.push_back(column);
+    _grid_rcb_enabled->setSubordinateWidgets(std::move(widgets));
+
     _wr.setUpdating(false);
 }
 

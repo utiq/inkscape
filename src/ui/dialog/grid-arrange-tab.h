@@ -18,21 +18,19 @@
 #ifndef INKSCAPE_UI_DIALOG_GRID_ARRANGE_TAB_H
 #define INKSCAPE_UI_DIALOG_GRID_ARRANGE_TAB_H
 
-#include "ui/widget/scalar-unit.h"
-#include "ui/dialog/arrange-tab.h"
-
-#include "ui/widget/anchor-selector.h"
-#include "ui/widget/spinbutton.h"
-
+#include <gtkmm/box.h>
 #include <gtkmm/checkbutton.h>
+#include <gtkmm/label.h>
 #include <gtkmm/radiobutton.h>
-#include <gtkmm/radiobuttongroup.h>
+
+#include "ui/dialog/arrange-tab.h"
+#include "ui/widget/anchor-selector.h"
+#include "ui/widget/scalar-unit.h"
+#include "ui/widget/spinbutton.h"
 
 class SPDesktop;
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 class ArrangeDialog;
 
@@ -132,9 +130,7 @@ private:
     void setDesktop(SPDesktop *);
 };
 
-} //namespace Dialog
-} //namespace UI
-} //namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 #endif /* INKSCAPE_UI_DIALOG_GRID_ARRANGE_TAB_H */
 

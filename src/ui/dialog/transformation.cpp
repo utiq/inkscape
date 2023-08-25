@@ -14,8 +14,12 @@
 
 #include "transformation.h"
 
+#include <sigc++/functors/mem_fun.h>
+#include <gtkmm/box.h>
+#include <gtkmm/button.h>
 #include <gtkmm/dialog.h>
-
+#include <gtkmm/entry.h>
+#include <gtkmm/label.h>
 #include <2geom/transforms.h>
 
 #include "desktop.h"
@@ -24,20 +28,13 @@
 #include "inkscape.h"
 #include "message-stack.h"
 #include "selection-chemistry.h"
-
 #include "object/algorithms/bboxsort.h"
 #include "object/sp-item-transform.h"
 #include "object/sp-namedview.h"
-
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 
-
-
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
-
+namespace Inkscape::UI::Dialog {
 
 /*########################################################################
 # C O N S T R U C T O R
@@ -45,52 +42,56 @@ namespace Dialog {
 
 Transformation::Transformation()
     : DialogBase("/dialogs/transformation", "Transform"),
+
       _page_move              (4, 2),
       _page_scale             (4, 2),
       _page_rotate            (4, 2),
       _page_skew              (4, 2),
       _page_transform         (3, 3),
+
       _scalar_move_horizontal (_("_Horizontal:"), _("Horizontal displacement (relative) or position (absolute)"), UNIT_TYPE_LINEAR,
-                               "", "transform-move-horizontal", &_units_move),
+                               "transform-move-horizontal", &_units_move),
       _scalar_move_vertical   (_("_Vertical:"),  _("Vertical displacement (relative) or position (absolute)"), UNIT_TYPE_LINEAR,
-                               "", "transform-move-vertical", &_units_move),
+                               "transform-move-vertical", &_units_move),
       _scalar_scale_horizontal(_("_Width:"), _("Horizontal size (absolute or percentage of current)"), UNIT_TYPE_DIMENSIONLESS,
-                               "", "transform-scale-horizontal", &_units_scale),
+                               "transform-scale-horizontal", &_units_scale),
       _scalar_scale_vertical  (_("_Height:"),  _("Vertical size (absolute or percentage of current)"), UNIT_TYPE_DIMENSIONLESS,
-                               "", "transform-scale-vertical", &_units_scale),
+                               "transform-scale-vertical", &_units_scale),
       _scalar_rotate          (_("A_ngle:"), _("Rotation angle (positive = counterclockwise)"), UNIT_TYPE_RADIAL,
-                               "", "transform-rotate", &_units_rotate),
+                               "transform-rotate", &_units_rotate),
       _scalar_skew_horizontal (_("_Horizontal:"), _("Horizontal skew angle (positive = counterclockwise), or absolute displacement, or percentage displacement"), UNIT_TYPE_LINEAR,
-                               "", "transform-skew-horizontal", &_units_skew),
+                               "transform-skew-horizontal", &_units_skew),
       _scalar_skew_vertical   (_("_Vertical:"),  _("Vertical skew angle (positive = clockwise), or absolute displacement, or percentage displacement"),  UNIT_TYPE_LINEAR,
-                               "", "transform-skew-vertical", &_units_skew),
+                               "transform-skew-vertical", &_units_skew),
 
-      _scalar_transform_a     ("", _("Transformation matrix element A")),
-      _scalar_transform_b     ("", _("Transformation matrix element B")),
-      _scalar_transform_c     ("", _("Transformation matrix element C")),
-      _scalar_transform_d     ("", _("Transformation matrix element D")),
-      _scalar_transform_e     ("", _("Transformation matrix element E"), UNIT_TYPE_LINEAR, "", "", &_units_transform),
-      _scalar_transform_f     ("", _("Transformation matrix element F"), UNIT_TYPE_LINEAR, "", "", &_units_transform),
+      _scalar_transform_a     ({}, _("Transformation matrix element A")),
+      _scalar_transform_b     ({}, _("Transformation matrix element B")),
+      _scalar_transform_c     ({}, _("Transformation matrix element C")),
+      _scalar_transform_d     ({}, _("Transformation matrix element D")),
+      _scalar_transform_e     ({}, _("Transformation matrix element E"),
+                               UNIT_TYPE_LINEAR, {}, &_units_transform),
+      _scalar_transform_f     ({}, _("Transformation matrix element F"),
+                               UNIT_TYPE_LINEAR, {}, &_units_transform),
 
-      _counterclockwise_rotate (),
-      _clockwise_rotate (),
+      _check_move_relative     (_("Rela_tive move")),
+      _check_scale_proportional(_("_Scale proportionally")),
+      _check_apply_separately  (_("Apply to each _object separately")),
+      _check_replace_matrix    (_("Edit c_urrent matrix")),
 
-      _check_move_relative    (_("Rela_tive move")),
-      _check_scale_proportional (_("_Scale proportionally")),
-      _check_apply_separately    (_("Apply to each _object separately")),
-      _check_replace_matrix    (_("Edit c_urrent matrix"))
-
+      resetButton{Gtk::make_managed<Gtk::Button>()},
+      applyButton{Gtk::make_managed<Gtk::Button>(_("_Apply"))}
 {
     _check_move_relative.set_use_underline();
     _check_move_relative.set_tooltip_text(_("Add the specified relative displacement to the current position; otherwise, edit the current absolute position directly"));
+
     _check_scale_proportional.set_use_underline();
     _check_scale_proportional.set_tooltip_text(_("Preserve the width/height ratio of the scaled objects"));
+
     _check_apply_separately.set_use_underline();
     _check_apply_separately.set_tooltip_text(_("Apply the scale/rotate/skew to each selected object separately; otherwise, transform the selection as a whole"));
+
     _check_replace_matrix.set_use_underline();
     _check_replace_matrix.set_tooltip_text(_("Edit the current transform= matrix; otherwise, post-multiply transform= by this matrix"));
-
-    set_spacing(0);
 
     // Notebook for individual transformations
     pack_start(_notebook, false, false);
@@ -124,15 +125,19 @@ Transformation::Transformation()
     _check_apply_separately.signal_toggled().connect(sigc::mem_fun(*this, &Transformation::onApplySeparatelyToggled));
 
     // make sure all spinbuttons activate Apply on pressing Enter
-    ((Gtk::Entry *) (_scalar_move_horizontal.getWidget()))->signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
-    ((Gtk::Entry *) (_scalar_move_vertical.getWidget()))->signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
-    ((Gtk::Entry *) (_scalar_scale_horizontal.getWidget()))->signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
-    ((Gtk::Entry *) (_scalar_scale_vertical.getWidget()))->signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
-    ((Gtk::Entry *) (_scalar_rotate.getWidget()))->signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
-    ((Gtk::Entry *) (_scalar_skew_horizontal.getWidget()))->signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
-    ((Gtk::Entry *) (_scalar_skew_vertical.getWidget()))->signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
+    auto const apply_on_activate = [this](UI::Widget::ScalarUnit &scalar)
+    {
+        auto &entry = dynamic_cast<Gtk::Entry &>(*scalar.getWidget());
+        entry.signal_activate().connect(sigc::mem_fun(*this, &Transformation::_apply));
+    };
+    apply_on_activate(_scalar_move_horizontal );
+    apply_on_activate(_scalar_move_vertical   );
+    apply_on_activate(_scalar_scale_horizontal);
+    apply_on_activate(_scalar_scale_vertical  );
+    apply_on_activate(_scalar_rotate          );
+    apply_on_activate(_scalar_skew_horizontal );
+    apply_on_activate(_scalar_skew_vertical   );
 
-    resetButton = Gtk::make_managed<Gtk::Button>();
     resetButton->set_image_from_icon_name("reset-settings-symbolic");
     resetButton->set_size_request(30, -1);
     resetButton->set_halign(Gtk::ALIGN_CENTER);
@@ -141,7 +146,6 @@ Transformation::Transformation()
     resetButton->set_sensitive(true);
     resetButton->signal_clicked().connect(sigc::mem_fun(*this, &Transformation::onClear));
 
-    applyButton = Gtk::make_managed<Gtk::Button>(_("_Apply"));
     applyButton->set_use_underline();
     applyButton->set_halign(Gtk::ALIGN_CENTER);
     applyButton->set_tooltip_text(_("Apply transformation to selection"));
@@ -158,11 +162,6 @@ Transformation::Transformation()
     pack_start(*button_box, Gtk::PACK_SHRINK, 0);
 
     show_all_children();
-}
-
-Transformation::~Transformation()
-{
-    _tabSwitchConn.disconnect();
 }
 
 void Transformation::selectionChanged(Inkscape::Selection *selection)
@@ -184,13 +183,9 @@ void Transformation::presentPage(Transformation::PageType page)
     set_visible(true);
 }
 
-
-
-
 /*########################################################################
 # S E T U P   L A Y O U T
 ########################################################################*/
-
 
 void Transformation::layoutPageMove()
 {
@@ -348,7 +343,6 @@ void Transformation::layoutPageSkew()
     //TODO: honour rotation center?
 }
 
-
 void Transformation::layoutPageTransform()
 {
     _units_transform.setUnitType(UNIT_TYPE_LINEAR);
@@ -367,7 +361,7 @@ void Transformation::layoutPageTransform()
     _page_transform.table().set_row_spacing(1);
     _page_transform.table().set_column_homogeneous(true);
 
-    _scalar_transform_a.setWidgetSizeRequest(65, -1);
+    _scalar_transform_a.getWidget()->set_size_request(65, -1);
     _scalar_transform_a.setRange(-1e10, 1e10);
     _scalar_transform_a.setDigits(3);
     _scalar_transform_a.setIncrements(0.1, 1.0);
@@ -381,7 +375,7 @@ void Transformation::layoutPageTransform()
     _scalar_transform_a.signal_value_changed()
         .connect(sigc::mem_fun(*this, &Transformation::onTransformValueChanged));
 
-    _scalar_transform_b.setWidgetSizeRequest(65, -1);
+    _scalar_transform_b.getWidget()->set_size_request(65, -1);
     _scalar_transform_b.setRange(-1e10, 1e10);
     _scalar_transform_b.setDigits(3);
     _scalar_transform_b.setIncrements(0.1, 1.0);
@@ -395,7 +389,7 @@ void Transformation::layoutPageTransform()
     _scalar_transform_b.signal_value_changed()
         .connect(sigc::mem_fun(*this, &Transformation::onTransformValueChanged));
 
-    _scalar_transform_c.setWidgetSizeRequest(65, -1);
+    _scalar_transform_c.getWidget()->set_size_request(65, -1);
     _scalar_transform_c.setRange(-1e10, 1e10);
     _scalar_transform_c.setDigits(3);
     _scalar_transform_c.setIncrements(0.1, 1.0);
@@ -409,8 +403,7 @@ void Transformation::layoutPageTransform()
     _scalar_transform_c.signal_value_changed()
         .connect(sigc::mem_fun(*this, &Transformation::onTransformValueChanged));
 
-
-    _scalar_transform_d.setWidgetSizeRequest(65, -1);
+    _scalar_transform_d.getWidget()->set_size_request(65, -1);
     _scalar_transform_d.setRange(-1e10, 1e10);
     _scalar_transform_d.setDigits(3);
     _scalar_transform_d.setIncrements(0.1, 1.0);
@@ -424,8 +417,7 @@ void Transformation::layoutPageTransform()
     _scalar_transform_d.signal_value_changed()
         .connect(sigc::mem_fun(*this, &Transformation::onTransformValueChanged));
 
-
-    _scalar_transform_e.setWidgetSizeRequest(65, -1);
+    _scalar_transform_e.getWidget()->set_size_request(65, -1);
     _scalar_transform_e.setRange(-1e10, 1e10);
     _scalar_transform_e.setDigits(3);
     _scalar_transform_e.setIncrements(0.1, 1.0);
@@ -439,8 +431,7 @@ void Transformation::layoutPageTransform()
     _scalar_transform_e.signal_value_changed()
         .connect(sigc::mem_fun(*this, &Transformation::onTransformValueChanged));
 
-
-    _scalar_transform_f.setWidgetSizeRequest(65, -1);
+    _scalar_transform_f.getWidget()->set_size_request(65, -1);
     _scalar_transform_f.setRange(-1e10, 1e10);
     _scalar_transform_f.setDigits(3);
     _scalar_transform_f.setIncrements(0.1, 1.0);
@@ -483,7 +474,6 @@ void Transformation::layoutPageTransform()
     _check_replace_matrix.signal_toggled()
         .connect(sigc::mem_fun(*this, &Transformation::onReplaceMatrixToggled));
 }
-
 
 /*########################################################################
 # U P D A T E
@@ -531,7 +521,6 @@ void Transformation::onSwitchPage(Gtk::Widget * /*page*/, guint pagenum)
 
     updateSelection((PageType)pagenum, getDesktop()->getSelection());
 }
-
 
 void Transformation::updatePageMove(Inkscape::Selection *selection)
 {
@@ -624,15 +613,9 @@ void Transformation::updatePageTransform(Inkscape::Selection *selection)
     }
 }
 
-
-
-
-
 /*########################################################################
 # A P P L Y
 ########################################################################*/
-
-
 
 void Transformation::_apply()
 {
@@ -933,7 +916,6 @@ void Transformation::applyPageSkew(Inkscape::Selection *selection)
     DocumentUndo::done(selection->desktop()->getDocument(), _("Skew"), INKSCAPE_ICON("dialog-transform"));
 }
 
-
 void Transformation::applyPageTransform(Inkscape::Selection *selection)
 {
     double a = _scalar_transform_a.getValue();
@@ -962,10 +944,6 @@ void Transformation::applyPageTransform(Inkscape::Selection *selection)
 
     DocumentUndo::done(selection->desktop()->getDocument(), _("Edit transformation matrix"), INKSCAPE_ICON("dialog-transform"));
 }
-
-
-
-
 
 /*########################################################################
 # V A L U E - C H A N G E D    C A L L B A C K S
@@ -1051,14 +1029,14 @@ void Transformation::onRotateValueChanged()
 
 void Transformation::onRotateCounterclockwiseClicked()
 {
-    _scalar_rotate.setTooltipText(_("Rotation angle (positive = counterclockwise)"));
+    _scalar_rotate.set_tooltip_text(_("Rotation angle (positive = counterclockwise)"));
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     prefs->setBool("/dialogs/transformation/rotateCounterClockwise", !getDesktop()->is_yaxisdown());
 }
 
 void Transformation::onRotateClockwiseClicked()
 {
-    _scalar_rotate.setTooltipText(_("Rotation angle (positive = clockwise)"));
+    _scalar_rotate.set_tooltip_text(_("Rotation angle (positive = clockwise)"));
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     prefs->setBool("/dialogs/transformation/rotateCounterClockwise", getDesktop()->is_yaxisdown());
 }
@@ -1124,7 +1102,6 @@ void Transformation::onScaleProportionalToggled()
         _scalar_scale_vertical.setProgrammatically = false;
     }
 }
-
 
 void Transformation::onClear()
 {
@@ -1200,9 +1177,7 @@ void Transformation::desktopReplaced()
     }
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

@@ -13,15 +13,15 @@
 #ifndef INKSCAPE_UI_WIDGET_SCALAR_H
 #define INKSCAPE_UI_WIDGET_SCALAR_H
 
+#include <gtkmm/adjustment.h>
+
 #include "labelled.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
  * A labelled text box, with spin buttons and optional
- * icon or suffix, for entering arbitrary number values.
+ * icon, for entering arbitrary number values.
  */
 class Scalar : public Labelled
 {
@@ -30,16 +30,14 @@ public:
      * Construct a Scalar Widget.
      *
      * @param label     Label.
-     * @param suffix    Suffix, placed after the widget (defaults to "").
-     * @param icon      Icon filename, placed before the label (defaults to "").
+     * @param icon      Icon filename, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the label
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to false).
      */
     Scalar(Glib::ustring const &label,
            Glib::ustring const &tooltip,
-           Glib::ustring const &suffix = "",
-           Glib::ustring const &icon = "",
+           Glib::ustring const &icon = {},
            bool mnemonic = true);
 
     /**
@@ -47,8 +45,7 @@ public:
      *
      * @param label     Label.
      * @param digits    Number of decimal digits to display.
-     * @param suffix    Suffix, placed after the widget (defaults to "").
-     * @param icon      Icon filename, placed before the label (defaults to "").
+     * @param icon      Icon filename, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the label
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to false).
@@ -56,8 +53,7 @@ public:
     Scalar(Glib::ustring const &label,
            Glib::ustring const &tooltip,
            unsigned digits,
-           Glib::ustring const &suffix = "",
-           Glib::ustring const &icon = "",
+           Glib::ustring const &icon = {},
            bool mnemonic = true);
 
     /**
@@ -66,18 +62,16 @@ public:
      * @param label     Label.
      * @param adjust    Adjustment to use for the SpinButton.
      * @param digits    Number of decimal digits to display (defaults to 0).
-     * @param suffix    Suffix, placed after the widget (defaults to "").
-     * @param icon      Icon filename, placed before the label (defaults to "").
+     * @param icon      Icon filename, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the label
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to true).
      */
     Scalar(Glib::ustring const &label,
            Glib::ustring const &tooltip,
-           Glib::RefPtr<Gtk::Adjustment> &adjust,
+           Glib::RefPtr<Gtk::Adjustment> adjust,
            unsigned digits = 0,
-           Glib::ustring const &suffix = "",
-           Glib::ustring const &icon = "",
+           Glib::ustring const &icon = {},
            bool mnemonic = true);
 
     /**
@@ -184,9 +178,7 @@ public:
     void hide_label();
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_SCALAR_H
 

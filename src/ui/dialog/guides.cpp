@@ -45,10 +45,10 @@ GuidelinePropertiesDialog::GuidelinePropertiesDialog(SPGuide *guide, SPDesktop *
 : _desktop(desktop), _guide(guide),
   _locked_toggle(_("Lo_cked")),
   _relative_toggle(_("Rela_tive change")),
-  _spin_button_x(C_("Guides", "_X:"), "", UNIT_TYPE_LINEAR, "", "", &_unit_menu),
-  _spin_button_y(C_("Guides", "_Y:"), "", UNIT_TYPE_LINEAR, "", "", &_unit_menu),
+  _spin_button_x(C_("Guides", "_X:"), Glib::ustring{}, UNIT_TYPE_LINEAR, Glib::ustring{}, &_unit_menu),
+  _spin_button_y(C_("Guides", "_Y:"), Glib::ustring{}, UNIT_TYPE_LINEAR, Glib::ustring{}, &_unit_menu),
   _label_entry(_("_Label:"), _("Optionally give this guideline a name")),
-  _spin_angle(_("_Angle:"), "", UNIT_TYPE_RADIAL),
+  _spin_angle(_("_Angle:"), {}, UNIT_TYPE_RADIAL),
   _mode(true), _oldpos(0.,0.), _oldangle(0.0)
 {
     _locked_toggle.set_use_underline();

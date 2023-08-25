@@ -6,45 +6,35 @@
 
 #include "font-button.h"
 
-#include <glibmm/i18n.h>
-
 #include <gtkmm/fontbutton.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 FontButton::FontButton(Glib::ustring const &label, Glib::ustring const &tooltip,
-              Glib::ustring const &suffix,
-              Glib::ustring const &icon,
-              bool mnemonic)
-           : Labelled(label, tooltip, new Gtk::FontButton("Sans 10"), suffix, icon, mnemonic)
+                       Glib::ustring const &icon, bool mnemonic)
+    : Labelled{label, tooltip, new Gtk::FontButton{"Sans 10"}, icon, mnemonic}
 {
 }
 
 Glib::ustring FontButton::getValue() const
 {
-    g_assert(_widget != nullptr);
-    return static_cast<Gtk::FontButton*>(_widget)->get_font_name();
+    g_assert(_widget);
+    return dynamic_cast<Gtk::FontButton const &>(*_widget).get_font_name();
 }
 
-
-void FontButton::setValue (Glib::ustring fontspec)
+void FontButton::setValue(Glib::ustring const &fontspec)
 {
-    g_assert(_widget != nullptr);
-    static_cast<Gtk::FontButton*>(_widget)->set_font_name(fontspec);
+    g_assert(_widget);
+    dynamic_cast<Gtk::FontButton &>(*_widget).set_font_name(fontspec);
 }
 
 Glib::SignalProxy<void> FontButton::signal_font_value_changed()
 {
-    g_assert(_widget != nullptr);
-    return static_cast<Gtk::FontButton*>(_widget)->signal_font_set();
+    g_assert(_widget);
+    return dynamic_cast<Gtk::FontButton &>(*_widget).signal_font_set();
 }
 
-
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

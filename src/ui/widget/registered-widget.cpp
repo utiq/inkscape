@@ -16,19 +16,15 @@
 
 #include "registered-widget.h"
 
+#include <glibmm/i18n.h>
 #include <gtkmm/radiobutton.h>
 
 #include "object/sp-root.h"
-
 #include "svg/svg-color.h"
 #include "svg/stringstream.h"
 #include "util/safe-printf.h"
 
-#include <glibmm/i18n.h>
-
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /*#########################################
  * Registered CHECKBUTTON
@@ -59,11 +55,14 @@ void
 RegisteredCheckButton::setActive (bool b)
 {
     setProgrammatically = true;
+
     set_active (b);
-    //The slave button is greyed out if the master button is unchecked
-    for (std::list<Gtk::Widget*>::const_iterator i = _slavewidgets.begin(); i != _slavewidgets.end(); ++i) {
-        (*i)->set_sensitive(b);
+
+    // The subordinate button is greyed out if the main button is unchecked
+    for (auto const subordinate: _subordinate_widgets) {
+        subordinate->set_sensitive(b);
     }
+
     setProgrammatically = false;
 }
 
@@ -77,12 +76,16 @@ RegisteredCheckButton::on_toggled()
 
     if (_wr->isUpdating())
         return;
+
     _wr->setUpdating (true);
 
-    write_to_xml(get_active() ? _active_str : _inactive_str);
-    //The slave button is greyed out if the master button is unchecked
-    for (std::list<Gtk::Widget*>::const_iterator i = _slavewidgets.begin(); i != _slavewidgets.end(); ++i) {
-        (*i)->set_sensitive(get_active());
+    auto const active = get_active();
+
+    write_to_xml(active ? _active_str : _inactive_str);
+
+    // The subordinate button is greyed out if the main button is unchecked
+    for (auto const subordinate: _subordinate_widgets) {
+        subordinate->set_sensitive(active);
     }
 
     _wr->setUpdating (false);
@@ -109,11 +112,14 @@ void
 RegisteredToggleButton::setActive (bool b)
 {
     setProgrammatically = true;
+
     set_active (b);
-    //The slave button is greyed out if the master button is untoggled
-    for (std::list<Gtk::Widget*>::const_iterator i = _slavewidgets.begin(); i != _slavewidgets.end(); ++i) {
-        (*i)->set_sensitive(b);
+
+    //The subordinate button is greyed out if the main button is untoggled
+    for (auto const subordinate: _subordinate_widgets) {
+        subordinate->set_sensitive(b);
     }
+
     setProgrammatically = false;
 }
 
@@ -127,12 +133,15 @@ RegisteredToggleButton::on_toggled()
 
     if (_wr->isUpdating())
         return;
+
     _wr->setUpdating (true);
 
-    write_to_xml(get_active() ? "true" : "false");
-    //The slave button is greyed out if the master button is untoggled
-    for (std::list<Gtk::Widget*>::const_iterator i = _slavewidgets.begin(); i != _slavewidgets.end(); ++i) {
-        (*i)->set_sensitive(get_active());
+    auto const active = get_active();
+    write_to_xml(active ? "true" : "false");
+
+    //The subordinate button is greyed out if the main button is untoggled
+    for (auto const subordinate: _subordinate_widgets) {
+        subordinate->set_sensitive(active);
     }
 
     _wr->setUpdating (false);
@@ -142,13 +151,8 @@ RegisteredToggleButton::on_toggled()
  * Registered UNITMENU
  */
 
-RegisteredUnitMenu::~RegisteredUnitMenu()
-{
-    _changed_connection.disconnect();
-}
-
 RegisteredUnitMenu::RegisteredUnitMenu (const Glib::ustring& label, const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in, SPDocument *doc_in)
-    :  RegisteredWidget<Labelled> (label, "" /*tooltip*/, new UnitMenu())
+    :  RegisteredWidget<Labelled> (label, Glib::ustring{} /*tooltip*/, new UnitMenu())
 {
     init_parent(key, wr, repr_in, doc_in);
 
@@ -183,13 +187,8 @@ RegisteredUnitMenu::on_changed()
  * Registered SCALARUNIT
  */
 
-RegisteredScalarUnit::~RegisteredScalarUnit()
-{
-    _value_changed_connection.disconnect();
-}
-
 RegisteredScalarUnit::RegisteredScalarUnit (const Glib::ustring& label, const Glib::ustring& tip, const Glib::ustring& key, const RegisteredUnitMenu &rum, Registry& wr, Inkscape::XML::Node* repr_in, SPDocument *doc_in, RSU_UserUnits user_units)
-    : RegisteredWidget<ScalarUnit>(label, tip, UNIT_TYPE_LINEAR, "", "", rum.getUnitMenu()),
+    : RegisteredWidget<ScalarUnit>(label, tip, UNIT_TYPE_LINEAR, Glib::ustring{}, rum.getUnitMenu()),
       _um(nullptr)
 {
     init_parent(key, wr, repr_in, doc_in);
@@ -252,11 +251,6 @@ RegisteredScalarUnit::on_value_changed()
  * Registered SCALAR
  */
 
-RegisteredScalar::~RegisteredScalar()
-{
-    _value_changed_connection.disconnect();
-}
-
 RegisteredScalar::RegisteredScalar ( const Glib::ustring& label, const Glib::ustring& tip,
                          const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
                          SPDocument * doc_in )
@@ -299,11 +293,6 @@ RegisteredScalar::on_value_changed()
 /*#########################################
  * Registered TEXT
  */
-
-RegisteredText::~RegisteredText()
-{
-    _activate_connection.disconnect();
-}
 
 RegisteredText::RegisteredText ( const Glib::ustring& label, const Glib::ustring& tip,
                          const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
@@ -348,18 +337,13 @@ RegisteredColorPicker::RegisteredColorPicker(const Glib::ustring& label,
                                              Registry& wr,
                                              Inkscape::XML::Node* repr_in,
                                              SPDocument *doc_in)
-    : RegisteredWidget<LabelledColorPicker> (label, title, tip, 0, true)
+    : RegisteredWidget<LabelledColorPicker>{label, title, tip, 0u, true}
 {
     init_parent("", wr, repr_in, doc_in);
 
     _ckey = ckey;
     _akey = akey;
     _changed_connection = connectChanged (sigc::mem_fun (*this, &RegisteredColorPicker::on_changed));
-}
-
-RegisteredColorPicker::~RegisteredColorPicker()
-{
-    _changed_connection.disconnect();
 }
 
 void
@@ -414,16 +398,13 @@ RegisteredColorPicker::on_changed (guint32 rgba)
 
 
 /*#########################################
- * Registered SUFFIXEDINTEGER
+ * Registered INTEGER
  */
 
-RegisteredSuffixedInteger::~RegisteredSuffixedInteger()
-{
-    _changed_connection.disconnect();
-}
-
-RegisteredSuffixedInteger::RegisteredSuffixedInteger (const Glib::ustring& label, const Glib::ustring& tip, const Glib::ustring& suffix, const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in, SPDocument *doc_in)
-    : RegisteredWidget<Scalar>(label, tip, 0, suffix),
+RegisteredInteger::RegisteredInteger (const Glib::ustring& label, const Glib::ustring& tip,
+                                      const Glib::ustring& key, Registry& wr,
+                                      Inkscape::XML::Node* repr_in, SPDocument *doc_in)
+    : RegisteredWidget<Scalar>{label, tip, 0u},
       setProgrammatically(false)
 {
     init_parent(key, wr, repr_in, doc_in);
@@ -432,11 +413,11 @@ RegisteredSuffixedInteger::RegisteredSuffixedInteger (const Glib::ustring& label
     setDigits (0);
     setIncrements(1, 10);
 
-    _changed_connection = signal_value_changed().connect (sigc::mem_fun(*this, &RegisteredSuffixedInteger::on_value_changed));
+    _changed_connection = signal_value_changed().connect (sigc::mem_fun(*this, &RegisteredInteger::on_value_changed));
 }
 
 void
-RegisteredSuffixedInteger::on_value_changed()
+RegisteredInteger::on_value_changed()
 {
     if (setProgrammatically) {
         setProgrammatically = false;
@@ -460,11 +441,6 @@ RegisteredSuffixedInteger::on_value_changed()
 /*#########################################
  * Registered RADIOBUTTONPAIR
  */
-
-RegisteredRadioButtonPair::~RegisteredRadioButtonPair()
-{
-    _changed_connection.disconnect();
-}
 
 RegisteredRadioButtonPair::RegisteredRadioButtonPair (const Glib::ustring& label,
         const Glib::ustring& label1, const Glib::ustring& label2,
@@ -529,12 +505,6 @@ RegisteredRadioButtonPair::on_value_changed()
  * Registered POINT
  */
 
-RegisteredPoint::~RegisteredPoint()
-{
-    _value_x_changed_connection.disconnect();
-    _value_y_changed_connection.disconnect();
-}
-
 RegisteredPoint::RegisteredPoint ( const Glib::ustring& label, const Glib::ustring& tip,
                         const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
                         SPDocument* doc_in )
@@ -573,12 +543,6 @@ RegisteredPoint::on_value_changed()
 /*#########################################
  * Registered TRANSFORMEDPOINT
  */
-
-RegisteredTransformedPoint::~RegisteredTransformedPoint()
-{
-    _value_x_changed_connection.disconnect();
-    _value_y_changed_connection.disconnect();
-}
 
 RegisteredTransformedPoint::RegisteredTransformedPoint ( const Glib::ustring& label, const Glib::ustring& tip,
                         const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
@@ -641,12 +605,6 @@ RegisteredTransformedPoint::on_value_changed()
  * Registered TRANSFORMEDPOINT
  */
 
-RegisteredVector::~RegisteredVector()
-{
-    _value_x_changed_connection.disconnect();
-    _value_y_changed_connection.disconnect();
-}
-
 RegisteredVector::RegisteredVector ( const Glib::ustring& label, const Glib::ustring& tip,
                         const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
                         SPDocument* doc_in )
@@ -686,11 +644,11 @@ void RegisteredVector::setPolarCoords(bool polar_coords)
 {
     _polar_coords = polar_coords;
     if (polar_coords) {
-        xwidget.setLabelText(_("Angle:"));
-        ywidget.setLabelText(_("Distance:"));
+        xwidget.getLabel()->set_text(_("Angle:"));
+        ywidget.getLabel()->set_text(_("Distance:"));
     } else {
-        xwidget.setLabelText(_("X:"));
-        ywidget.setLabelText(_("Y:"));
+        xwidget.getLabel()->set_text(_("X:"));
+        ywidget.getLabel()->set_text(_("Y:"));
     }
 }
 
@@ -724,12 +682,6 @@ RegisteredVector::on_value_changed()
 /*#########################################
  * Registered RANDOM
  */
-
-RegisteredRandom::~RegisteredRandom()
-{
-    _value_changed_connection.disconnect();
-    _reseeded_connection.disconnect();
-}
 
 RegisteredRandom::RegisteredRandom ( const Glib::ustring& label, const Glib::ustring& tip,
                          const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
@@ -778,14 +730,9 @@ RegisteredRandom::on_value_changed()
  * Registered FONT-BUTTON
  */
 
-RegisteredFontButton::~RegisteredFontButton()
-{
-    _signal_font_set.disconnect();
-}
-
 RegisteredFontButton::RegisteredFontButton ( const Glib::ustring& label, const Glib::ustring& tip,
-                        const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
-                        SPDocument* doc_in )
+                                             const Glib::ustring& key, Registry& wr, Inkscape::XML::Node* repr_in,
+                                             SPDocument* doc_in )
     : RegisteredWidget<FontButton>(label, tip)
 {
     init_parent(key, wr, repr_in, doc_in);
@@ -815,9 +762,7 @@ RegisteredFontButton::on_value_changed()
     _wr->setUpdating (false);
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:
