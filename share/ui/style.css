@@ -1177,3 +1177,9 @@ popover.menu.menuize > stack > box > modelbutton:first-child > * /* Affect child
     min-width : 32px;
     min-height: 12px;
 }
+
+/* GradientImage */
+#GradientImage {
+    min-width : 54px;
+    min-height: 12px;
+}

@@ -13,8 +13,10 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <glibmm/i18n.h>
+#include "gradient-toolbar.h"
 
+#include <map>
+#include <glibmm/i18n.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/radiotoolbutton.h>
 #include <gtkmm/separatortoolitem.h>
@@ -24,15 +26,12 @@
 #include "document.h"
 #include "gradient-chemistry.h"
 #include "gradient-drag.h"
-#include "gradient-toolbar.h"
 #include "selection.h"
-
 #include "object/sp-defs.h"
 #include "object/sp-linear-gradient.h"
 #include "object/sp-radial-gradient.h"
 #include "object/sp-stop.h"
 #include "style.h"
-
 #include "ui/icon-names.h"
 #include "ui/tools/gradient-tool.h"
 #include "ui/util.h"
@@ -54,7 +53,6 @@ void gr_apply_gradient_to_item( SPItem *item, SPGradient *gr, SPGradientType ini
     bool isFill = (mode == Inkscape::FOR_FILL);
     if (style
         && (isFill ? style->fill.isPaintserver() : style->stroke.isPaintserver())
-        //&& is<SPGradient>(isFill ? style->getFillPaintServer() : style->getStrokePaintServer()) ) {
         && (isFill ? is<SPGradient>(style->getFillPaintServer()) : is<SPGradient>(style->getStrokePaintServer())) ) {
         SPPaintServer *server = isFill ? style->getFillPaintServer() : style->getStrokePaintServer();
         if ( is<SPLinearGradient>(server) ) {
@@ -110,84 +108,81 @@ int gr_vector_list(Glib::RefPtr<Gtk::ListStore> store, SPDesktop *desktop,
 
     // Get list of gradients in document.
     SPDocument *document = desktop->getDocument();
-    std::vector<SPObject *> gl;
     std::vector<SPObject *> gradients = document->getResourceList( "gradient" );
+    std::map<Glib::ustring, SPGradient *> labels_gradients; // ordered map, so we sort by label.
     for (auto gradient : gradients) {
         auto grad = cast<SPGradient>(gradient);
         if ( grad->hasStops() && !grad->isSolid() ) {
-            gl.push_back(gradient);
+            labels_gradients.emplace(gr_prepare_label(gradient), grad);
         }
     }
 
     store->clear();
-
     Inkscape::UI::Widget::ComboToolItemColumns columns;
     Gtk::TreeModel::Row row;
 
-    if (gl.empty()) {
+    if (labels_gradients.empty()) {
         // The document has no gradients
-
         row = *(store->append());
         row[columns.col_label    ] = _("No gradient");
         row[columns.col_tooltip  ] = "";
         row[columns.col_icon     ] = "NotUsed";
         row[columns.col_data     ] = nullptr;
         row[columns.col_sensitive] = true;
+        return selected;
+    }
 
-    } else if (selection_empty) {
+    if (selection_empty) {
         // Document has gradients, but nothing is currently selected.
-
         row = *(store->append());
         row[columns.col_label    ] = _("Nothing selected");
         row[columns.col_tooltip  ] = "";
         row[columns.col_icon     ] = "NotUsed";
         row[columns.col_data     ] = nullptr;
         row[columns.col_sensitive] = true;
+        return selected;
+    }
 
-    } else {
+    // Document has gradients and a selection.
 
-        if (gr_selected == nullptr) {
-            row = *(store->append());
-            row[columns.col_label    ] = _("No gradient");
-            row[columns.col_tooltip  ] = "";
-            row[columns.col_icon     ] = "NotUsed";
-            row[columns.col_data     ] = nullptr;
-            row[columns.col_sensitive] = true;
+    if (gr_selected == nullptr) {
+        row = *(store->append());
+        row[columns.col_label    ] = _("No gradient");
+        row[columns.col_tooltip  ] = "";
+        row[columns.col_icon     ] = "NotUsed";
+        row[columns.col_data     ] = nullptr;
+        row[columns.col_sensitive] = true;
+    }
+
+    if (gr_multi) {
+        row = *(store->append());
+        row[columns.col_label    ] = _("Multiple gradients");
+        row[columns.col_tooltip  ] = "";
+        row[columns.col_icon     ] = "NotUsed";
+        row[columns.col_data     ] = nullptr;
+        row[columns.col_sensitive] = true;
+    }
+
+    int idx = 0;
+    for (auto const &[label, gradient] : labels_gradients) {
+        Glib::RefPtr<Gdk::Pixbuf> pixbuf = sp_gradient_to_pixbuf_ref(gradient, 64, 16);
+
+        row = *(store->append());
+        row[columns.col_label    ] = label;
+        row[columns.col_tooltip  ] = "";
+        row[columns.col_icon     ] = "NotUsed";
+        row[columns.col_pixbuf   ] = pixbuf;
+        row[columns.col_data     ] = gradient;
+        row[columns.col_sensitive] = true;
+
+        if (gradient == gr_selected) {
+            selected = idx;
         }
+        idx ++;
+    }
 
-        if (gr_multi) {
-            row = *(store->append());
-            row[columns.col_label    ] = _("Multiple gradients");
-            row[columns.col_tooltip  ] = "";
-            row[columns.col_icon     ] = "NotUsed";
-            row[columns.col_data     ] = nullptr;
-            row[columns.col_sensitive] = true;
-        }
-
-        int idx = 0;
-        for (auto it : gl) {
-            auto gradient = cast<SPGradient>(it);
-
-            Glib::ustring label = gr_prepare_label(gradient);
-            Glib::RefPtr<Gdk::Pixbuf> pixbuf = sp_gradient_to_pixbuf_ref(gradient, 64, 16);
-
-            row = *(store->append());
-            row[columns.col_label    ] = label;
-            row[columns.col_tooltip  ] = "";
-            row[columns.col_icon     ] = "NotUsed";
-            row[columns.col_pixbuf   ] = pixbuf;
-            row[columns.col_data     ] = gradient;
-            row[columns.col_sensitive] = true;
-
-            if (gradient == gr_selected) {
-                selected = idx;
-            }
-            idx ++;
-        }
-
-        if (gr_multi) {
-            selected = 0; // This will show "Multiple Gradients"
-        }
+    if (gr_multi) {
+        selected = 0; // This will show "Multiple Gradients"
     }
 
     return selected;
@@ -327,9 +322,8 @@ void gr_read_selection( Inkscape::Selection *selection,
     }
  }
 
-namespace Inkscape {
-namespace UI {
-namespace Toolbar {
+namespace Inkscape::UI::Toolbar {
+
 GradientToolbar::GradientToolbar(SPDesktop *desktop)
         : Toolbar(desktop)
 {
@@ -394,11 +388,8 @@ GradientToolbar::GradientToolbar(SPDesktop *desktop)
     /* Gradient Select list*/
     {
         UI::Widget::ComboToolItemColumns columns;
-
         auto store = Gtk::ListStore::create(columns);
-
         Gtk::TreeModel::Row row;
-
         row = *(store->append());
         row[columns.col_label    ] = _("No gradient");
         row[columns.col_tooltip  ] = "";
@@ -409,7 +400,6 @@ GradientToolbar::GradientToolbar(SPDesktop *desktop)
                                                        "",                  // Tooltip
                                                        "Not Used",          // Icon
                                                        store );             // Tree store
-
         _select_cb->use_icon( false );
         _select_cb->use_pixbuf( true );
         _select_cb->use_group_label( true );
@@ -968,13 +958,11 @@ GradientToolbar::update_stop_list( SPGradient *gradient, SPStop *new_stop, bool 
     int selected = -1;
 
     auto store = _stop_cb->get_store();
-
     if (!store) {
         return selected;
     }
 
     store->clear();
-
     UI::Widget::ComboToolItemColumns columns;
     Gtk::TreeModel::Row row;
 
@@ -991,28 +979,22 @@ GradientToolbar::update_stop_list( SPGradient *gradient, SPStop *new_stop, bool 
 
     if (!gradient) {
         // No valid gradient
-
         row = *(store->append());
         row[columns.col_label    ] = _("No gradient");
         row[columns.col_tooltip  ] = "";
         row[columns.col_icon     ] = "NotUsed";
         row[columns.col_data     ] = nullptr;
         row[columns.col_sensitive] = true;
-
     } else if (!gradient->hasStops()) {
         // Has gradient but it has no stops
-
         row = *(store->append());
         row[columns.col_label    ] = _("No stops in gradient");
         row[columns.col_tooltip  ] = "";
         row[columns.col_icon     ] = "NotUsed";
         row[columns.col_data     ] = nullptr;
         row[columns.col_sensitive] = true;
-
     } else {
         // Gradient has stops
-
-        // Get list of stops
         for (auto& ochild: gradient->children) {
             if (is<SPStop>(&ochild)) {
 
@@ -1173,9 +1155,8 @@ GradientToolbar::defs_modified(SPObject * /*defs*/, guint /*flags*/)
     selection_changed(nullptr);
 }
 
-}
-}
-}
+} // namespace Inkscape::UI::Toolbar
+
 /*
   Local Variables:
   mode:c++

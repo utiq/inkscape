@@ -11,13 +11,10 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-/**
-   A combobox that can be displayed in a toolbar
-*/
-
 #ifndef SEEN_COMBO_TOOL_ITEM
 #define SEEN_COMBO_TOOL_ITEM
 
+#include <memory>
 #include <vector>
 #include <glibmm/refptr.h>
 #include <gtkmm/enums.h>
@@ -106,7 +103,7 @@ private:
 
     /* Combobox in tool */
     Gtk::ComboBox* _combobox;
-    Gtk::Label* _group_label_widget;
+    std::unique_ptr<Gtk::Label> _group_label_widget;
     Gtk::Box* _container;
 
     Gtk::MenuItem* _menuitem;
