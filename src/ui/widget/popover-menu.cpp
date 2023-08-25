@@ -80,6 +80,11 @@ void PopoverMenu::append(Gtk::Widget &child)
     _grid.attach_next_to(child, Gtk::POS_BOTTOM);
 }
 
+void PopoverMenu::prepend(Gtk::Widget &child)
+{
+    _grid.attach_next_to(child, Gtk::POS_TOP);
+}
+
 void PopoverMenu::remove(Gtk::Widget &child)
 {
     _grid.remove(child);

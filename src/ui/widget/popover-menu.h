@@ -43,8 +43,10 @@ public:
     void attach(Gtk::Widget &child,
                 int left_attach, int right_attach,
                 int top_attach, int bottom_attach);
-    /// Add new row containing child
+    /// Add new row containing child, at start/top
     void append(Gtk::Widget &child);
+    /// Add new row containing child, at end/bottom
+    void prepend(Gtk::Widget &child);
     /// Remove/unparent added child.
     void remove(Gtk::Widget &child);
 

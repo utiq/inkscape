@@ -10,32 +10,53 @@
  */
 
 #include <utility>
+#include <glibmm/i18n.h>
 #include <glibmm/main.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/adjustment.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
+#include <gtkmm/drawingarea.h>
 #include <gtkmm/flowbox.h>
 #include <gtkmm/flowboxchild.h>
-#include <gtkmm/menu.h>
 #include <gtkmm/menubutton.h>
 #include <gtkmm/popover.h>
-#include <gtkmm/radiomenuitem.h>
+#include <gtkmm/radiobutton.h>
 #include <gtkmm/scale.h>
 #include <gtkmm/scrollbar.h>
 #include <gtkmm/scrolledwindow.h>
+#include <gtkmm/separator.h>
+#include <sigc++/functors/mem_fun.h>
 
 #include "color-palette.h"
 #include "ui/builder-utils.h"
 #include "ui/dialog/color-item.h"
+#include "ui/widget/popover-menu.h"
+#include "ui/widget/popover-menu-item.h"
 
 namespace Inkscape::UI::Widget {
+
+[[nodiscard]] static auto make_menu()
+{
+    auto const separator = Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_HORIZONTAL);
+    separator->set_margin_top   (5);
+    separator->set_margin_bottom(5);
+
+    auto const config = Gtk::make_managed<PopoverMenuItem>(_("Configure..."), true);
+
+    auto menu = std::make_unique<PopoverMenu>(Gtk::POS_TOP);
+    menu->get_style_context()->add_class("ColorPalette");
+    menu->append(*separator);
+    menu->append(*config);
+    menu->show_all_children();
+
+    return std::make_pair(std::move(menu), std::ref(*config));
+}
 
 ColorPalette::ColorPalette():
     _builder(create_builder("color-palette.glade")),
     _normal_box(get_widget<Gtk::FlowBox>(_builder, "flow-box")),
     _pinned_box(get_widget<Gtk::FlowBox>(_builder, "pinned")),
-    _menu(get_widget<Gtk::Menu>(_builder, "menu")),
     _scroll_btn(get_widget<Gtk::FlowBox>(_builder, "scroll-buttons")),
     _scroll_left(get_widget<Gtk::Button>(_builder, "btn-left")),
     _scroll_right(get_widget<Gtk::Button>(_builder, "btn-right")),
@@ -49,8 +70,11 @@ ColorPalette::ColorPalette():
     auto& box = get_widget<Gtk::Box>(_builder, "palette-box");
     this->add(box);
 
-    auto& config = get_widget<Gtk::MenuItem>(_builder, "config");
-    auto& dlg = get_widget<Gtk::Popover>(_builder, "config-popup");
+    auto [menu, config] = make_menu();
+    _menu = std::move(menu);
+    auto& btn_menu = get_widget<Gtk::MenuButton>(_builder, "btn-menu");
+    btn_menu.set_popover(*_menu);
+    auto& dlg = get_settings_popover();
     config.signal_activate().connect([=,&dlg](){
         dlg.popup();
     });
@@ -644,64 +668,73 @@ void ColorPalette::rebuild_widgets()
     _pinned_box.thaw_notify();
 }
 
-class ColorPaletteMenuItem : public Gtk::RadioMenuItem {
+class ColorPaletteMenuItem : public PopoverMenuItem {
 public:
-    ColorPaletteMenuItem(Gtk::RadioMenuItem::Group &group,
+    ColorPaletteMenuItem(Gtk::RadioButton::Group &group,
                          Glib::ustring const &label,
                          Glib::ustring id,
                          std::vector<ColorPalette::rgb_t> colors)
-        : Gtk::RadioMenuItem(group, label)
+        : Glib::ObjectBase{"ColorPaletteMenuItem"}
+        , PopoverMenuItem{}
+        , _radio_button{Gtk::make_managed<Gtk::RadioButton>(group, label)}
+        , _drawing_area{Gtk::make_managed<Gtk::DrawingArea>()}
         , id{std::move(id)}
         , _colors{std::move(colors)}
     {
-        set_margin_bottom(2);
+        _drawing_area->set_size_request(-1, 2);
+        _drawing_area->signal_draw().connect(
+            sigc::mem_fun(*this, &ColorPaletteMenuItem::on_drawing_area_draw));
+
+        auto const box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+        box->add(*_radio_button);
+        box->add(*_drawing_area);
+        add(*box);
+        show_all();
     }
+
+    void set_active(bool const active) { _radio_button->set_active(active); }
 
     Glib::ustring const id;
 
 private:
+    Gtk::RadioButton *_radio_button;
+    Gtk::DrawingArea *_drawing_area;
     std::vector<ColorPalette::rgb_t> _colors;
 
-    bool on_draw(Cairo::RefPtr<Cairo::Context> const &cr) final;
+    bool on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr);
 };
 
-bool ColorPaletteMenuItem::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
+bool ColorPaletteMenuItem::on_drawing_area_draw(Cairo::RefPtr<Cairo::Context> const &cr)
 {
-    RadioMenuItem::on_draw(cr);
+    if (_colors.empty()) return true;
 
-    if (_colors.empty()) return false;
+    auto const width = _drawing_area->get_width(), height = _drawing_area->get_height();
+    // Skip height of radiobutton at side, to skip the circular radio indicator.
+    auto const left = _radio_button->get_height();
+    constexpr auto dx = 1; // width per color
+    auto const w = width - left;
+    if (w <= 0) return true;
 
-    auto const width = get_width(), height = get_height();
-    auto x = 0;
-    auto y = 0;
-    auto left = x + height;
-    auto right = x + width - height;
-    auto dx = 1;
-    auto dy = 2;
     auto px = left;
-    auto py = y + height - dy;
-    auto w = right - left;
-    if (w <= 0) return false;
-
     for (int i = 0; i < w; ++i) {
-        if (px >= right) break;
+        if (px >= width) return true;
 
         int index = i * _colors.size() / w;
         auto& color = _colors.at(index);
 
         cr->set_source_rgb(color.r, color.g, color.b);
-        cr->rectangle(px, py, dx, dy);
+        cr->rectangle(px, 0, dx, height);
         cr->fill();
 
         px += dx;
     }
 
-    return false;
+    return true;
 }
 
 void ColorPalette::set_palettes(const std::vector<ColorPalette::palette_t>& palettes) {
     for (auto const &item: _palette_menu_items) {
-        _menu.remove(*item);
+        _menu->remove(*item);
     }
 
     _palette_menu_items.clear();
@@ -721,7 +754,7 @@ void ColorPalette::set_palettes(const std::vector<ColorPalette::palette_t>& pale
             }
         });
         item->set_visible(true);
-        _menu.prepend(*item);
+        _menu->prepend(*item);
         _palette_menu_items.push_back(std::move(item));
     }
 }

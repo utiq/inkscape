@@ -25,7 +25,6 @@ namespace Gtk {
 class Builder;
 class Button;
 class FlowBox;
-class Menu;
 class ScrolledWindow;
 } // namespace Gtk
 
@@ -38,6 +37,7 @@ class ColorItem;
 namespace Widget {
 
 class ColorPaletteMenuItem;
+class PopoverMenu;
 
 class ColorPalette : public Gtk::Box {
 public:
@@ -128,7 +128,7 @@ private:
     Gtk::Button& _scroll_down;
     Gtk::Button& _scroll_left;
     Gtk::Button& _scroll_right;
-    Gtk::Menu& _menu;
+    std::unique_ptr<PopoverMenu> _menu;
     std::vector<std::unique_ptr<ColorPaletteMenuItem>> _palette_menu_items;
     int _size = 10;
     int _border = 0;

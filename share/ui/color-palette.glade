@@ -43,23 +43,6 @@
     <property name="visible">True</property>
     <property name="icon-name">go-previous</property>
   </object>
-  <object class="GtkMenu" id="menu">
-    <property name="visible">True</property>
-    <child>
-      <object class="GtkSeparatorMenuItem">
-        <property name="visible">True</property>
-        <property name="margin-top">5</property>
-        <property name="margin-bottom">5</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="config">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Configure...</property>
-        <property name="use-underline">True</property>
-      </object>
-    </child>
-  </object>
   <object class="GtkBox" id="palette-box">
     <property name="visible">True</property>
     <child>
@@ -230,7 +213,6 @@
         <property name="margin-start">1</property>
         <property name="margin-end">1</property>
         <property name="relief">none</property>
-        <property name="popup">menu</property>
         <property name="direction">none</property>
         <property name="use-popover">False</property>
         <style>

@@ -26,7 +26,7 @@ class PopoverMenu;
 
 /// A replacement for GTK3ʼs Gtk::MenuItem, as removed in GTK4.
 /// Aim is to be a minimal but mostly “drop-in” replacement.
-class PopoverMenuItem final
+class PopoverMenuItem
     : public CssNameClassInit
     , public Gtk::Button
 {
