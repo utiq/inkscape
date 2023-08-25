@@ -75,6 +75,7 @@
     <child>
       <object class="GtkLabel" id="LPESelectionInfo">
         <property name="visible">True</property>
+        <property name="no-show-all">True</property>
         <property name="margin-left">5</property>
         <property name="margin-right">5</property>
         <property name="margin-start">5</property>
