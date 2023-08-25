@@ -12,27 +12,34 @@
 #ifndef SEEN_COLOR_PALETTE_H
 #define SEEN_COLOR_PALETTE_H
 
-#include <glibmm/ustring.h>
-#include <gtkmm/bin.h>
-#include <gtkmm/builder.h>
-#include <gtkmm/button.h>
-#include <gtkmm/flowbox.h>
-#include <gtkmm/popover.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/menu.h>
-#include <gtkmm/widget.h>
+#include <memory>
 #include <vector>
+#include <glibmm/ustring.h>
+#include <glibmm/refptr.h>
+#include <gtkmm/box.h>
+#include <sigc++/signal.h>
+
 #include "helper/auto-connection.h"
 
-namespace Inkscape {
-namespace UI {
-    namespace Dialog {
-        class ColorItem;
-    };
+namespace Gtk {
+class Builder;
+class Button;
+class FlowBox;
+class Menu;
+class ScrolledWindow;
+} // namespace Gtk
+
+namespace Inkscape::UI {
+
+namespace Dialog {
+class ColorItem;
+} // namespace Dialog
 
 namespace Widget {
 
-class ColorPalette : public Gtk::Bin {
+class ColorPaletteMenuItem;
+
+class ColorPalette : public Gtk::Box {
 public:
     ColorPalette();
     ~ColorPalette() override;
@@ -122,6 +129,7 @@ private:
     Gtk::Button& _scroll_left;
     Gtk::Button& _scroll_right;
     Gtk::Menu& _menu;
+    std::vector<std::unique_ptr<ColorPaletteMenuItem>> _palette_menu_items;
     int _size = 10;
     int _border = 0;
     int _rows = 1;
@@ -142,6 +150,18 @@ private:
     auto_connection _idle_resize;
 };
 
-}}} // namespace
+} // namespace Widget
+} // namespace Inkscape::UI
 
 #endif // SEEN_COLOR_PALETTE_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:

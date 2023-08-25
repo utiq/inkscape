@@ -1,10 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** @file
+ * @brief Color palette widget
+ */
+/* Authors:
+ *   Michael Kowalski
+ *
+ * Copyright (C) 2021 Michael Kowalski
+ * Released under GNU GPL v2+, read the file 'COPYING' for more information.
+ */
 
+#include <utility>
 #include <glibmm/main.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/adjustment.h>
-#include <gtkmm/box.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/button.h>
+#include <gtkmm/flowbox.h>
 #include <gtkmm/flowboxchild.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/menubutton.h>
@@ -12,14 +23,13 @@
 #include <gtkmm/radiomenuitem.h>
 #include <gtkmm/scale.h>
 #include <gtkmm/scrollbar.h>
+#include <gtkmm/scrolledwindow.h>
 
 #include "color-palette.h"
 #include "ui/builder-utils.h"
 #include "ui/dialog/color-item.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 ColorPalette::ColorPalette():
     _builder(create_builder("color-palette.glade")),
@@ -634,30 +644,36 @@ void ColorPalette::rebuild_widgets()
     _pinned_box.thaw_notify();
 }
 
-class CustomMenuItem : public Gtk::RadioMenuItem {
+class ColorPaletteMenuItem : public Gtk::RadioMenuItem {
 public:
-    CustomMenuItem(Gtk::RadioMenuItem::Group& group, const Glib::ustring& label, const Glib::ustring id, std::vector<ColorPalette::rgb_t> colors):
-        Gtk::RadioMenuItem(group, label), _colors(std::move(colors)) {
-
+    ColorPaletteMenuItem(Gtk::RadioMenuItem::Group &group,
+                         Glib::ustring const &label,
+                         Glib::ustring id,
+                         std::vector<ColorPalette::rgb_t> colors)
+        : Gtk::RadioMenuItem(group, label)
+        , id{std::move(id)}
+        , _colors{std::move(colors)}
+    {
         set_margin_bottom(2);
     }
 
-    Glib::ustring tag;
+    Glib::ustring const id;
 
 private:
-    bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override;
     std::vector<ColorPalette::rgb_t> _colors;
+
+    bool on_draw(Cairo::RefPtr<Cairo::Context> const &cr) final;
 };
 
-bool CustomMenuItem::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
+bool ColorPaletteMenuItem::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
+{
     RadioMenuItem::on_draw(cr);
+
     if (_colors.empty()) return false;
 
-    auto allocation = get_allocation();
+    auto const width = get_width(), height = get_height();
     auto x = 0;
     auto y = 0;
-    auto width = allocation.get_width();
-    auto height = allocation.get_height();
     auto left = x + height;
     auto right = x + width - height;
     auto dx = 1;
@@ -684,23 +700,19 @@ bool CustomMenuItem::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
 }
 
 void ColorPalette::set_palettes(const std::vector<ColorPalette::palette_t>& palettes) {
-    auto items = _menu.get_children();
-    auto count = items.size();
-
-    int index = 0;
-    while (count > 2) {
-        if (auto item = items[index++]) {
-            _menu.remove(*item);
-            delete item;
-        }
-        count--;
+    for (auto const &item: _palette_menu_items) {
+        _menu.remove(*item);
     }
 
+    _palette_menu_items.clear();
+    _palette_menu_items.reserve(palettes.size());
+
     Gtk::RadioMenuItem::Group group;
-    for (auto it = palettes.rbegin(); it != palettes.rend(); ++it) {
+    // We prepend in reverse so we add the palettes above the constant separator & Configure items.
+    for (auto it = palettes.crbegin(); it != palettes.crend(); ++it) {
         auto& name = it->name;
         auto& id = it->id;
-        auto const item = Gtk::make_managed<CustomMenuItem>(group, name, id, it->colors);
+        auto item = std::make_unique<ColorPaletteMenuItem>(group, name, id, it->colors);
         item->signal_activate().connect([=](){
             if (!_in_update) {
                 _in_update = true;
@@ -710,6 +722,7 @@ void ColorPalette::set_palettes(const std::vector<ColorPalette::palette_t>& pale
         });
         item->set_visible(true);
         _menu.prepend(*item);
+        _palette_menu_items.push_back(std::move(item));
     }
 }
 
@@ -722,13 +735,12 @@ sigc::signal<void ()>& ColorPalette::get_settings_changed_signal() {
 }
 
 void ColorPalette::set_selected(const Glib::ustring& id) {
-    auto items = _menu.get_children();
     _in_update = true;
-    for (auto item : items) {
-        if (auto radio = dynamic_cast<CustomMenuItem*>(item)) {
-            radio->set_active(radio->tag == id);
-        }
+
+    for (auto const &item : _palette_menu_items) {
+        item->set_active(item->id == id);
     }
+
     _in_update = false;
 }
 
@@ -753,4 +765,15 @@ void ColorPalette::apply_filter() {
     _normal_box.invalidate_filter();
 }
 
-}}} // namespace
+} // namespace Inkscape::UI::Widget
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:
