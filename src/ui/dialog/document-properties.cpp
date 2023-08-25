@@ -1863,8 +1863,8 @@ void GridWidget::update()
     auto spacing = grid->getSpacing() * scale;
     _rsu_sx->setValueKeepUnit(spacing[Geom::X], "px");
     _rsu_sy->setValueKeepUnit(spacing[Geom::Y], "px");
-    const_cast<Gtk::Label*>(_rsu_sx->getLabel())->set_markup_with_mnemonic(modular ? _("Block _width:") : _("Spacing _X:"));
-    const_cast<Gtk::Label*>(_rsu_sy->getLabel())->set_markup_with_mnemonic(modular ? _("Block _height:") : _("Spacing _Y:"));
+    _rsu_sx->getLabel()->set_markup_with_mnemonic(modular ? _("Block _width:") : _("Spacing _X:"));
+    _rsu_sy->getLabel()->set_markup_with_mnemonic(modular ? _("Block _height:") : _("Spacing _Y:"));
 
     auto show = [](Gtk::Widget* w, bool do_show){
         w->set_no_show_all(false);

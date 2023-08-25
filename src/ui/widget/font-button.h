@@ -22,8 +22,9 @@ public:
     /**
      * Construct a FontButton Widget.
      *
-     * @param label     Label.
-     * @param icon      Icon filename, placed before the label (defaults to empty).
+     * @param label     Label, as per the Labelled base class.
+     * @param tooltip   Tooltip, as per the Labelled base class.
+     * @param icon      Icon name, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the label
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to false).

@@ -37,11 +37,11 @@ protected:
 
 public:
     /** Construct a Labelled Widget.
-     * @param label     Label.
+     * @param label     Label text.
      * @param tooltip   Tooltip markup to set on this Box.
      * @param widget    Widget to label; should be allocated with new, as it will
      *                  be passed to Gtk::manage().
-     * @param icon      Icon filename, placed before the label (defaults to empty).
+     * @param icon      Icon name, placed before the label (defaults to empty).
      * @param mnemonic  Mnemonic toggle; if true, an underscore (_) in the text
      *                  indicates the next character should be used for the
      *                  mnemonic accelerator key (defaults to true).

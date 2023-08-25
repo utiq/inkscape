@@ -63,6 +63,7 @@ Find::Find()
 
       entry_find(_("F_ind:"), _("Find objects by their content or properties (exact or partial match)")),
       entry_replace(_("R_eplace:"), _("Replace match with this value")),
+      label_group{Gtk::SizeGroup::create(Gtk::SIZE_GROUP_HORIZONTAL)},
 
       check_scope_all(_("_All")),
       check_scope_layer(_("Current _layer")),
@@ -127,16 +128,15 @@ Find::Find()
       vbox_types2(Gtk::ORIENTATION_VERTICAL),
       hbox_types(Gtk::ORIENTATION_HORIZONTAL),
       hboxbutton_row(Gtk::ORIENTATION_HORIZONTAL)
-
 {
-    label_group = Gtk::SizeGroup::create(Gtk::SIZE_GROUP_HORIZONTAL);
-    auto label1 = const_cast<Gtk::Label*>(entry_find.getLabel());
+    auto const label1 = entry_find.getLabel();
     label_group->add_widget(*label1);
     label1->set_xalign(0);
-    auto label2 = const_cast<Gtk::Label*>(entry_replace.getLabel());
+    auto const label2 = entry_replace.getLabel();
     label_group->add_widget(*label2);
     label2->set_xalign(0);
-    const int MARGIN = 4;
+
+    static constexpr int MARGIN = 4;
     set_margin_start(MARGIN);
     set_margin_end(MARGIN);
     entry_find.set_margin_top(MARGIN);

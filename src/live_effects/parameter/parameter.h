@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef INKSCAPE_LIVEPATHEFFECT_PARAMETER_H
-#define INKSCAPE_LIVEPATHEFFECT_PARAMETER_H
-
 /*
  * Inkscape::LivePathEffectParameters
  *
@@ -10,10 +7,15 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_LIVEPATHEFFECT_PARAMETER_H
+#define INKSCAPE_LIVEPATHEFFECT_PARAMETER_H
+
+#include <vector>
 #include <2geom/forward.h>
 #include <2geom/pathvector.h>
 #include <glibmm/ustring.h>
 
+#include "helper/auto-connection.h"
 #include "live_effects/lpeobject.h"
 #include "ui/widget/registered-widget.h"
 
@@ -22,7 +24,7 @@
 // in gtk3, it is an issue: it allocates widget size for the maxmium
 // value you pass to it, leading to some insane lengths.
 // If you need this to be more, please be conservative about it.
-const double SCALARPARAM_G_MAXDOUBLE =
+inline constexpr double SCALARPARAM_G_MAXDOUBLE =
     10000000000.0; // TODO fixme: using an arbitrary large number as a magic value seems fragile.
 
 class KnotHolder;
@@ -32,23 +34,24 @@ class SPItem;
 
 namespace Gtk {
 class Widget;
-}
+} // namespace Gtk
 
 namespace Inkscape {
+
 namespace Display {
 class TemporaryItem;
-}
+} // namespace Display
+
 namespace NodePath {
 class Path;
-}
+} // namespace NodePath
 
-namespace UI {
-namespace Widget {
+namespace UI::Widget {
 class Registry;
-}
-} // namespace UI
+} // namespace UI::Widget
 
 namespace LivePathEffect {
+
 class Effect;
 
 class Parameter {
@@ -86,7 +89,7 @@ class Parameter {
     virtual void param_transform_multiply(Geom::Affine const & /*postmul*/, bool set){};
     virtual std::vector<SPObject *> param_get_satellites();
     void param_higlight(bool highlight);
-    sigc::connection *selection_changed_connection = nullptr;
+    auto_connection selection_changed_connection;
     void change_selection(Inkscape::Selection *selection);
     void update_satellites();
     Glib::ustring param_key;
@@ -113,7 +116,7 @@ class ScalarParam : public Parameter {
   public:
     ScalarParam(const Glib::ustring &label, const Glib::ustring &tip, const Glib::ustring &key,
                 Inkscape::UI::Widget::Registry *wr, Effect *effect, gdouble default_value = 1.0);
-    ~ScalarParam() override;
+
     ScalarParam(const ScalarParam &) = delete;
     ScalarParam &operator=(const ScalarParam &) = delete;
 
@@ -159,7 +162,7 @@ class ScalarParam : public Parameter {
 
 } // namespace Inkscape
 
-#endif
+#endif // INKSCAPE_LIVEPATHEFFECT_PARAMETER_H
 
 /*
   Local Variables:

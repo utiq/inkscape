@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
+ * Inkscape::LivePathEffectParameters
+ *
  * Copyright (C) Johan Engelen 2007 <j.b.c.engelen@utwente.nl>
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -8,31 +10,27 @@
 #include "random.h"
 
 #include <glibmm/i18n.h>
+#include <glibmm/ustring.h>
 
 #include "live_effects/effect.h"
 #include "svg/stringstream.h"
 #include "svg/svg.h"
 #include "ui/icon-names.h"
-#include "ui/widget/random.h"
-#include "ui/widget/registered-widget.h"
 
 #define noLPERANDOMPARAM_DEBUG
 
 /* RNG stolen from /display/nr-filter-turbulence.cpp */
-#define RAND_m 2147483647 /* 2**31 - 1 */
-#define RAND_a 16807 /* 7**5; primitive root of m */
-#define RAND_q 127773 /* m / a */
-#define RAND_r 2836 /* m % a */
-#define BSize 0x100
+static constexpr int RAND_m = 2147483647; // 2**31 - 1
+static constexpr int RAND_a =      16807; // 7**5; primitive root of m
+static constexpr int RAND_q =     127773; // m / a
+static constexpr int RAND_r =       2836; // m % a
+static constexpr int BSize  =      0x100;
 
-namespace Inkscape {
+namespace Inkscape::LivePathEffect {
 
-namespace LivePathEffect {
-
-
-RandomParam::RandomParam( const Glib::ustring& label, const Glib::ustring& tip,
-                      const Glib::ustring& key, Inkscape::UI::Widget::Registry* wr,
-                      Effect* effect, gdouble default_value, long default_seed, bool randomsign)
+RandomParam::RandomParam(const Glib::ustring& label, const Glib::ustring& tip,
+                         const Glib::ustring& key, Inkscape::UI::Widget::Registry* wr,
+                         Effect* effect, gdouble default_value, long default_seed, bool randomsign)
     : Parameter(label, tip, key, wr, effect)
 {
     defvalue = default_value;
@@ -46,8 +44,6 @@ RandomParam::RandomParam( const Glib::ustring& label, const Glib::ustring& tip,
     seed = startseed;
     _randomsign = randomsign;
 }
-
-RandomParam::~RandomParam() = default;
 
 bool
 RandomParam::param_readSVGValue(const gchar * strvalue)
@@ -161,7 +157,6 @@ RandomParam::resetRandomizer()
     seed = startseed;
 }
 
-
 Gtk::Widget *
 RandomParam::param_newWidget()
 {
@@ -178,15 +173,14 @@ RandomParam::param_newWidget()
     }
     regrandom->setRange(min, max);
     regrandom->setProgrammatically = false;
-    regrandom->signal_button_release_event().connect(sigc::mem_fun (*this, &RandomParam::on_button_release));
-
+    regrandom->signal_value_changed().connect(sigc::mem_fun(*this, &RandomParam::on_value_changed));
     regrandom->set_undo_parameters(_("Change random parameter"), INKSCAPE_ICON("dialog-path-effects"));
     return regrandom;
 }
 
-bool RandomParam::on_button_release(GdkEventButton* button_event) {
+void RandomParam::on_value_changed()
+{
     param_effect->refresh_widgets = true;
-    return false;
 }
 
 RandomParam::operator gdouble()
@@ -196,8 +190,7 @@ RandomParam::operator gdouble()
     } else {
         return rand() * value;
     }
-};
-
+}
 
 long
 RandomParam::setup_seed(long lSeed)
@@ -220,9 +213,7 @@ RandomParam::rand()
   return dresult;
 }
 
-
-} /* namespace LivePathEffect */
-} /* namespace Inkscape */
+} // namespace Inkscape::LivePathEffect
 
 /*
   Local Variables:

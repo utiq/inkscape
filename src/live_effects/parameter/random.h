@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef INKSCAPE_LIVEPATHEFFECT_PARAMETER_RANDOM_H
-#define INKSCAPE_LIVEPATHEFFECT_PARAMETER_RANDOM_H
-
 /*
  * Inkscape::LivePathEffectParameters
  *
@@ -10,18 +7,20 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_LIVEPATHEFFECT_PARAMETER_RANDOM_H
+#define INKSCAPE_LIVEPATHEFFECT_PARAMETER_RANDOM_H
+
 #include "live_effects/parameter/parameter.h"
-#include <glibmm/ustring.h>
-#include <2geom/point.h>
-#include <2geom/path.h>
 
-namespace Inkscape {
+namespace Glib {
+class ustring;
+} // namespace Glib
 
-namespace LivePathEffect {
+namespace Inkscape::LivePathEffect {
 
 class RandomParam : public Parameter {
 public:
-    RandomParam(  const Glib::ustring& label,
+    RandomParam(const Glib::ustring& label,
                 const Glib::ustring& tip,
                 const Glib::ustring& key, 
                 Inkscape::UI::Widget::Registry* wr,
@@ -29,7 +28,6 @@ public:
                 gdouble default_value = 1.0,
                 long default_seed = 0,
                 bool randomsign = false);
-    ~RandomParam() override;
 
     bool param_readSVGValue(const gchar * strvalue) override;
     Glib::ustring param_getSVGValue() const override;
@@ -61,7 +59,7 @@ protected:
     gdouble defvalue;
 
 private:
-    bool on_button_release(GdkEventButton* button_event);
+    void on_value_changed();
     long setup_seed(long);
     gdouble rand();
 
@@ -69,8 +67,17 @@ private:
     RandomParam& operator=(const RandomParam&) = delete;
 };
 
-} //namespace LivePathEffect
+} // namespace Inkscape::LivePathEffect
 
-} //namespace Inkscape
+#endif // INKSCAPE_LIVEPATHEFFECT_PARAMETER_RANDOM_H
 
-#endif
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

@@ -21,10 +21,7 @@
 
 #define noLPEREALPARAM_DEBUG
 
-namespace Inkscape {
-
-namespace LivePathEffect {
-
+namespace Inkscape::LivePathEffect {
 
 Parameter::Parameter(Glib::ustring label, Glib::ustring tip, Glib::ustring key, Inkscape::UI::Widget::Registry *wr,
                      Effect *effect)
@@ -43,14 +40,7 @@ Parameter::~Parameter() {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
     if (desktop && ownerlocator) {
         desktop->remove_temporary_canvasitem(ownerlocator);
-        ownerlocator = nullptr;
     }
-    if (selection_changed_connection) {
-        selection_changed_connection->disconnect();
-        delete selection_changed_connection;
-        selection_changed_connection = nullptr;
-    }
-    param_effect = nullptr;
 }
 
 void Parameter::param_write_to_repr(const char *svgd)
@@ -144,8 +134,8 @@ void Parameter::connect_selection_changed()
         if (selection) {
             std::vector<SPObject *> satellites = param_get_satellites();
             if (!selection_changed_connection) {
-                selection_changed_connection = new sigc::connection(
-                    selection->connectChangedFirst(sigc::mem_fun(*this, &Parameter::change_selection)));
+                selection_changed_connection = selection->connectChangedFirst(
+                    sigc::mem_fun(*this, &Parameter::change_selection));
             }
         }
     }
@@ -223,8 +213,6 @@ ScalarParam::ScalarParam(const Glib::ustring &label, const Glib::ustring &tip, c
     , _width_chars(-1)
 {
 }
-
-ScalarParam::~ScalarParam() = default;
 
 bool ScalarParam::param_readSVGValue(const gchar *strvalue)
 {
@@ -360,8 +348,7 @@ void ScalarParam::param_set_increments(double step, double page)
     inc_page = page;
 }
 
-} /* namespace LivePathEffect */
-} /* namespace Inkscape */
+} // namespace Inkscape::LivePathEffect
 
 /*
   Local Variables:
