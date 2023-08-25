@@ -91,6 +91,7 @@ enum TaperShape {
     TAPER_CENTER,
     TAPER_RIGHT,
     TAPER_LEFT,
+    TAPER_CLAMP,
     LAST_SHAPE
 };
 
@@ -98,6 +99,7 @@ static const Util::EnumData<unsigned> TaperShapeType[] = {
     {TAPER_CENTER, N_("Center"), "center"},
     {TAPER_LEFT,   N_("Left"),   "left"},
     {TAPER_RIGHT,  N_("Right"),  "right"},
+    {TAPER_CLAMP,  N_("Clamp"),  "clamp"},
 };
 
 static const Util::EnumDataConverter<unsigned> JoinTypeConverter(JoinType, sizeof (JoinType)/sizeof(*JoinType));
@@ -480,7 +482,11 @@ LPETaperStroke::doBeforeEffect (SPLPEItem const* lpeitem)
             // Construct the pattern
             std::stringstream pat_str;
             pat_str.imbue(std::locale::classic());
+            bool clamp = false;
             switch (TaperShapeTypeConverter.get_id_from_key(start_shape._vector[index])) {
+                case TAPER_CLAMP:
+                    clamp = true;
+                    break;
                 case TAPER_RIGHT:
                     pat_str << "M 1,0 Q " << 1 - (double)start_smoothingv[index] << ",0 0,1 L 1,1";
                     break;
@@ -491,13 +497,14 @@ LPETaperStroke::doBeforeEffect (SPLPEItem const* lpeitem)
                     pat_str << "M 1,0 C " << 1 - (double)start_smoothingv[index] << ",0 0,0.5 0,0.5 0,0.5 " << 1 - (double)start_smoothingv[index] << ",1 1,1";
                     break;
             }
+            if (!clamp) {
+                pat_vec = sp_svg_read_pathv(pat_str.str().c_str());
+                pwd2.concat(stretch_along(pathv_tmp[0].toPwSb(), pat_vec[0], fabs(line_width)));
+                throwaway_path = Geom::path_from_piecewise(pwd2, LPE_CONVERSION_TOLERANCE)[0];
 
-            pat_vec = sp_svg_read_pathv(pat_str.str().c_str());
-            pwd2.concat(stretch_along(pathv_tmp[0].toPwSb(), pat_vec[0], fabs(line_width)));
-            throwaway_path = Geom::path_from_piecewise(pwd2, LPE_CONVERSION_TOLERANCE)[0];
-
-            real_path.append(throwaway_path);
-        }
+                real_path.append(throwaway_path);
+            }
+        }    
         
         // if this condition happens to evaluate false, i.e. there was no space for a path to be drawn, it is simply skipped.
         // although this seems obvious, it can probably lead to bugs.
@@ -518,8 +525,11 @@ LPETaperStroke::doBeforeEffect (SPLPEItem const* lpeitem)
             // append the ending taper
             std::stringstream pat_str_1;
             pat_str_1.imbue(std::locale::classic());
-
+            bool clamp = false;
             switch (TaperShapeTypeConverter.get_id_from_key(end_shape._vector[index])) {
+                case TAPER_CLAMP:
+                    clamp = true;
+                    break;
                 case TAPER_RIGHT:
                     pat_str_1 << "M 0,1 L 1,1 Q " << (double)end_smoothingv[index] << ",0 0,0";
                     break;
@@ -530,19 +540,20 @@ LPETaperStroke::doBeforeEffect (SPLPEItem const* lpeitem)
                     pat_str_1 << "M 0,1 C " << (double)end_smoothingv[index] << ",1 1,0.5 1,0.5 1,0.5 " << (double)end_smoothingv[index] << ",0 0,0";
                     break;
             }
+            if (!clamp) {
+                pat_vec = sp_svg_read_pathv(pat_str_1.str().c_str());
 
-            pat_vec = sp_svg_read_pathv(pat_str_1.str().c_str());
+                pwd2 = Piecewise<D2<SBasis> >();
+                pwd2.concat(stretch_along(pathv_tmp[2].toPwSb(), pat_vec[0], fabs(line_width)));
 
-            pwd2 = Piecewise<D2<SBasis> >();
-            pwd2.concat(stretch_along(pathv_tmp[2].toPwSb(), pat_vec[0], fabs(line_width)));
-
-            throwaway_path = Geom::path_from_piecewise(pwd2, LPE_CONVERSION_TOLERANCE)[0];
-            if (!Geom::are_near(real_path.finalPoint(), throwaway_path.initialPoint()) && real_path.size() >= 1) {
-                real_path.appendNew<Geom::LineSegment>(throwaway_path.initialPoint());
-            } else {
-                real_path.setFinal(throwaway_path.initialPoint());
+                throwaway_path = Geom::path_from_piecewise(pwd2, LPE_CONVERSION_TOLERANCE)[0];
+                if (!Geom::are_near(real_path.finalPoint(), throwaway_path.initialPoint()) && real_path.size() >= 1) {
+                    real_path.appendNew<Geom::LineSegment>(throwaway_path.initialPoint());
+                } else {
+                    real_path.setFinal(throwaway_path.initialPoint());
+                }
+                real_path.append(throwaway_path);
             }
-            real_path.append(throwaway_path);
         }
         
         if (!metInMiddle) {
