@@ -15,7 +15,6 @@
 
 #include <vector>
 
-#include <gdk/gdk.h>
 #include <glibmm/ustring.h>
 
 #include "enums.h"  // SPAnchorType
@@ -79,7 +78,6 @@ struct SPSelTransHandle;
 struct SPSelTransHandle {
     SPSelTransType type;
     SPAnchorType anchor;
-    GdkCursorType cursor;
     unsigned int control;
     gdouble x, y;
 };

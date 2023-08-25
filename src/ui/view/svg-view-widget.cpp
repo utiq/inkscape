@@ -160,18 +160,17 @@ bool SVGViewWidget::event(CanvasEvent const &event, DrawingItem *drawing_item)
         },
         [&] (EnterEvent const &event) {
             if (href) {
-                auto display = gdk_display_get_default();
-                auto cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
-                auto window = gtk_widget_get_window(_canvas->Gtk::Widget::gobj());
-                gdk_window_set_cursor(window, cursor);
-                g_object_unref(cursor);
+                auto display = Gdk::Display::get_default();
+                auto cursor = Gdk::Cursor::create(display, "pointer");
+                auto window = _canvas->get_window(); // GDK Window
+                window->set_cursor(cursor);
                 set_tooltip_text(href);
             }
         },
         [&] (LeaveEvent const &event) {
             if (href) {
-                auto window = gtk_widget_get_window(_canvas->Gtk::Widget::gobj());
-                gdk_window_set_cursor(window, nullptr);
+                auto window = _canvas->get_window(); // GDK Window
+                window->set_cursor();
                 set_tooltip_text("");
             }
         },

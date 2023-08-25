@@ -1167,14 +1167,14 @@ gboolean Inkscape::SelTrans::scaleRequest(Geom::Point &pt, guint state)
 gboolean Inkscape::SelTrans::stretchRequest(SPSelTransHandle const &handle, Geom::Point &pt, guint state)
 {
     Geom::Dim2 axis, perp;
-    switch (handle.cursor) {
-        case GDK_TOP_SIDE:
-        case GDK_BOTTOM_SIDE:
+    switch (handle.anchor) {
+        case SP_ANCHOR_S:
+        case SP_ANCHOR_N:
             axis = Geom::Y;
             perp = Geom::X;
             break;
-        case GDK_LEFT_SIDE:
-        case GDK_RIGHT_SIDE:
+        case SP_ANCHOR_W:
+        case SP_ANCHOR_E:
             axis = Geom::X;
             perp = Geom::Y;
             break;
@@ -1302,12 +1302,14 @@ gboolean Inkscape::SelTrans::skewRequest(SPSelTransHandle const &handle, Geom::P
     Geom::Dim2 dim_a;
     Geom::Dim2 dim_b;
 
-    switch (handle.cursor) {
-        case GDK_SB_H_DOUBLE_ARROW:
+    switch (handle.anchor) {
+        case SP_ANCHOR_S:
+        case SP_ANCHOR_N:
             dim_a = Geom::Y;
             dim_b = Geom::X;
             break;
-        case GDK_SB_V_DOUBLE_ARROW:
+        case SP_ANCHOR_W:
+        case SP_ANCHOR_E:
             dim_a = Geom::X;
             dim_b = Geom::Y;
             break;
