@@ -104,7 +104,7 @@ std::string choose_file_open(Glib::ustring const &title, Gtk::Window *parent,
     return _choose_file_open(title, parent, {}, mime_types, current_folder);
 }
 
-std::string choose_file_open(Glib::ustring title, Gtk::Window *parent,
+std::string choose_file_open(Glib::ustring const &title, Gtk::Window *parent,
                              std::vector<std::pair<Glib::ustring, Glib::ustring>> const &filters,
                              std::string &current_folder)
 {
