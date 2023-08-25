@@ -3,7 +3,9 @@
  * Color selector using sliders for each components, for multiple color modes
  *//*
  * Authors:
- * see git history
+ *   see git history
+ *   bulia byak <buliabyak@users.sf.net>
+ *   Massinissa Derriche <massinissa.derriche@gmail.com>
  *
  * Copyright (C) 2018, 2021 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -12,15 +14,15 @@
 #ifndef SEEN_SP_COLOR_SCALES_H
 #define SEEN_SP_COLOR_SCALES_H
 
-#include <gtkmm/box.h>
 #include <array>
+#include <memory>
 #include <vector>
+#include <gtkmm/box.h>
 
+#include "helper/auto-connection.h"
 #include "ui/selected-color.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 class ColorSlider;
 class ColorWheel;
@@ -47,7 +49,6 @@ public:
     static void setScaled(Glib::RefPtr<Gtk::Adjustment> &a, double v, bool constrained = false);
 
     ColorScales(SelectedColor &color, bool no_alpha);
-    ~ColorScales() override;
 
     void setupMode(bool no_alpha);
     SPColorScalesMode getMode() const;
@@ -94,8 +95,8 @@ protected:
     const Glib::ustring _prefs = "/color_scales";
     static gchar const * const _pref_wheel_visibility;
 
-    sigc::connection _color_changed;
-    sigc::connection _color_dragged;
+    auto_connection _color_changed;
+    auto_connection _color_dragged;
 
 public:
     // By default, disallow copy constructor and assignment operator
@@ -124,11 +125,10 @@ struct ColorPickerDescription
 
 std::vector<ColorPickerDescription> get_color_pickers();
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif /* !SEEN_SP_COLOR_SCALES_H */
+
 /*
   Local Variables:
   mode:c++

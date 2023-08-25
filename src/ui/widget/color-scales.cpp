@@ -3,7 +3,7 @@
  * Color selector using sliders for each components, for multiple color modes
  *//*
  * Authors:
- * see git history
+ *   see git history
  *   bulia byak <buliabyak@users.sf.net>
  *   Massinissa Derriche <massinissa.derriche@gmail.com>
  *
@@ -11,51 +11,48 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include "ui/widget/color-scales.h"
+
+#include <functional>
+#include <stdexcept>
+#include <glibmm/i18n.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/adjustment.h>
-#include <gtkmm/spinbutton.h>
+#include <gtkmm/expander.h>
 #include <gtkmm/grid.h>
-#include <glibmm/i18n.h>
-#include <functional>
-#include <memory>
-#include <stdexcept>
-#include <vector>
+#include <gtkmm/label.h>
+#include <gtkmm/spinbutton.h>
 
-#include "ui/dialog-events.h"
-#include "ui/selected-color.h"
-#include "ui/widget/color-scales.h"
-#include "ui/widget/color-slider.h"
-#include "ui/widget/color-icc-selector.h"
-#include "ui/widget/scrollprotected.h"
-#include "ui/icon-loader.h"
 #include "oklab.h"
 #include "preferences.h"
-
+#include "ui/dialog-events.h"
+#include "ui/icon-loader.h"
+#include "ui/selected-color.h"
+#include "ui/widget/color-icc-selector.h"
+#include "ui/widget/color-slider.h"
 #include "ui/widget/ink-color-wheel.h"
 #include "ui/widget/oklab-color-wheel.h"
+#include "ui/widget/scrollprotected.h"
 
-static int const CSC_CHANNEL_R     = (1 << 0);
-static int const CSC_CHANNEL_G     = (1 << 1);
-static int const CSC_CHANNEL_B     = (1 << 2);
-static int const CSC_CHANNEL_A     = (1 << 3);
-static int const CSC_CHANNEL_H     = (1 << 0);
-static int const CSC_CHANNEL_S     = (1 << 1);
-static int const CSC_CHANNEL_V     = (1 << 2);
-static int const CSC_CHANNEL_C     = (1 << 0);
-static int const CSC_CHANNEL_M     = (1 << 1);
-static int const CSC_CHANNEL_Y     = (1 << 2);
-static int const CSC_CHANNEL_K     = (1 << 3);
-static int const CSC_CHANNEL_CMYKA = (1 << 4);
+constexpr static int CSC_CHANNEL_R     = (1 << 0);
+constexpr static int CSC_CHANNEL_G     = (1 << 1);
+constexpr static int CSC_CHANNEL_B     = (1 << 2);
+constexpr static int CSC_CHANNEL_A     = (1 << 3);
+constexpr static int CSC_CHANNEL_H     = (1 << 0);
+constexpr static int CSC_CHANNEL_S     = (1 << 1);
+constexpr static int CSC_CHANNEL_V     = (1 << 2);
+constexpr static int CSC_CHANNEL_C     = (1 << 0);
+constexpr static int CSC_CHANNEL_M     = (1 << 1);
+constexpr static int CSC_CHANNEL_Y     = (1 << 2);
+constexpr static int CSC_CHANNEL_K     = (1 << 3);
+constexpr static int CSC_CHANNEL_CMYKA = (1 << 4);
 
-static int const CSC_CHANNELS_ALL  = 0;
+constexpr static int CSC_CHANNELS_ALL  = 0;
 
-static int const XPAD = 2;
-static int const YPAD = 2;
+constexpr static int XPAD = 2;
+constexpr static int YPAD = 2;
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
-
+namespace Inkscape::UI::Widget {
 
 static guchar const *sp_color_scales_hue_map();
 static guchar const *sp_color_scales_hsluv_map(guchar *map,
@@ -170,19 +167,6 @@ ColorScales<MODE>::ColorScales(SelectedColor &color, bool no_alpha)
 
     _color_changed = _color.signal_changed.connect([this](){ _onColorChanged(); });
     _color_dragged = _color.signal_dragged.connect([this](){ _onColorChanged(); });
-}
-
-template <SPColorScalesMode MODE>
-ColorScales<MODE>::~ColorScales()
-{
-    _color_changed.disconnect();
-    _color_dragged.disconnect();
-
-    for (gint i = 0; i < 5; i++) {
-        _l[i] = nullptr;
-        _s[i] = nullptr;
-        _b[i] = nullptr;
-    }
 }
 
 template <SPColorScalesMode MODE>
@@ -1137,10 +1121,9 @@ static guchar const *sp_color_scales_hsluv_map(guchar *map,
         std::function<void(float*, float)> callback)
 {
     // Only generate 21 colors and interpolate between them to get 1024
-    static int const STEPS = 21;
-    static int const COLORS = (STEPS+1) * 3;
-
-    std::vector<float> steps = range<float>(STEPS+1, 0.f, 1.f);
+    constexpr static int STEPS = 21;
+    constexpr static int COLORS = (STEPS+1) * 3;
+    static auto const steps = range<float>(STEPS+1, 0.f, 1.f);
 
     // Generate color steps
     gfloat colors[COLORS];
@@ -1232,9 +1215,7 @@ template class ColorScalesFactory<SPColorScalesMode::HSV>;
 template class ColorScalesFactory<SPColorScalesMode::HSLUV>;
 template class ColorScalesFactory<SPColorScalesMode::OKLAB>;
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

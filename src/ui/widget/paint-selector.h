@@ -1,26 +1,31 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * Generic paint selector widget
+ * PaintSelector: Generic paint selector widget.
  *//*
  * Authors:
- *   Lauris
+ *   Lauris Kaplinski
+ *   bulia byak <buliabyak@users.sf.net>
+ *   John Cliff <simarilius@yahoo.com>
  *   Jon A. Cruz <jon@joncruz.org>
+ *   Abhishek Sharma
  *
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
+
 #ifndef SEEN_SP_PAINT_SELECTOR_H
 #define SEEN_SP_PAINT_SELECTOR_H
 
+#include <memory>
+#include <optional>
+#include <2geom/forward.h>
+#include <gtkmm/box.h>
+
 #include "color.h"
 #include "fill-or-stroke.h"
-#include <glib.h>
-#include <gtkmm/box.h>
-#include <optional>
-
+#include "gradient-selector-interface.h"
 #include "object/sp-gradient-spread.h"
 #include "object/sp-gradient-units.h"
-#include "gradient-selector-interface.h"
 #include "ui/selected-color.h"
 #include "ui/widget/gradient-selector.h"
 #include "ui/widget/swatch-selector.h"
@@ -41,14 +46,12 @@ class RadioButton;
 class ToggleButton;
 } // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 class FillRuleRadioButton;
-class StyleToggleButton;
 class GradientEditor;
 class PatternEditor;
+class StyleToggleButton;
 
 /**
  * Generic paint selector widget.
@@ -110,7 +113,7 @@ class PaintSelector : public Gtk::Box {
     bool _meshmenu_update = false;
 #endif
 
-    Inkscape::UI::SelectedColor *_selected_color;
+    std::unique_ptr<Inkscape::UI::SelectedColor> _selected_color;
     bool _updating_color;
 
     void getColorAlpha(SPColor &color, gfloat &alpha) const;
@@ -164,7 +167,6 @@ class PaintSelector : public Gtk::Box {
 
   public:
     PaintSelector(FillOrStroke kind);
-    ~PaintSelector() override;
 
     inline decltype(_signal_fillrule_changed) signal_fillrule_changed() const { return _signal_fillrule_changed; }
     inline decltype(_signal_dragged) signal_dragged() const { return _signal_dragged; }
@@ -219,9 +221,8 @@ enum {
     COMBO_N_COLS = 4
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
+
 #endif // SEEN_SP_PAINT_SELECTOR_H
 
 /*

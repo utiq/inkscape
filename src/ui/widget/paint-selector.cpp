@@ -16,53 +16,52 @@
 
 #define noSP_PS_VERBOSE
 
+#include "paint-selector.h"
+
 #include <cstring>
+#include <exception>
+#include <iostream>
 #include <string>
 #include <vector>
-
-#include <glibmm/i18n.h>
+#include <2geom/affine.h>
+#include <2geom/point.h>
+#include <2geom/transforms.h>
 #include <glibmm/fileutils.h>
+#include <glibmm/i18n.h>
+#include <gtkmm/combobox.h>
+#include <gtkmm/label.h>
+#include <gtkmm/radiobutton.h>
+#include <gtkmm/togglebutton.h>
 
 #include "desktop-style.h"
-#include "inkscape.h"
-#include "paint-selector.h"
-#include "path-prefix.h"
-#include "pattern-manipulation.h"
-
 #include "helper/stock-items.h"
-#include "ui/icon-loader.h"
-
-#include "style.h"
-
-#include "io/sys.h"
+#include "inkscape.h"
 #include "io/resource.h"
+#include "io/sys.h"
 #include "object/sp-hatch.h"
 #include "object/sp-linear-gradient.h"
 #include "object/sp-mesh-gradient.h"
 #include "object/sp-pattern.h"
 #include "object/sp-radial-gradient.h"
 #include "object/sp-stop.h"
-
+#include "path-prefix.h"
+#include "pattern-manipulation.h"
+#include "style.h"
 #include "svg/css-ostringstream.h"
-
+#include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/widget/color-notebook.h"
-#include "ui/widget/gradient-selector.h"
 #include "ui/widget/gradient-editor.h"
+#include "ui/widget/gradient-selector.h"
 #include "ui/widget/pattern-editor.h"
-#include "ui/widget/swatch-selector.h"
 #include "ui/widget/scrollprotected.h"
-
+#include "ui/widget/swatch-selector.h"
 #include "widgets/widget-sizes.h"
-
 #include "xml/repr.h"
 
 #ifdef SP_PS_VERBOSE
 #include "svg/svg-icc-color.h"
 #endif // SP_PS_VERBOSE
-
-#include <gtkmm/label.h>
-#include <gtkmm/combobox.h>
 
 using Inkscape::UI::SelectedColor;
 
@@ -215,7 +214,7 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     pack_start(*_frame, true, true, 0);
 
     /* Last used color */
-    _selected_color = new SelectedColor;
+    _selected_color = std::make_unique<SelectedColor>();
     _updating_color = false;
 
     _selected_color->signal_grabbed.connect(sigc::mem_fun(*this, &PaintSelector::onSelectedColorGrabbed));
@@ -235,14 +234,6 @@ PaintSelector::PaintSelector(FillOrStroke kind)
 
     // don't let docking manager uncover hidden widgets
     set_no_show_all();
-}
-
-PaintSelector::~PaintSelector()
-{
-    if (_selected_color) {
-        delete _selected_color;
-        _selected_color = nullptr;
-    }
 }
 
 StyleToggleButton *PaintSelector::style_button_add(gchar const *pixmap, PaintSelector::Mode mode, gchar const *tip)
