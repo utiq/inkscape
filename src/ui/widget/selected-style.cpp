@@ -45,7 +45,6 @@
 #include "ui/dialog/dialog-base.h"
 #include "ui/dialog/fill-and-stroke.h"
 #include "ui/icon-names.h"
-#include "ui/popup-menu.h"
 #include "ui/tools/tool-base.h"
 #include "ui/widget/color-preview.h"
 #include "ui/widget/gradient-image.h"
@@ -1085,7 +1084,7 @@ void SelectedStyle::make_popup_opacity()
     add_item(_("100% (Opaque)"  ), &SelectedStyle::opacity_1  );
 }
 
-bool SelectedStyle::on_opacity_popup()
+bool SelectedStyle::on_opacity_popup(PopupMenuOptionalClick)
 {
     _popup_opacity->popup_at_center(_opacity_sb);
     return true;

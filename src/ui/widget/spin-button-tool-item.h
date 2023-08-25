@@ -13,6 +13,8 @@
 #include <gtk/gtk.h> // GtkEventControllerKey
 #include <gtkmm/toolitem.h>
 
+#include "ui/popup-menu.h"
+
 namespace Gtk {
 class Adjustment;
 class Box;
@@ -68,7 +70,7 @@ private:
     void on_btn_is_focus_changed();
     bool on_btn_key_pressed(GtkEventControllerKey const *controller,
                             unsigned keyval, unsigned keycode, GdkModifierType state);
-    bool on_popup_menu();
+    bool on_popup_menu(PopupMenuOptionalClick);
 
     void defocus();
     bool process_tab(int direction);

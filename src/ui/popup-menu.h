@@ -16,6 +16,7 @@
 #define SEEN_UI_POPUP_MENU_H
 
 #include <memory>
+#include <optional>
 #include <sigc++/connection.h>
 #include <sigc++/slot.h>
 
@@ -26,8 +27,14 @@ class Widget;
 
 namespace Inkscape::UI {
 
+/// Information from a GestureMultiPress if a popup menu was opened by click
+struct PopupMenuClick final { int const n_press{}; double const x{}, y{}; };
+/// Optional: not present if popup wasnʼt triggered by click.
+using PopupMenuOptionalClick = std::optional<PopupMenuClick>;
+
 /// Return whether a popup was activated.
-using PopupMenuSlot = sigc::slot<bool()>;
+/// Click param is nullopt if popup wasnʼt triggered by a click.
+using PopupMenuSlot = sigc::slot<bool (PopupMenuOptionalClick)>;
 
 /// Connect slot to a widgetʼs key and button events that traditionally trigger a popup menu, i.e.:
 /// * The keys used by GTK3ʼs signal Widget::popup-menu: the Menu key, or the Shift+F10 combination

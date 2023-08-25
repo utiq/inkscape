@@ -30,22 +30,28 @@ static bool on_key_pressed(GtkEventControllerKey const * /*controller*/,
 {
     g_return_val_if_fail(slot != nullptr, false);
 
-    if (keyval == GDK_KEY_Menu) return (*slot)(); 
+    if (keyval == GDK_KEY_Menu) {
+        return (*slot)(std::nullopt);
+    }
 
     state = static_cast<GdkModifierType>(state & gtk_accelerator_get_default_mod_mask());
-    if (keyval == GDK_KEY_F10 && Controller::has_flag(state, GDK_SHIFT_MASK)) return (*slot)();
+    if (keyval == GDK_KEY_F10 && Controller::has_flag(state, GDK_SHIFT_MASK)) {
+        return (*slot)(std::nullopt);
+    }
 
     return false;
 }
 
 static Gtk::EventSequenceState on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                int /*n_press*/, double /*dx*/, double /*dy*/,
+                                                int const n_press, double const dx, double const dy,
                                                 PopupMenuSlot const * const slot)
 {
     g_return_val_if_fail(slot != nullptr, Gtk::EVENT_SEQUENCE_NONE);
 
-    if (gdk_event_triggers_context_menu(Controller::get_last_event(click))
-        && (*slot)()) return Gtk::EVENT_SEQUENCE_CLAIMED;
+    if (gdk_event_triggers_context_menu(Controller::get_last_event(click))) {
+        auto const click = PopupMenuClick{n_press, dx, dy};
+        if ((*slot)(click)) return Gtk::EVENT_SEQUENCE_CLAIMED;
+    }
 
     return Gtk::EVENT_SEQUENCE_NONE;
 }

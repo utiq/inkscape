@@ -16,6 +16,7 @@
 
 #include "message.h"
 #include "preferences.h" // observer
+#include "ui/popup-menu.h"
 
 namespace Gtk {
 class Grid;
@@ -58,12 +59,12 @@ private:
     bool zoom_output();
     void zoom_value_changed();
     void zoom_menu_handler();
-    bool zoom_popup();
+    bool zoom_popup(PopupMenuOptionalClick);
 
     bool rotate_output();
     void rotate_value_changed();
     void rotate_menu_handler();
-    bool rotate_popup();
+    bool rotate_popup(PopupMenuOptionalClick);
 
     // From left to right
     SelectedStyle* selected_style = nullptr;

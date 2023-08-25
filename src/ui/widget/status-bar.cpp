@@ -26,7 +26,6 @@
 #include "desktop.h"
 #include "ui/builder-utils.h"
 #include "ui/menuize.h"
-#include "ui/popup-menu.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/layer-selector.h"
 #include "ui/widget/page-selector.h"
@@ -245,7 +244,7 @@ StatusBar::zoom_value_changed()
 }
 
 bool
-StatusBar::zoom_popup()
+StatusBar::zoom_popup(PopupMenuOptionalClick)
 {
     popup_at_center(*zoom_popover, *zoom);
     return true;
@@ -295,7 +294,7 @@ StatusBar::rotate_value_changed()
 }
 
 bool
-StatusBar::rotate_popup()
+StatusBar::rotate_popup(PopupMenuOptionalClick)
 {
     popup_at_center(*rotate_popover, *rotate);
     return true;

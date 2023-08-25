@@ -18,7 +18,6 @@
 #include "spinbutton.h"
 #include "ui/controller.h"
 #include "ui/icon-loader.h"
-#include "ui/popup-menu.h"
 #include "ui/widget/popover-menu.h"
 #include "ui/widget/popover-menu-item.h"
 
@@ -334,7 +333,7 @@ SpinButtonToolItem::set_icon(const Glib::ustring& icon_name)
  * \brief Create a popup menu
  */
 bool
-SpinButtonToolItem::on_popup_menu()
+SpinButtonToolItem::on_popup_menu(PopupMenuOptionalClick)
 {
     auto const numeric_menu = create_numeric_menu();
     numeric_menu->popup_at_center(*_hbox);

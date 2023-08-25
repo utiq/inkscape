@@ -19,48 +19,99 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h" // only include where actually required!
-#endif
-
-#include <vector>
-
 #include "document-properties.h"
 
+#include <algorithm>
+#include <iterator>
+#include <list>
+#include <optional>
+#include <set>
+#include <string>
+#include <gtkmm/image.h>
+#include <gtkmm/liststore.h>
+#include <sigc++/adaptors/bind.h>
+#include <sigc++/functors/mem_fun.h>
+
+#include "actions/actions-tools.h"
+#include "color/cms-system.h"
+#include "helper/auto-connection.h"
+#include "include/gtkmm_version.h"
+#include "io/sys.h"
+#include "object/color-profile.h"
+#include "object/sp-grid.h"
+#include "object/sp-root.h"
+#include "object/sp-script.h"
 #include "page-manager.h"
 #include "rdf.h"
 #include "style.h"
-
-#include "actions/actions-tools.h"
-
-#include "color/cms-system.h"
-
-#include "include/gtkmm_version.h"
-
-#include "io/sys.h"
-
-#include "object/color-profile.h"
-#include "object/sp-root.h"
-#include "object/sp-grid.h"
-#include "object/sp-script.h"
-
+#include "svg/svg-color.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
+#include "ui/popup-menu.h"
 #include "ui/shape-editor.h"
 #include "ui/widget/alignment-selector.h"
 #include "ui/widget/entity-entry.h"
 #include "ui/widget/notebook-page.h"
 #include "ui/widget/page-properties.h"
+#include "ui/widget/popover-menu.h"
+#include "ui/widget/popover-menu-item.h"
 
-#include "svg/svg-color.h"
+namespace Inkscape::UI {
 
-namespace Inkscape {
-namespace UI {
+namespace Widget {
+
+class GridWidget : public Gtk::Box
+{
+public:
+    GridWidget(SPGrid *obj);
+
+    void update();
+    SPGrid *getGrid() { return grid; }
+    XML::Node *getGridRepr() { return repr; }
+    Gtk::Box *getTabWidget() { return _tab; }
+
+private:
+    SPGrid *grid = nullptr;
+    XML::Node *repr = nullptr;
+
+    Gtk::Box *_tab = nullptr;
+    Gtk::Image *_tab_img = nullptr;
+    Gtk::Label *_tab_lbl = nullptr;
+
+    Gtk::Label *_name_label = nullptr;
+
+    UI::Widget::Registry _wr;
+    RegisteredCheckButton *_grid_rcb_enabled = nullptr;
+    RegisteredCheckButton *_grid_rcb_snap_visible_only = nullptr;
+    RegisteredCheckButton *_grid_rcb_visible = nullptr;
+    RegisteredCheckButton *_grid_rcb_dotted = nullptr;
+    AlignmentSelector     *_grid_as_alignment = nullptr;
+
+    RegisteredUnitMenu *_rumg = nullptr;
+    RegisteredScalarUnit *_rsu_ox = nullptr;
+    RegisteredScalarUnit *_rsu_oy = nullptr;
+    RegisteredScalarUnit *_rsu_sx = nullptr;
+    RegisteredScalarUnit *_rsu_sy = nullptr;
+    RegisteredScalar *_rsu_ax = nullptr;
+    RegisteredScalar *_rsu_az = nullptr;
+    RegisteredColorPicker *_rcp_gcol = nullptr;
+    RegisteredColorPicker *_rcp_gmcol = nullptr;
+    RegisteredSuffixedInteger *_rsi = nullptr;
+    RegisteredScalarUnit* _rsu_gx = nullptr;
+    RegisteredScalarUnit* _rsu_gy = nullptr;
+    RegisteredScalarUnit* _rsu_mx = nullptr;
+    RegisteredScalarUnit* _rsu_my = nullptr;
+
+    Inkscape::auto_connection _modified_signal;
+};
+
+} // namespace Widget
+
 namespace Dialog {
 
-#define SPACE_SIZE_X 15
-#define SPACE_SIZE_Y 10
+static constexpr int SPACE_SIZE_X = 15;
+static constexpr int SPACE_SIZE_Y = 10;
 
 static void docprops_style_button(Gtk::Button& btn, char const* iconName)
 {
@@ -68,6 +119,41 @@ static void docprops_style_button(Gtk::Button& btn, char const* iconName)
     gtk_widget_set_visible(child, true);
     btn.add(*Gtk::manage(Glib::wrap(child)));
     btn.set_relief(Gtk::RELIEF_NONE);
+}
+
+static bool do_remove_popup_menu(PopupMenuOptionalClick const click,
+                                 Gtk::TreeView &tree_view, sigc::slot<void ()> const &slot)
+{
+    auto const selection = tree_view.get_selection();
+    if (!selection) return false;
+
+    auto const it = selection->get_selected();
+    if (!it) return false;
+
+    auto const mi = Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("_Remove"), true);
+    mi->signal_activate().connect(slot);
+    auto const menu = std::make_shared<UI::Widget::PopoverMenu>(Gtk::POS_BOTTOM);
+    menu->append(*mi);
+    UI::on_hide_reset(menu);
+
+    if (click) {
+        menu->popup_at(tree_view, click->x, click->y);
+        return true;
+    }
+
+    auto const column = tree_view.get_column(0);
+    g_return_val_if_fail(column, false);
+    auto rect = Gdk::Rectangle{};
+    tree_view.get_cell_area(Gtk::TreePath{it}, *column, rect);
+    menu->popup_at(tree_view, rect.get_x() + rect.get_width () / 2.0,
+                              rect.get_y() + rect.get_height());
+    return true;
+}
+
+static void connect_remove_popup_menu(Gtk::TreeView &tree_view, sigc::slot<void ()> slot)
+{
+    UI::on_popup_menu(tree_view, sigc::bind(&do_remove_popup_menu,
+                                            std::ref(tree_view), std::move(slot)));
 }
 
 DocumentProperties::DocumentProperties()
@@ -584,7 +670,6 @@ void DocumentProperties::linkSelectedProfile()
         cprofRepr->setAttribute("xlink:href", Glib::filename_to_uri(Glib::filename_from_utf8(file)));
         cprofRepr->setAttribute("id", file);
 
-
         // Checks whether there is a defs element. Creates it when needed
         Inkscape::XML::Node *defsRepr = sp_repr_lookup_name(xml_doc, "svg:defs");
         if (!defsRepr) {
@@ -645,55 +730,6 @@ void DocumentProperties::populate_linked_profiles_box()
     }
 }
 
-void DocumentProperties::external_scripts_list_button_release(GdkEventButton* event)
-{
-    if((event->type == GDK_BUTTON_RELEASE) && (event->button == 3)) {
-        _ExternalScriptsContextMenu.popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
-    }
-}
-
-void DocumentProperties::embedded_scripts_list_button_release(GdkEventButton* event)
-{
-    if((event->type == GDK_BUTTON_RELEASE) && (event->button == 3)) {
-        _EmbeddedScriptsContextMenu.popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
-    }
-}
-
-void DocumentProperties::linked_profiles_list_button_release(GdkEventButton* event)
-{
-    if((event->type == GDK_BUTTON_RELEASE) && (event->button == 3)) {
-        _EmbProfContextMenu.popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
-    }
-}
-
-void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
-{
-    auto const mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
-    _EmbProfContextMenu.append(*mi);
-    mi->signal_activate().connect(rem);
-    mi->set_visible(true);
-    _EmbProfContextMenu.accelerate(parent);
-}
-
-
-void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
-{
-    auto const mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
-    _ExternalScriptsContextMenu.append(*mi);
-    mi->signal_activate().connect(rem);
-    mi->set_visible(true);
-    _ExternalScriptsContextMenu.accelerate(parent);
-}
-
-void DocumentProperties::embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
-{
-    auto const mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
-    _EmbeddedScriptsContextMenu.append(*mi);
-    mi->signal_activate().connect(rem);
-    mi->set_visible(true);
-    _EmbeddedScriptsContextMenu.accelerate(parent);
-}
-
 void DocumentProperties::onColorProfileSelectRow()
 {
     Glib::RefPtr<Gtk::TreeSelection> sel = _LinkedProfilesList.get_selection();
@@ -701,7 +737,6 @@ void DocumentProperties::onColorProfileSelectRow()
         _unlink_btn.set_sensitive(sel->count_selected_rows () > 0);
     }
 }
-
 
 void DocumentProperties::removeSelectedProfile(){
     Glib::ustring name;
@@ -812,8 +847,7 @@ void DocumentProperties::build_cms()
 
     _LinkedProfilesList.get_selection()->signal_changed().connect( sigc::mem_fun(*this, &DocumentProperties::onColorProfileSelectRow) );
 
-    _LinkedProfilesList.signal_button_release_event().connect_notify(sigc::mem_fun(*this, &DocumentProperties::linked_profiles_list_button_release));
-    cms_create_popup_menu(_LinkedProfilesList, sigc::mem_fun(*this, &DocumentProperties::removeSelectedProfile));
+    connect_remove_popup_menu(_LinkedProfilesList, sigc::mem_fun(*this, &DocumentProperties::removeSelectedProfile));
 
     if (auto document = getDocument()) {
         std::vector<SPObject *> current = document->getResourceList( "defs" );
@@ -890,7 +924,6 @@ void DocumentProperties::build_scripting()
     _ExternalScriptsList.append_column(_("Filename"), _ExternalScriptsListColumns.filenameColumn);
     _ExternalScriptsList.set_headers_visible(true);
 // TODO restore?    _ExternalScriptsList.set_fixed_height_mode(true);
-
 
     //# Embedded scripts tab
     _page_embedded_scripts->set_visible(true);
@@ -989,13 +1022,10 @@ void DocumentProperties::build_scripting()
     _external_remove_btn.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::removeExternalScript));
     _embed_remove_btn.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::removeEmbeddedScript));
 
-    _ExternalScriptsList.signal_button_release_event().connect_notify(sigc::mem_fun(*this, &DocumentProperties::external_scripts_list_button_release));
-    external_create_popup_menu(_ExternalScriptsList, sigc::mem_fun(*this, &DocumentProperties::removeExternalScript));
+    connect_remove_popup_menu(_ExternalScriptsList, sigc::mem_fun(*this, &DocumentProperties::removeExternalScript));
+    connect_remove_popup_menu(_EmbeddedScriptsList, sigc::mem_fun(*this, &DocumentProperties::removeEmbeddedScript));
 
-    _EmbeddedScriptsList.signal_button_release_event().connect_notify(sigc::mem_fun(*this, &DocumentProperties::embedded_scripts_list_button_release));
-    embedded_create_popup_menu(_EmbeddedScriptsList, sigc::mem_fun(*this, &DocumentProperties::removeEmbeddedScript));
-
-//TODO: review this observers code:
+    //TODO: review this observers code:
     if (auto document = getDocument()) {
         std::vector<SPObject *> current = document->getResourceList( "script" );
         if (! current.empty()) {
@@ -1103,7 +1133,6 @@ void  DocumentProperties::browseExternalScript() {
     //# Get the current directory for finding files
     static Glib::ustring open_path;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-
 
     Glib::ustring attr = prefs->getString(_prefs_path);
     if (!attr.empty()) open_path = attr;
@@ -1524,7 +1553,6 @@ void DocumentProperties::update_widgets()
     _wr.setUpdating (false);
 }
 
-
 //--------------------------------------------------------------------
 
 void DocumentProperties::on_response (int id)
@@ -1630,7 +1658,6 @@ void DocumentProperties::onNewGrid(GridType grid_type)
     DocumentUndo::done(document, _("Create new grid"), INKSCAPE_ICON("document-properties"));
 }
 
-
 void DocumentProperties::onRemoveGrid()
 {
     gint pagenum = _grids_notebook.get_current_page();
@@ -1663,7 +1690,7 @@ void DocumentProperties::display_unit_change(const Inkscape::Util::Unit* doc_uni
     action->activate(doc_unit->abbr);
 }
 
-}; // namespace Dialog
+} // namespace Dialog
 
 namespace Widget {
 
@@ -1826,15 +1853,6 @@ GridWidget::GridWidget(SPGrid *grid)
     _wr.setUpdating(false);
 }
 
-GridWidget::~GridWidget()
-{
-    _grid_rcb_enabled = nullptr;
-    _grid_rcb_snap_visible_only = nullptr;
-    _grid_rcb_visible = nullptr;
-    _grid_rcb_dotted = nullptr;
-    _grid_as_alignment = nullptr;
-}
-
 /**
  * Keep the grid up to date with it's values.
  */
@@ -1915,8 +1933,8 @@ void GridWidget::update()
 }
 
 } // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+
+} // namespace Inkscape::UI
 
 /*
   Local Variables:

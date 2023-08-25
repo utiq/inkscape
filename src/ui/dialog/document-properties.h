@@ -1,13 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/** \file
- * \brief  Document Properties dialog
+/**
+ * @file
+ * Document properties dialog, Gtkmm-style.
  */
 /* Authors:
- *   Ralf Stephan <ralf@ark.in-berlin.de>
+ *   bulia byak <buliabyak@users.sf.net>
  *   Bryce W. Harrington <bryce@bryceharrington.org>
+ *   Lauris Kaplinski <lauris@kaplinski.com>
+ *   Jon Phillips <jon@rejon.org>
+ *   Ralf Stephan <ralf@ark.in-berlin.de> (Gtkmm)
+ *   Diederik van Lierop <mail@diedenrezi.nl>
+ *   Jon A. Cruz <jon@joncruz.org>
+ *   Abhishek Sharma
  *
- * Copyright (C) 2006-2008 Johan Engelen <johan@shouraizou.nl>
- * Copyright (C) 2004, 2005 Authors
+ * Copyright (C) 2006-2008 Johan Engelen  <johan@shouraizou.nl>
+ * Copyright (C) 2000 - 2008 Authors
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
@@ -19,14 +26,19 @@
 #include "config.h" // only include where actually required!
 #endif
 
-#include <cstddef>
-#include <gtkmm/comboboxtext.h>
-#include <gtkmm/liststore.h>
+#include <vector>
+#include <glibmm/refptr.h>
+#include <gtkmm/box.h>
+#include <gtkmm/button.h>
+#include <gtkmm/combobox.h>
+#include <gtkmm/entry.h>
+#include <gtkmm/label.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/treemodel.h>
 #include <gtkmm/textview.h>
-#include <sigc++/sigc++.h>
+#include <gtkmm/treeview.h>
 
-#include "helper/auto-connection.h"
 #include "object/sp-grid.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/licensor.h"
@@ -36,61 +48,20 @@
 #include "xml/helper-observer.h"
 #include "xml/node-observer.h"
 
+namespace Gtk {
+class ListStore;
+} // namespace gtk
+
 namespace Inkscape {
+
 namespace XML { class Node; }
+
 namespace UI {
 
 namespace Widget {
-class AlignmentSelector;
 class EntityEntry;
 class NotebookPage;
 class PageProperties;
-
-class GridWidget : public Gtk::Box
-{
-public:
-    GridWidget(SPGrid *obj);
-    ~GridWidget() override;
-
-    void update();
-    SPGrid *getGrid() { return grid; }
-    XML::Node *getGridRepr() { return repr; }
-    Gtk::Box *getTabWidget() { return _tab; }
-private:
-    SPGrid *grid = nullptr;
-    XML::Node *repr = nullptr;
-
-    Gtk::Box *_tab = nullptr;
-    Gtk::Image *_tab_img = nullptr;
-    Gtk::Label *_tab_lbl = nullptr;
-
-    Gtk::Label *_name_label = nullptr;
-
-    UI::Widget::Registry _wr;
-    RegisteredCheckButton *_grid_rcb_enabled = nullptr;
-    RegisteredCheckButton *_grid_rcb_snap_visible_only = nullptr;
-    RegisteredCheckButton *_grid_rcb_visible = nullptr;
-    RegisteredCheckButton *_grid_rcb_dotted = nullptr;
-    AlignmentSelector     *_grid_as_alignment = nullptr;
-
-    RegisteredUnitMenu *_rumg = nullptr;
-    RegisteredScalarUnit *_rsu_ox = nullptr;
-    RegisteredScalarUnit *_rsu_oy = nullptr;
-    RegisteredScalarUnit *_rsu_sx = nullptr;
-    RegisteredScalarUnit *_rsu_sy = nullptr;
-    RegisteredScalar *_rsu_ax = nullptr;
-    RegisteredScalar *_rsu_az = nullptr;
-    RegisteredColorPicker *_rcp_gcol = nullptr;
-    RegisteredColorPicker *_rcp_gmcol = nullptr;
-    RegisteredSuffixedInteger *_rsi = nullptr;
-    RegisteredScalarUnit* _rsu_gx = nullptr;
-    RegisteredScalarUnit* _rsu_gy = nullptr;
-    RegisteredScalarUnit* _rsu_mx = nullptr;
-    RegisteredScalarUnit* _rsu_my = nullptr;
-
-    Inkscape::auto_connection _modified_signal;
-};
-
 } // namespace Widget
 
 namespace Dialog {
@@ -127,16 +98,14 @@ protected:
     void remove_grid_widget(XML::Node &node);
 
     virtual void  on_response (int);
+
     void  populate_available_profiles();
     void  populate_linked_profiles_box();
     void  linkSelectedProfile();
     void  removeSelectedProfile();
-    void  onColorProfileSelectRow();
-    void  linked_profiles_list_button_release(GdkEventButton* event);
-    void  cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
 
-    void  external_scripts_list_button_release(GdkEventButton* event);
-    void  embedded_scripts_list_button_release(GdkEventButton* event);
+    void  onColorProfileSelectRow();
+
     void  populate_script_lists();
     void  addExternalScript();
     void  browseExternalScript();
@@ -147,8 +116,6 @@ protected:
     void  onExternalScriptSelectRow();
     void  onEmbeddedScriptSelectRow();
     void  editEmbeddedScript();
-    void  external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
-    void  embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
     void  load_default_metadata();
     void  save_default_metadata();
     void update_viewbox(SPDesktop* desktop);
@@ -212,7 +179,6 @@ protected:
     Glib::RefPtr<Gtk::ListStore> _LinkedProfilesListStore;
     Gtk::TreeView _LinkedProfilesList;
     Gtk::ScrolledWindow _LinkedProfilesListScroller;
-    Gtk::Menu _EmbProfContextMenu;
 
     //---------------------------------------------------------------
     Gtk::Button         _external_add_btn;
@@ -243,8 +209,6 @@ protected:
     Gtk::TreeView _EmbeddedScriptsList;
     Gtk::ScrolledWindow _ExternalScriptsListScroller;
     Gtk::ScrolledWindow _EmbeddedScriptsListScroller;
-    Gtk::Menu _ExternalScriptsContextMenu;
-    Gtk::Menu _EmbeddedScriptsContextMenu;
     Gtk::Entry _script_entry;
     Gtk::TextView _EmbeddedContent;
     Gtk::ScrolledWindow _EmbeddedContentScroller;
@@ -289,6 +253,7 @@ private:
         Inkscape::XML::Node *_node{nullptr};
         DocumentProperties *_dialog;
     };
+
     // nodes connected to listeners
     WatchConnection _namedview_connection;
     WatchConnection _root_connection;

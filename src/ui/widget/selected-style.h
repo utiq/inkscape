@@ -21,8 +21,10 @@
 #include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
+
 #include "helper/auto-connection.h"
 #include "rotateable.h"
+#include "ui/popup-menu.h"
 #include "ui/widget/spinbutton.h"
 
 namespace Gtk {
@@ -232,7 +234,7 @@ protected:
     std::unique_ptr<UI::Widget::PopoverMenu> _popup_opacity;
     void make_popup_opacity();
     void on_opacity_changed();
-    bool on_opacity_popup();
+    bool on_opacity_popup(PopupMenuOptionalClick);
     void opacity_0();
     void opacity_025();
     void opacity_05();
