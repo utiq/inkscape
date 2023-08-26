@@ -13,16 +13,9 @@
 #ifndef SEEN_UI_MANAGE_HPP
 #define SEEN_UI_MANAGE_HPP
 
-// TEST
-// #define INKSCAPE_UI_MANAGE_DEBUG
-
 #include <cassert>
-#include <stdexcept>
-#include <unordered_map>
+#include <map>
 #include <utility>
-#ifdef INKSCAPE_UI_MANAGE_DEBUG
-#include <typeinfo>
-#endif // INKSCAPE_UI_MANAGE_DEBUG
 #include <glibmm/refptr.h>
 #include <glibmm/objectbase.h>
 
@@ -45,8 +38,9 @@ namespace Manage::Detail {
    as long as C handlers will need to call to them, _but_ are destroyed with the
    Widget or other related object, rather than leaking or needing manual code */
 
+// N.B.: NOT unordered as we (e.g. popup-menu.cpp) require elements to stay at same address forever
 template <typename Secondary>
-inline auto s_map = std::unordered_multimap<Glib::ObjectBase const *, Secondary>{};
+inline auto s_map = std::multimap<Glib::ObjectBase const *, Secondary>{};
 
 template <typename Secondary>
 [[nodiscard]] static auto erase(void * const data)
@@ -55,10 +49,6 @@ template <typename Secondary>
                         static_cast<Glib::ObjectBase       *>(data) );
     [[maybe_unused]] auto const count = s_map<Secondary>.erase(primary);
     assert(count > 0);
-#ifdef INKSCAPE_UI_MANAGE_DEBUG
-    g_warning(Glib::ustring::compose("Manage::Detail::erase()d %1 secondary %2 object(s)",
-                                     count, typeid(Secondary).name()).c_str());
-#endif // INKSCAPE_UI_MANAGE_DEBUG
     return data;
 }
 
