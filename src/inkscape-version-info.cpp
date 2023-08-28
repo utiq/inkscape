@@ -116,7 +116,7 @@ std::string os_version() {
  */
 std::string debug_info() {
     std::stringstream ss;
-    gtkmm_major_version;
+
     ss << inkscape_version() << std::endl;
     ss << std::endl;
 
