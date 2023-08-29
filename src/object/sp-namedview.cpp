@@ -556,78 +556,78 @@ void SPNamedView::show(SPDesktop *desktop)
  */
 void sp_namedview_window_from_document(SPDesktop *desktop)
 {
-    SPNamedView *nv = desktop->namedview;
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    int window_geometry = prefs->getInt("/options/savewindowgeometry/value", PREFS_WINDOW_GEOMETRY_NONE);
-    int default_size = prefs->getInt("/options/defaultwindowsize/value", PREFS_WINDOW_SIZE_NATURAL);
-    bool new_document = (nv->window_width <= 0) || (nv->window_height <= 0);
+    // SPNamedView *nv = desktop->namedview;
+    // Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    // int window_geometry = prefs->getInt("/options/savewindowgeometry/value", PREFS_WINDOW_GEOMETRY_NONE);
+    // int default_size = prefs->getInt("/options/defaultwindowsize/value", PREFS_WINDOW_SIZE_NATURAL);
+    // bool new_document = (nv->window_width <= 0) || (nv->window_height <= 0);
 
-    // restore window size and position stored with the document
-    Gtk::Window *win = desktop->getToplevel();
-    g_assert(win);
+    // // restore window size and position stored with the document
+    // Gtk::Window *win = desktop->getToplevel();
+    // g_assert(win);
 
-    if (window_geometry == PREFS_WINDOW_GEOMETRY_LAST) {
-        gint pw = prefs->getInt("/desktop/geometry/width", -1);
-        gint ph = prefs->getInt("/desktop/geometry/height", -1);
-        gint px = prefs->getInt("/desktop/geometry/x", -1);
-        gint py = prefs->getInt("/desktop/geometry/y", -1);
-        gint full = prefs->getBool("/desktop/geometry/fullscreen");
-        gint maxed = prefs->getBool("/desktop/geometry/maximized");
-        if (pw>0 && ph>0) {
+    // if (window_geometry == PREFS_WINDOW_GEOMETRY_LAST) {
+    //     gint pw = prefs->getInt("/desktop/geometry/width", -1);
+    //     gint ph = prefs->getInt("/desktop/geometry/height", -1);
+    //     gint px = prefs->getInt("/desktop/geometry/x", -1);
+    //     gint py = prefs->getInt("/desktop/geometry/y", -1);
+    //     gint full = prefs->getBool("/desktop/geometry/fullscreen");
+    //     gint maxed = prefs->getBool("/desktop/geometry/maximized");
+    //     if (pw>0 && ph>0) {
 
-            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(px, py);
-            pw = std::min(pw, monitor_geometry.get_width());
-            ph = std::min(ph, monitor_geometry.get_height());
-            desktop->setWindowSize(pw, ph);
-            desktop->setWindowPosition(Geom::Point(px, py));
-        }
-        if (maxed) {
-            win->maximize();
-        }
-        if (full) {
-            win->fullscreen();
-        }
-    } else if ((window_geometry == PREFS_WINDOW_GEOMETRY_FILE && nv->window_maximized) ||
-               ((new_document || window_geometry == PREFS_WINDOW_GEOMETRY_NONE) &&
-                default_size == PREFS_WINDOW_SIZE_MAXIMIZED)) {
-        win->maximize();
-    } else {
-        const int MIN_WINDOW_SIZE = 600;
+    //         Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(px, py);
+    //         pw = std::min(pw, monitor_geometry.get_width());
+    //         ph = std::min(ph, monitor_geometry.get_height());
+    //         desktop->setWindowSize(pw, ph);
+    //         desktop->setWindowPosition(Geom::Point(px, py));
+    //     }
+    //     if (maxed) {
+    //         win->maximize();
+    //     }
+    //     if (full) {
+    //         win->fullscreen();
+    //     }
+    // } else if ((window_geometry == PREFS_WINDOW_GEOMETRY_FILE && nv->window_maximized) ||
+    //            ((new_document || window_geometry == PREFS_WINDOW_GEOMETRY_NONE) &&
+    //             default_size == PREFS_WINDOW_SIZE_MAXIMIZED)) {
+    //     win->maximize();
+    // } else {
+    //     const int MIN_WINDOW_SIZE = 600;
 
-        int w = prefs->getInt("/template/base/inkscape:window-width", 0);
-        int h = prefs->getInt("/template/base/inkscape:window-height", 0);
-        bool move_to_screen = false;
-        if (window_geometry == PREFS_WINDOW_GEOMETRY_FILE && !new_document) {
-            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(nv->window_x, nv->window_y);
-            w = MIN(monitor_geometry.get_width(), nv->window_width);
-            h = MIN(monitor_geometry.get_height(), nv->window_height);
-            move_to_screen = true;
-        } else if (default_size == PREFS_WINDOW_SIZE_LARGE) {
-            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
-            w = MAX(0.75 * monitor_geometry.get_width(), MIN_WINDOW_SIZE);
-            h = MAX(0.75 * monitor_geometry.get_height(), MIN_WINDOW_SIZE);
-        } else if (default_size == PREFS_WINDOW_SIZE_SMALL) {
-            w = h = MIN_WINDOW_SIZE;
-        } else if (default_size == PREFS_WINDOW_SIZE_NATURAL) {
-            // don't set size (i.e. keep the gtk+ default, which will be the natural size)
-            // unless gtk+ decided it would be a good idea to show a window that is larger than the screen
-            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
-            int monitor_width =  monitor_geometry.get_width();
-            int monitor_height = monitor_geometry.get_height();
-            int window_width, window_height;
-            win->get_size(window_width, window_height);
-            if (window_width > monitor_width || window_height > monitor_height) {
-                w = std::min(monitor_width, window_width);
-                h = std::min(monitor_height, window_height);
-            }
-        }
-        if ((w > 0) && (h > 0)) {
-            desktop->setWindowSize(w, h);
-            if (move_to_screen) {
-                desktop->setWindowPosition(Geom::Point(nv->window_x, nv->window_y));
-            }
-        }
-    }
+    //     int w = prefs->getInt("/template/base/inkscape:window-width", 0);
+    //     int h = prefs->getInt("/template/base/inkscape:window-height", 0);
+    //     bool move_to_screen = false;
+    //     if (window_geometry == PREFS_WINDOW_GEOMETRY_FILE && !new_document) {
+    //         Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(nv->window_x, nv->window_y);
+    //         w = MIN(monitor_geometry.get_width(), nv->window_width);
+    //         h = MIN(monitor_geometry.get_height(), nv->window_height);
+    //         move_to_screen = true;
+    //     } else if (default_size == PREFS_WINDOW_SIZE_LARGE) {
+    //         Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
+    //         w = MAX(0.75 * monitor_geometry.get_width(), MIN_WINDOW_SIZE);
+    //         h = MAX(0.75 * monitor_geometry.get_height(), MIN_WINDOW_SIZE);
+    //     } else if (default_size == PREFS_WINDOW_SIZE_SMALL) {
+    //         w = h = MIN_WINDOW_SIZE;
+    //     } else if (default_size == PREFS_WINDOW_SIZE_NATURAL) {
+    //         // don't set size (i.e. keep the gtk+ default, which will be the natural size)
+    //         // unless gtk+ decided it would be a good idea to show a window that is larger than the screen
+    //         Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
+    //         int monitor_width =  monitor_geometry.get_width();
+    //         int monitor_height = monitor_geometry.get_height();
+    //         int window_width, window_height;
+    //         win->get_size(window_width, window_height);
+    //         if (window_width > monitor_width || window_height > monitor_height) {
+    //             w = std::min(monitor_width, window_width);
+    //             h = std::min(monitor_height, window_height);
+    //         }
+    //     }
+    //     if ((w > 0) && (h > 0)) {
+    //         desktop->setWindowSize(w, h);
+    //         if (move_to_screen) {
+    //             desktop->setWindowPosition(Geom::Point(nv->window_x, nv->window_y));
+    //         }
+    //     }
+    // }
 
     // Cancel any history of transforms up to this point (must be before call to zoom).
     desktop->clear_transform_history();

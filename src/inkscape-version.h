@@ -23,9 +23,7 @@ extern char const *version_string_without_revision; ///< version string excludin
 
 extern unsigned short int const build_year; ///< four digit year of build
 
-extern unsigned int const version_major;
-extern unsigned int const version_minor;
-extern unsigned int const version_patch;
+extern char const *short_version; ///< version string (without dots) excluding revision, date and suffix
 
 } // namespace Inkscape
 

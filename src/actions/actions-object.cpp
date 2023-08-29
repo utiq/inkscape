@@ -27,6 +27,29 @@
 #include "ui/icon-names.h"
 #include "object/sp-lpe-item.h"
 
+#include "trace/autotrace/inkscape-autotrace.h"
+#include "trace/depixelize/inkscape-depixelize.h"
+#include "trace/potrace/inkscape-potrace.h"
+
+void
+selection_trace(const Glib::VariantBase &value, InkscapeApplication *app)
+{
+    Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value);
+    std::vector<Glib::ustring> settings = Glib::Regex::split_simple(",", s.get());
+    Inkscape::Trace::Tracer tracer;
+    auto scans = std::stoi(settings[0]);           // Scans
+    auto smooth = settings[1] == "true";           // Smooth
+    auto stack = settings[2] == "true";            // Stack
+    auto removeBackground = settings[3] == "true"; // Remove background
+    Inkscape::Trace::Potrace::PotraceTracingEngine pte(Inkscape::Trace::Potrace::TRACE_QUANT_COLOR, false, 64, 0.45, 0., .65, scans, stack, smooth, removeBackground);
+    pte.potraceParams->opticurve = true;
+    pte.potraceParams->opttolerance = std::stof(settings[6]); // Optimize
+    pte.potraceParams->alphamax = std::stof(settings[5]);     // Smooth corners
+    pte.potraceParams->turdsize = std::stoi(settings[4]);     // Speckles
+
+    tracer.trace(&pte);
+}
+
 // No sanity checking is done... should probably add.
 void
 object_set_attribute(const Glib::VariantBase& value, InkscapeApplication *app)
@@ -345,6 +368,7 @@ add_actions_object(InkscapeApplication* app)
     // clang-format off
     gapp->add_action_with_parameter( "object-set-attribute",            String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_set_attribute),  app));
     gapp->add_action_with_parameter( "object-set-property",             String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_set_property),   app));
+    gapp->add_action_with_parameter( "selection-trace",                 String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&selection_trace),           app));
 
     gapp->add_action(                "object-unlink-clones",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_unlink_clones),          app));
     gapp->add_action(                "object-to-path",                  sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_to_path),                app));

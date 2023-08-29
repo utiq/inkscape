@@ -202,6 +202,7 @@ public:
 
     void iconify();
     void maximize();
+    void hide();
     void fullscreen();
     static gint ruler_event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget *dtw, bool horiz);
 

@@ -1046,6 +1046,12 @@ SPDesktop::maximize()
     _widget->maximize();
 }
 
+void
+SPDesktop::hide()
+{
+    _widget->hide();
+}
+
 bool
 SPDesktop::is_fullscreen()
 {

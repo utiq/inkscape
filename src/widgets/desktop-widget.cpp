@@ -933,6 +933,17 @@ SPDesktopWidget::maximize()
     }
 }
 
+void 
+SPDesktopWidget::hide()
+{
+    GtkWidget *widget = gtk_widget_get_toplevel(GTK_WIDGET(_canvas->gobj()));
+    GtkWindow *topw = GTK_WINDOW(widget);
+
+    if (GTK_IS_WINDOW(topw)) {
+        gtk_window_iconify(topw);
+    }
+}
+
 void
 SPDesktopWidget::fullscreen()
 {

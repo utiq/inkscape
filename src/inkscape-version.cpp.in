@@ -12,4 +12,5 @@ namespace Inkscape {
     unsigned int const version_major = @INKSCAPE_VERSION_MAJOR@;
     unsigned int const version_minor = @INKSCAPE_VERSION_MINOR@;
     unsigned int const version_patch = @INKSCAPE_VERSION_PATCH@;
+    char const *short_version = "@INKSCAPE_SHORT_VERSION@";
 }

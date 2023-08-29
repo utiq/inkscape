@@ -817,8 +817,8 @@ bool SelectTool::root_handler(GdkEvent* event) {
 
             GtkWindow *w = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(_desktop->getCanvas()->gobj())));
             if (w) {
-                gtk_window_present(w);
-                _desktop->getCanvas()->grab_focus();
+                // gtk_window_present(w);
+                // _desktop->getCanvas()->grab_focus();
             }
             break;
         }
