@@ -58,8 +58,6 @@
 namespace Inkscape {
 namespace UI {
 
-void sp_apply_lpeffect(SPDesktop* desktop, SPLPEItem* item, LivePathEffect::EffectType etype);
-
 namespace Dialog {
 
 
@@ -428,7 +426,8 @@ public:
             _ry.get_adjustment()->set_value(0);
             // add flexible corners effect if not yet present
             if (!find_lpeffect(_rect, LivePathEffect::FILLET_CHAMFER)) {
-                sp_apply_lpeffect(_desktop, _rect, LivePathEffect::FILLET_CHAMFER);
+                LivePathEffect::Effect::createAndApply("fillet_chamfer", _rect->document, _rect);
+                DocumentUndo::done(_rect->document, _("Add fillet/chamfer effect"), INKSCAPE_ICON("dialog-path-effects"));
             }
         });
     }
