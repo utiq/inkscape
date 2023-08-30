@@ -159,7 +159,8 @@ void LPETaperStroke::doOnApply(SPLPEItem const* lpeitem)
     auto item = cast<SPShape>(lpeitem_mutable);
 
     if (!item) {
-        printf("WARNING: It only makes sense to apply Taper stroke to paths (not groups).\n");
+        g_warning("It only makes sense to apply Taper stroke to paths (not groups).");
+        return;
     }
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -616,7 +617,7 @@ void KnotHolderEntityAttachBegin::knot_set(Geom::Point const &p, Geom::Point con
     Geom::Point const s = snap_knot_position(p, state);
 
     if (!is<SPShape>(_effect->sp_lpe_item)) {
-        printf("WARNING: LPEItem is not a path!\n");
+        g_warning("LPEItem is not a path!");
         return;
     }
     
@@ -648,7 +649,7 @@ void KnotHolderEntityAttachEnd::knot_set(Geom::Point const &p, Geom::Point const
     Geom::Point const s = snap_knot_position(p, state);
 
     if (!is<SPShape>(_effect->sp_lpe_item)) {
-        printf("WARNING: LPEItem is not a path!\n");
+        g_warning("LPEItem is not a path!");
         return;
     }
     

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <cassert>
+#include <gtkmm/entrycompletion.h>
 #include <gtkmm/menubutton.h>
 #include <gtkmm/searchentry.h>
+#include <gtkmm/liststore.h>
 
 #include "completion-popup.h"
 #include "ui/builder-utils.h"
@@ -70,6 +72,8 @@ CompletionPopup::CompletionPopup() :
     set_visible(true);
 }
 
+CompletionPopup::~CompletionPopup() = default;
+
 void CompletionPopup::clear_completion_list() {
     _list->clear();
 }
@@ -108,3 +112,14 @@ void CompletionPopup::clear() {
 }
 
 } // namespace Inkscape::UI::Widget
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:

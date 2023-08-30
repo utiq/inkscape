@@ -65,6 +65,11 @@ public:
     /// Get the list of menu items (children of our grid)
     [[nodiscard]] std::vector<Gtk::Widget *> get_items();
 
+    /// This would give not the items, rather an internal Grid. Use get_items().
+    void get_children() const = delete;
+    /// @copydoc get_children() const
+    void get_children()       = delete;
+
 private:
     PopoverMenuGrid &_grid;
 

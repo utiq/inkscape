@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * @brief Filter Effects dialog
+ * Filter Effects dialog.
  */
 /* Authors:
- *   Nicholas Bishop <nicholasbishop@gmail.com>
+ *   Nicholas Bishop <nicholasbishop@gmail.org>
  *   Rodrigo Kumpera <kumpera@gmail.com>
+ *   Felipe C. da S. Sanches <juca@members.fsf.org>
+ *   Jon A. Cruz <jon@joncruz.org>
+ *   Abhishek Sharma
  *   insaner
  *
  * Copyright (C) 2007 Authors

@@ -9,8 +9,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <cstddef>
 #include <algorithm>
+#include <cstddef>
 #include <tuple>
 #include <glibmm/i18n.h>
 
@@ -31,6 +31,7 @@
 #include "object/sp-use.h"
 #include "svg/svg.h"
 #include "ui/builder-utils.h"
+#include "ui/column-menu-builder.h"
 #include "ui/controller.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
@@ -39,60 +40,7 @@
 #include "ui/widget/custom-tooltip.h"
 #include "util/optstr.h"
 
-namespace Inkscape {
-namespace UI {
-
-bool sp_can_apply_lpeffect(SPLPEItem* item, LivePathEffect::EffectType etype) {
-    if (!item) return false;
-
-    auto shape = cast<SPShape>(item);
-    auto path = cast<SPPath>(item);
-    auto group = cast<SPGroup>(item);
-    Glib::ustring item_type;
-    if (group) {
-        item_type = "group";
-    } else if (path) {
-        item_type = "path";
-    } else if (shape) {
-        item_type = "shape";
-    }
-    bool has_clip = item->getClipObject() != nullptr;
-    bool has_mask = item->getMaskObject() != nullptr;
-    bool applicable = true;
-    if (!has_clip && etype == LivePathEffect::POWERCLIP) {
-        applicable = false;
-    }
-    if (!has_mask && etype == LivePathEffect::POWERMASK) {
-        applicable = false;
-    }
-    if (item_type == "group" && !Inkscape::LivePathEffect::LPETypeConverter.get_on_group(etype)) {
-        applicable = false;
-    } else if (item_type == "shape" && !Inkscape::LivePathEffect::LPETypeConverter.get_on_shape(etype)) {
-        applicable = false;
-    } else if (item_type == "path" && !Inkscape::LivePathEffect::LPETypeConverter.get_on_path(etype)) {
-        applicable = false;
-    }
-    return applicable;
-}
-
-void sp_apply_lpeffect(SPDesktop* desktop, SPLPEItem* item, LivePathEffect::EffectType etype) {
-    if (!sp_can_apply_lpeffect(item, etype)) return;
-
-    Glib::ustring key = Inkscape::LivePathEffect::LPETypeConverter.get_key(etype);
-    LivePathEffect::Effect::createAndApply(key.c_str(), item->document, item);
-    item->getCurrentLPE()->refresh_widgets = true;
-    DocumentUndo::done(item->document, _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
-
-    if (desktop) {
-        // this is rotten - UI LPE knots refresh
-        // force selection change
-        desktop->getSelection()->clear();
-        desktop->getSelection()->add(item);
-        Inkscape::UI::Tools::sp_update_helperpath(desktop);
-    }
-}
-
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 /*####################
  * Callback functions
@@ -153,6 +101,7 @@ void LivePathEffectEditor::selectionChanged(Inkscape::Selection * selection)
     onSelectionChanged(selection);
     clearMenu();
 }
+
 void LivePathEffectEditor::selectionModified(Inkscape::Selection * selection, guint flags)
 {
     current_lpeitem = cast<SPLPEItem>(selection->singleItem());
@@ -337,6 +286,7 @@ struct LPEMetadata {
 };
 
 static std::map<Inkscape::LivePathEffect::EffectType, LPEMetadata> g_lpes;
+
 // populate popup with lpes and completion list for a search box
 void LivePathEffectEditor::add_lpes(Inkscape::UI::Widget::CompletionPopup& popup, bool symbolic) {
     auto& menu = popup.get_menu();
@@ -365,12 +315,16 @@ void LivePathEffectEditor::add_lpes(Inkscape::UI::Widget::CompletionPopup& popup
 
     popup.clear_completion_list();
 
-    // 2-column menu
-    for (auto w:menu.get_children()) {
-        menu.remove(*w);
+    // 3-column menu
+    // Due to when we rebuild, itʼs not so easy to only populate when the MenuButton is clicked, so
+    // we remove existing children. We also want to free them, BUT theyʼre Gtk::managed()d, so… h4x
+    // TODO: GTK4: Use MenuButton.set_create_popup_func() to create new menu every time, on demand?
+    for (auto const item: menu.get_items()) {
+        menu.remove(*item);
+        g_assert(item->is_managed_()); // "Private API", but sanity check for us
+        delete item; // This is not ideal, but gtkmm/object.cc says should be OK
     }
     Inkscape::UI::ColumnMenuBuilder<Inkscape::LivePathEffect::LPECategory> builder(menu, 3, Gtk::ICON_SIZE_LARGE_TOOLBAR);
-
     for (auto& lpe : lpes) {
         // build popup menu
         auto type = lpe.type;
@@ -383,18 +337,15 @@ void LivePathEffectEditor::add_lpes(Inkscape::UI::Widget::CompletionPopup& popup
         if (builder.new_section()) {
             builder.set_section(get_category_name(lpe.category));
         }
-    
         // build completion list
         if (lpe.sensitive) {
             popup.add_to_completion_list(static_cast<int>(lpe.type), lpe.label, lpe.icon_name + (symbolic ? "-symbolic" : ""));
         }
     }
-
     if (symbolic) {
         menu.get_style_context()->add_class("symbolic");
     }
 }
-
 
 void
 LivePathEffectEditor::setMenu()
@@ -1226,9 +1177,7 @@ void LivePathEffectEditor::on_showgallery_notify(Preferences::Entry const &new_v
     _LPEGallery.set_visible(new_val.getBool());
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

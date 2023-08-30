@@ -55,12 +55,17 @@ PopoverMenu::PopoverMenu(Gtk::PositionType const position)
     set_position(position);
     add(_grid);
 
-    // FIXME: Initially focused item is sometimes wrong on first popup. GTK bug?
-    // Grabbing focus in ::show does not always work & sometimes even crashes :(
-    // For now, just remove possibly wrong, visible selection until hover/keynav
-    // This is also nicer for menus with only 1 item, like the ToolToolbar popup
-    signal_show().connect([this]{ Glib::signal_idle().connect_once(
-            [this]{ unset_items_focus_hover(nullptr); }); });
+    signal_show().connect([this]
+    {
+        // Check no one (accidentally?) removes child
+        g_return_if_fail(_grid.get_parent() == this);
+
+        // FIXME: Initially focused item is sometimes wrong on first popup. GTK bug?
+        // Grabbing focus in ::show does not always work & sometimes even crashes :(
+        // For now, just remove possibly wrong, visible selection until hover/keynav
+        // This is also nicer for menus with only 1 item, like the ToolToolbar popup
+        Glib::signal_idle().connect_once( [this]{ unset_items_focus_hover(nullptr); });
+    });
 
     // Temporarily hide tooltip of relative-to widget to avoid it covering us up
     UI::autohide_tooltip(*this);
@@ -70,6 +75,9 @@ void PopoverMenu::attach(Gtk::Widget &child,
                          int const left_attach, int const right_attach,
                          int const top_attach, int const bottom_attach)
 {
+    // Check no one (accidentally?) removes child
+    g_return_if_fail(_grid.get_parent() == this);
+
     auto const width = right_attach - left_attach;
     auto const height = bottom_attach - top_attach;
     _grid.attach(child, left_attach, top_attach, width, height);
