@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtk+" version="3.24"/>
   <object class="GtkBox" id="export-box">
     <property name="name">ExportDialog</property>
     <property name="visible">True</property>
@@ -49,9 +48,7 @@
                               <object class="GtkGrid">
                                 <property name="visible">True</property>
                                 <property name="valign">start</property>
-                                <property name="margin-start">1</property>
-                                <property name="margin-end">1</property>
-                                <property name="margin-bottom">3</property>
+                                <property name="margin-top">5</property>
                                 <child>
                                   <object class="GtkRadioButton" id="si_s_selection">
                                     <property name="label" translatable="yes">Selection</property>
@@ -513,7 +510,7 @@
                                     </child>
                                     <child>
                                       <object class="GtkCheckButton" id="si_hide_all">
-                                        <property name="label" translatable="yes">Export Selected only</property>
+                                        <property name="label" translatable="yes">Export Selected Only</property>
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="draw-indicator">True</property>
@@ -537,7 +534,7 @@
                                             <property name="visible">True</property>
                                             <property name="margin-left">7</property>
                                             <property name="margin-start">7</property>
-                                            <property name="label" translatable="yes">Background color</property>
+                                            <property name="label" translatable="yes">Background Color</property>
                                           </object>
                                           <packing>
                                             <property name="position">1</property>
@@ -578,7 +575,6 @@
                       <object class="GtkEntry" id="si_filename">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="margin-start">5</property>
                         <property name="hexpand">True</property>
                         <property name="secondary-icon-name">folder-open</property>
                         <property name="secondary-icon-tooltip-text" translatable="yes">Browse export directory</property>
@@ -761,52 +757,43 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButtonBox">
+                              <object class="GtkBox">
                                 <property name="visible">True</property>
                                 <property name="hexpand">True</property>
-                                <property name="layout-style">expand</property>
                                 <child>
                                   <object class="GtkRadioButton" id="b_s_selection">
                                     <property name="label" translatable="yes">Selection</property>
                                     <property name="name">export_selection</property>
                                     <property name="visible">True</property>
+                                    <property name="hexpand">True</property>
                                     <property name="tooltip-text" translatable="yes">Export selected objects to separate files</property>
                                     <property name="active">True</property>
                                     <property name="draw-indicator">False</property>
                                   </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                  </packing>
                                 </child>
                                 <child>
                                   <object class="GtkRadioButton" id="b_s_layers">
                                     <property name="label" translatable="yes">Layers</property>
                                     <property name="name">export_selection</property>
                                     <property name="visible">True</property>
+                                    <property name="hexpand">True</property>
                                     <property name="tooltip-text" translatable="yes">Export layers as separate files</property>
                                     <property name="active">True</property>
                                     <property name="draw-indicator">False</property>
                                     <property name="group">b_s_selection</property>
                                   </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
                                 </child>
                                 <child>
                                   <object class="GtkRadioButton" id="b_s_pages">
                                     <property name="label" translatable="yes">Pages</property>
                                     <property name="name">export_selection</property>
                                     <property name="visible">True</property>
+                                    <property name="hexpand">True</property>
                                     <property name="tooltip-text" translatable="yes">Export pages as separate files</property>
                                     <property name="active">True</property>
                                     <property name="draw-indicator">False</property>
                                     <property name="group">b_s_selection</property>
                                   </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="position">2</property>
-                                  </packing>
                                 </child>
                               </object>
                               <packing>
@@ -864,7 +851,7 @@
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="margin-end">6</property>
-                                    <property name="label" translatable="yes">Background color</property>
+                                    <property name="label" translatable="yes">Background Color</property>
                                   </object>
                                 </child>
                                 <child>
@@ -923,6 +910,7 @@
                         <property name="can-focus">True</property>
                         <property name="hexpand">True</property>
                         <property name="secondary-icon-name">folder-open</property>
+                        <property name="secondary-icon-tooltip-text" translatable="yes">Browse export directory</property>
                         <property name="placeholder-text" translatable="yes">Filename</property>
                       </object>
                       <packing>
