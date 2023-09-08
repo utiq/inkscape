@@ -440,57 +440,49 @@ void SPNamedView::updateViewPort()
         _viewport->update(*box, {}, {}, nullptr, document->getPageManager().hasPages());
     }
 }
-}
 
-for (auto guide : this->guides) {
-    guide->setColor(this->guidecolor);
-    guide->readAttr(SPAttr::INKSCAPE_COLOR);
-}
+void SPNamedView::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
+{
+    SPObjectGroup::child_added(child, ref);
 
-SPObject *no = this->document->getObjectByRepr(child);
-if (!no)
-    return;
+    SPObject *no = this->document->getObjectByRepr(child);
+    if (!no)
+        return;
 
-if (auto grid = cast<SPGrid>(no)) {
-    grids.emplace_back(grid);
-    for (auto view : views) {
-        grid->show(view);
-    }
-} else if (!strcmp(child->name(), "inkscape:page")) {
-    if (auto page = cast<SPPage>(no)) {
-        document->getPageManager().addPage(page);
-        for (auto view : this->views) {
-            page->showPage(view->getCanvasPagesBg(), view->getCanvasPagesFg());
+    if (auto grid = cast<SPGrid>(no)) {
+        grids.emplace_back(grid);
+        for (auto view : views) {
+            grid->show(view);
         }
-    }
-} else {
-    if (auto g = cast<SPGuide>(no)) {
-        this->guides.push_back(g);
-
-        // g_object_set(G_OBJECT(g), "color", this->guidecolor, "hicolor", this->guidehicolor, NULL);
-        g->setColor(this->guidecolor);
-        g->setHiColor(this->guidehicolor);
-        g->readAttr(SPAttr::INKSCAPE_COLOR);
-        sp_nv_read_opacity(value, &this->guidecolor);
-
-        for (auto guide : this->guides) {
-            guide->setColor(this->guidecolor);
-            guide->readAttr(SPAttr::INKSCAPE_COLOR);
-        }
-
-        if (this->editable) {
+    } else if (!strcmp(child->name(), "inkscape:page")) {
+        if (auto page = cast<SPPage>(no)) {
+            document->getPageManager().addPage(page);
             for (auto view : this->views) {
-                g->SPGuide::showSPGuide(view->getCanvasGuides());
+                page->showPage(view->getCanvasPagesBg(), view->getCanvasPagesFg());
+            }
+        }
+    } else {
+        if (auto g = cast<SPGuide>(no)) {
+            this->guides.push_back(g);
 
-                if (view->guides_active) {
-                    g->sensitize(view->getCanvas(), TRUE);
+            // g_object_set(G_OBJECT(g), "color", this->guidecolor, "hicolor", this->guidehicolor, NULL);
+            g->setColor(this->guidecolor);
+            g->setHiColor(this->guidehicolor);
+            g->readAttr(SPAttr::INKSCAPE_COLOR);
+
+            if (this->editable) {
+                for (auto view : this->views) {
+                    g->SPGuide::showSPGuide(view->getCanvasGuides());
+
+                    if (view->guides_active) {
+                        g->sensitize(view->getCanvas(), TRUE);
+                    }
+
+                    this->setShowGuideSingle(g);
                 }
-
-                this->setShowGuideSingle(g);
             }
         }
     }
-}
 }
 
 void SPNamedView::remove_child(Inkscape::XML::Node *child)
@@ -685,275 +677,270 @@ void sp_namedview_update_layers_from_document(SPDesktop *desktop)
     // don't use that object if it's not at least group
     if (!layer || !is<SPGroup>(layer)) {
         layer = nullptr;
-        break;
     }
     // if that didn't work out, look for the topmost layer
     if (!layer) {
         for (auto &iter : document->getRoot()->children) {
-            Inkscape::Util::Unit const *new_unit = nullptr;
-
-            if (value) {
-                Inkscape::Util::Unit const *const req_unit = unit_table.getUnit(value);
-                if (!unit_table.hasUnit(value)) {
-                    g_warning("Unrecognized unit `%s'", value);
-                    / * fixme: Document errors should be reported in the status bar or
-                     * the like (e.g. as per
-                     * http://www.w3.org/TR/SVG11/implnote.html#ErrorProcessing); g_log
-                }
-            }
-        }
-        if (layer) {
-            desktop->layerManager().setCurrentLayer(layer);
-        }
-
-        // FIXME: find a better place to do this
-        document->get_event_log()->updateUndoVerbs();
-    }
-
-    void sp_namedview_document_from_window(SPDesktop * desktop)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        int window_geometry = prefs->getInt("/options/savewindowgeometry/value", PREFS_WINDOW_GEOMETRY_NONE);
-        bool save_geometry_in_file = window_geometry == PREFS_WINDOW_GEOMETRY_FILE;
-        bool save_viewport_in_file = prefs->getBool("/options/savedocviewport/value", true);
-        Inkscape::XML::Node *view = desktop->namedview->getRepr();
-
-        // saving window geometry is not undoable
-        DocumentUndo::ScopedInsensitive _no_undo(desktop->getDocument());
-
-        if (save_viewport_in_file) {
-            view->setAttributeSvgDouble("inkscape:zoom", desktop->current_zoom());
-            double rotation = ::round(desktop->current_rotation() * 180.0 / M_PI);
-            view->setAttributeSvgNonDefaultDouble("inkscape:rotation", rotation, 0.0);
-            Geom::Point center = desktop->current_center();
-            view->setAttributeSvgDouble("inkscape:cx", center.x());
-            view->setAttributeSvgDouble("inkscape:cy", center.y());
-        }
-
-        if (save_geometry_in_file) {
-            gint w, h, x, y;
-            desktop->getWindowGeometry(x, y, w, h);
-            view->setAttributeInt("inkscape:window-width", w);
-            view->setAttributeInt("inkscape:window-height", h);
-            view->setAttributeInt("inkscape:window-x", x);
-            view->setAttributeInt("inkscape:window-y", y);
-            view->setAttributeInt("inkscape:window-maximized", desktop->is_maximized());
-        }
-
-        view->setAttribute("inkscape:current-layer", desktop->layerManager().currentLayer()->getId());
-    }
-
-    void SPNamedView::hide(SPDesktop const *desktop)
-    {
-        g_assert(desktop != nullptr);
-        g_assert(std::find(views.begin(), views.end(), desktop) != views.end());
-        for (auto guide : guides) {
-            guide->hideSPGuide(desktop->getCanvas());
-        }
-        for (auto grid : grids) {
-            grid->hide(desktop);
-        }
-        _viewport->remove(desktop->getCanvas());
-        for (auto page : document->getPageManager().getPages()) {
-            page->hidePage(desktop->getCanvas());
-        }
-        views.erase(std::remove(views.begin(), views.end(), desktop), views.end());
-    }
-
-    /**
-     * Set an attribute in the named view to the value in this preference, or use the fallback.
-     *
-     * @param attribute - The svg namedview attribute to set.
-     * @param preference - The preference to find the value from (optional)
-     * @param fallback - The fallback to use if preference not set or not found. (optional)
-     */
-    void SPNamedView::setDefaultAttribute(std::string attribute, std::string preference, std::string fallback)
-    {
-        if (!getAttribute(attribute.c_str())) {
-            std::string value = "";
-            if (!preference.empty()) {
-                Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-                value = prefs->getString(preference);
-            }
-            if (value.empty() && !fallback.empty()) {
-                value = fallback;
-            }
-            if (!value.empty()) {
-                setAttribute(attribute, value);
+            if (desktop->layerManager().isLayer(&iter)) {
+                layer = &iter;
             }
         }
     }
+    if (layer) {
+        desktop->layerManager().setCurrentLayer(layer);
+    }
 
-    void SPNamedView::activateGuides(void *desktop, bool active)
-    {
-        g_assert(desktop != nullptr);
-        g_assert(std::find(views.begin(), views.end(), desktop) != views.end());
+    // FIXME: find a better place to do this
+    document->get_event_log()->updateUndoVerbs();
+}
 
-        SPDesktop *dt = static_cast<SPDesktop *>(desktop);
-        for (auto &guide : this->guides) {
-            guide->sensitize(dt->getCanvas(), active);
+void sp_namedview_document_from_window(SPDesktop * desktop)
+{
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    int window_geometry = prefs->getInt("/options/savewindowgeometry/value", PREFS_WINDOW_GEOMETRY_NONE);
+    bool save_geometry_in_file = window_geometry == PREFS_WINDOW_GEOMETRY_FILE;
+    bool save_viewport_in_file = prefs->getBool("/options/savedocviewport/value", true);
+    Inkscape::XML::Node *view = desktop->namedview->getRepr();
+
+    // saving window geometry is not undoable
+    DocumentUndo::ScopedInsensitive _no_undo(desktop->getDocument());
+
+    if (save_viewport_in_file) {
+        view->setAttributeSvgDouble("inkscape:zoom", desktop->current_zoom());
+        double rotation = ::round(desktop->current_rotation() * 180.0 / M_PI);
+        view->setAttributeSvgNonDefaultDouble("inkscape:rotation", rotation, 0.0);
+        Geom::Point center = desktop->current_center();
+        view->setAttributeSvgDouble("inkscape:cx", center.x());
+        view->setAttributeSvgDouble("inkscape:cy", center.y());
+    }
+
+    if (save_geometry_in_file) {
+        gint w, h, x, y;
+        desktop->getWindowGeometry(x, y, w, h);
+        view->setAttributeInt("inkscape:window-width", w);
+        view->setAttributeInt("inkscape:window-height", h);
+        view->setAttributeInt("inkscape:window-x", x);
+        view->setAttributeInt("inkscape:window-y", y);
+        view->setAttributeInt("inkscape:window-maximized", desktop->is_maximized());
+    }
+
+    view->setAttribute("inkscape:current-layer", desktop->layerManager().currentLayer()->getId());
+}
+
+void SPNamedView::hide(SPDesktop const *desktop)
+{
+    g_assert(desktop != nullptr);
+    g_assert(std::find(views.begin(), views.end(), desktop) != views.end());
+    for (auto guide : guides) {
+        guide->hideSPGuide(desktop->getCanvas());
+    }
+    for (auto grid : grids) {
+        grid->hide(desktop);
+    }
+    _viewport->remove(desktop->getCanvas());
+    for (auto page : document->getPageManager().getPages()) {
+        page->hidePage(desktop->getCanvas());
+    }
+    views.erase(std::remove(views.begin(), views.end(), desktop), views.end());
+}
+
+/**
+ * Set an attribute in the named view to the value in this preference, or use the fallback.
+ *
+ * @param attribute - The svg namedview attribute to set.
+ * @param preference - The preference to find the value from (optional)
+ * @param fallback - The fallback to use if preference not set or not found. (optional)
+ */
+void SPNamedView::setDefaultAttribute(std::string attribute, std::string preference, std::string fallback)
+{
+    if (!getAttribute(attribute.c_str())) {
+        std::string value = "";
+        if (!preference.empty()) {
+            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+            value = prefs->getString(preference);
+        }
+        if (value.empty() && !fallback.empty()) {
+            value = fallback;
+        }
+        if (!value.empty()) {
+            setAttribute(attribute, value);
         }
     }
+}
 
-    gchar const *SPNamedView::getName() const
-    {
-        return this->getAttribute("id");
+void SPNamedView::activateGuides(void *desktop, bool active)
+{
+    g_assert(desktop != nullptr);
+    g_assert(std::find(views.begin(), views.end(), desktop) != views.end());
+
+    SPDesktop *dt = static_cast<SPDesktop *>(desktop);
+    for (auto &guide : this->guides) {
+        guide->sensitize(dt->getCanvas(), active);
     }
+}
 
-    std::vector<SPDesktop *> const SPNamedView::getViewList() const
+gchar const *SPNamedView::getName() const
+{
+    return this->getAttribute("id");
+}
+
+std::vector<SPDesktop *> const SPNamedView::getViewList() const
+{
+    return views;
+}
+
+void SPNamedView::toggleShowGuides()
+{
+    setShowGuides(!getShowGuides());
+}
+
+void SPNamedView::toggleLockGuides()
+{
+    setLockGuides(!getLockGuides());
+}
+
+void SPNamedView::toggleShowGrids()
+{
+    setShowGrids(!getShowGrids());
+}
+
+void SPNamedView::setShowGrids(bool v)
+{
     {
-        return views;
+        DocumentUndo::ScopedInsensitive ice(document);
+
+        if (v && grids.empty())
+            SPGrid::create_new(document, this->getRepr(), GridType::RECTANGULAR);
+
+        getRepr()->setAttributeBoolean("showgrid", v);
     }
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
+}
 
-    void SPNamedView::toggleShowGuides()
-    {
-        setShowGuides(!getShowGuides());
-    }
+bool SPNamedView::getShowGrids()
+{
+    return grids_visible;
+}
 
-    void SPNamedView::toggleLockGuides()
-    {
-        setLockGuides(!getLockGuides());
-    }
-
-    void SPNamedView::toggleShowGrids()
-    {
-        setShowGrids(!getShowGrids());
-    }
-
-    void SPNamedView::setShowGrids(bool v)
-    {
+void SPNamedView::setShowGuides(bool v)
+{
+    if (auto repr = getRepr()) {
         {
-            DocumentUndo::ScopedInsensitive ice(document);
-
-            if (v && grids.empty())
-                SPGrid::create_new(document, this->getRepr(), GridType::RECTANGULAR);
-
-            getRepr()->setAttributeBoolean("showgrid", v);
+            DocumentUndo::ScopedInsensitive _no_undo(document);
+            repr->setAttributeBoolean("showguides", v);
         }
         requestModified(SP_OBJECT_MODIFIED_FLAG);
     }
-
-    bool SPNamedView::getShowGrids()
-    {
-        return grids_visible;
-    }
-
-    void SPNamedView::setShowGuides(bool v)
-    {
-        if (auto repr = getRepr()) {
-            {
-                DocumentUndo::ScopedInsensitive _no_undo(document);
-                repr->setAttributeBoolean("showguides", v);
-            }
-            requestModified(SP_OBJECT_MODIFIED_FLAG);
-        }
-    }
-
-    void SPNamedView::setLockGuides(bool v)
-    {
-        if (auto repr = getRepr()) {
-            {
-                DocumentUndo::ScopedInsensitive _no_undo(document);
-                repr->setAttributeBoolean("inkscape:lockguides", v);
-            }
-            requestModified(SP_OBJECT_MODIFIED_FLAG);
-        }
-    }
-
-    void SPNamedView::setShowGuideSingle(SPGuide * guide)
-    {
-        if (getShowGuides())
-            guide->showSPGuide();
-        else
-            guide->hideSPGuide();
-    }
-
-    bool SPNamedView::getShowGuides()
-    {
-        if (auto repr = getRepr()) {
-            // show guides if not specified, for backwards compatibility
-            return repr->getAttributeBoolean("showguides", true);
-        }
-
-        return false;
-    }
-
-    bool SPNamedView::getLockGuides()
-    {
-        if (auto repr = getRepr()) {
-            return repr->getAttributeBoolean("inkscape:lockguides");
-        }
-
-        return false;
-    }
-
-    void SPNamedView::newGridCreated()
-    {
-        if (grids_visible)
-            return;
-
-        _sync_grids = false;
-        setShowGrids(true);
-        _sync_grids = true;
-    }
-
-    void SPNamedView::updateGrids()
-    {
-        if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
-                document->getActionGroup()->lookup_action("show-grids"))) {
-            saction->change_state(getShowGrids());
-        }
-        if (_sync_grids) {
-            DocumentUndo::ScopedInsensitive ice(document);
-            for (auto grid : grids) {
-                grid->setVisible(getShowGrids());
-            }
-        }
-    }
-
-    void SPNamedView::updateGuides()
-    {
-        if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
-                document->getActionGroup()->lookup_action("show-all-guides"))) {
-            saction->change_state(getShowGuides());
-        }
-
-        if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
-                document->getActionGroup()->lookup_action("lock-all-guides"))) {
-            bool is_locked = getLockGuides();
-            saction->change_state(is_locked);
-
-            for (auto desktop : views) {
-                auto dt_widget = desktop->getDesktopWidget();
-                dt_widget->get_canvas_grid()->GetGuideLock()->set_active(is_locked);
-            }
-        }
-
-        for (SPGuide *guide : guides) {
-            setShowGuideSingle(guide);
-            guide->set_locked(this->getLockGuides(), true);
-        }
-    }
-
-    /**
-     * Returns namedview's default unit.
-     * If no default unit is set, "px" is returned
-     */
-    Inkscape::Util::Unit const *SPNamedView::getDisplayUnit() const
-    {
-        return display_units ? display_units : unit_table.getUnit("px");
-    }
-
-    /**
-     * Set the display unit to the given value.
-     */
-    void SPNamedView::setDisplayUnit(std::string unit)
-    {
-        setDisplayUnit(unit_table.getUnit(unit));
-    }
-
-    this->requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
+
+void SPNamedView::setLockGuides(bool v)
+{
+    if (auto repr = getRepr()) {
+        {
+            DocumentUndo::ScopedInsensitive _no_undo(document);
+            repr->setAttributeBoolean("inkscape:lockguides", v);
+        }
+        requestModified(SP_OBJECT_MODIFIED_FLAG);
+    }
+}
+
+void SPNamedView::setShowGuideSingle(SPGuide * guide)
+{
+    if (getShowGuides())
+        guide->showSPGuide();
+    else
+        guide->hideSPGuide();
+}
+
+bool SPNamedView::getShowGuides()
+{
+    if (auto repr = getRepr()) {
+        // show guides if not specified, for backwards compatibility
+        return repr->getAttributeBoolean("showguides", true);
+    }
+
+    return false;
+}
+
+bool SPNamedView::getLockGuides()
+{
+    if (auto repr = getRepr()) {
+        return repr->getAttributeBoolean("inkscape:lockguides");
+    }
+
+    return false;
+}
+
+void SPNamedView::newGridCreated()
+{
+    if (grids_visible)
+        return;
+
+    _sync_grids = false;
+    setShowGrids(true);
+    _sync_grids = true;
+}
+
+void SPNamedView::updateGrids()
+{
+    if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
+                document->getActionGroup()->lookup_action("show-grids"))) {
+
+        saction->change_state(getShowGrids());
+    }
+    if (_sync_grids) {
+        DocumentUndo::ScopedInsensitive ice(document);
+        for (auto grid : grids) {
+            grid->setVisible(getShowGrids());
+        }
+    }
+}
+
+void SPNamedView::updateGuides()
+{
+    if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
+                document->getActionGroup()->lookup_action("show-all-guides"))) {
+
+        saction->change_state(getShowGuides());
+    }
+
+    if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
+                document->getActionGroup()->lookup_action("lock-all-guides"))) {
+
+        bool is_locked = getLockGuides();
+        saction->change_state(is_locked);
+
+        for (auto desktop : views) {
+            auto dt_widget = desktop->getDesktopWidget();
+            dt_widget->get_canvas_grid()->GetGuideLock()->set_active(is_locked);
+        }
+    }
+
+    for (SPGuide *guide : guides) {
+        setShowGuideSingle(guide);
+        guide->set_locked(this->getLockGuides(), true);
+    }
+}
+
+/**
+ * Returns namedview's default unit.
+ * If no default unit is set, "px" is returned
+ */
+Inkscape::Util::Unit const *SPNamedView::getDisplayUnit() const
+{
+    return display_units ? display_units : unit_table.getUnit("px");
+}
+
+/**
+ * Set the display unit to the given value.
+ */
+void SPNamedView::setDisplayUnit(std::string unit)
+{
+    setDisplayUnit(unit_table.getUnit(unit));
+}
+
+//this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+//}
 
 /**
  * Returns the first grid it could find that isEnabled(). Returns NULL, if none is enabled
@@ -1003,23 +990,21 @@ void SPNamedView::change_color(unsigned int rgba, SPAttr color_key, SPAttr opaci
         getRepr()->setAttributeCssDouble(sp_attribute_name(opacity_key), (rgba & 0xff) / 255.0);
     }
 }
-}
-}
 
-void SPNamedView::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
-{
-    SPObjectGroup::child_added(child, ref);
-}
-else
-{
-    str_value = value ? "true" : "false";
-}
-getRepr()->setAttribute(sp_attribute_name(key), str_value);
+void SPNamedView::change_bool_setting(SPAttr key, bool value) {
+    const char* str_value = nullptr;
+    if (key == SPAttr::SHAPE_RENDERING) {
+        str_value = value ? "auto" : "crispEdges";
+    } else if (key == SPAttr::PAGELABELSTYLE) {
+        str_value = value ? "below" : "default";
+    } else {
+        str_value = value ? "true" : "false";
+    }
+    getRepr()->setAttribute(sp_attribute_name(key), str_value);
 }
 
 // show/hide guide lines without modifying view; used to quickly and temporarily hide them and restore them
-void SPNamedView::temporarily_show_guides(bool show)
-{
+void SPNamedView::temporarily_show_guides(bool show) {
     // hide grid and guides
     for (auto guide : guides) {
         show ? guide->showSPGuide() : guide->hideSPGuide();
@@ -1030,8 +1015,6 @@ void SPNamedView::temporarily_show_guides(bool show)
         page->set_guides_visible(show);
     }
 }
-if (!no)
-    return;
 
 /*
   Local Variables:

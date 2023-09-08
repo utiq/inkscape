@@ -14,6 +14,8 @@
  *
  */
 
+#include "inkscape-window.h"
+
 #include <gtkmm/box.h>
 #include <gtkmm/menubar.h>
 #include <iostream>
@@ -37,7 +39,6 @@
 #include "desktop-events.h"      // Handle key events
 #include "enums.h"               // PREFS_WINDOW_GEOMETRY_NONE
 #include "inkscape-application.h"
-#include "inkscape-window.h"
 #include "inkscape.h"            // SP_ACTIVE_DESKTOP
 #include "object/sp-namedview.h" // TODO Remove need for this!
 #include "ui/desktop/menu-icon-shift.h"
@@ -53,8 +54,8 @@
 #include "ui/widget/canvas.h"
 #include "widgets/desktop-widget.h"
 
-                using Inkscape::UI::Dialog::DialogContainer;
 using Inkscape::UI::Dialog::DialogManager;
+using Inkscape::UI::Dialog::DialogContainer;
 using Inkscape::UI::Dialog::DialogWindow;
 
 static gboolean _resize_children(Gtk::Window *win)

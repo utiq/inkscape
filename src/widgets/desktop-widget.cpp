@@ -129,12 +129,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
     auto adjust_pos = [=]() {
         int minimum_width, natural_width;
         dtw->tool_toolbox->get_preferred_width(minimum_width, natural_width);
-
-    dtw->tool_toolbox = Gtk::make_managed<Inkscape::UI::Toolbar::ToolToolbar>(inkscape_window);
-    dtw->_tbbox->pack1(*dtw->tool_toolbox, false, false);
-    auto adjust_pos = [=]() {
-        int minimum_width, natural_width;
-        dtw->tool_toolbox->get_preferred_width(minimum_width, natural_width);
         if (minimum_width > 0) {
             int pos = dtw->_tbbox->get_position();
             int new_pos = pos + minimum_width / 2;

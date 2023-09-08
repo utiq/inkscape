@@ -45,6 +45,8 @@
 #include "layer-manager.h"
 #include "message-context.h"
 #include "message-stack.h"
+#include "actions/actions-view-mode.h" // To update View menu
+#include "actions/actions-tools.h" // To change tools
 #include "object/sp-namedview.h"
 #include "object/sp-root.h"
 #include "ui/dialog/dialog-container.h"
@@ -1263,11 +1265,6 @@ void SPDesktop::emitToolSubselectionChangedEx(gpointer data, SPObject *object)
     _tool_subselection_changed.emit(data, object);
 }
 
-void SPDesktop::emitToolSubselectionChangedEx(gpointer data, SPObject *object)
-{
-    _tool_subselection_changed.emit(data, object);
-}
-
 sigc::connection SPDesktop::connectToolSubselectionChanged(const sigc::slot<void(gpointer)> &slot)
 {
     return _tool_subselection_changed.connect([=](gpointer ptr, SPObject *) { slot(ptr); });
@@ -1417,7 +1414,6 @@ static bool _drawing_handler(Inkscape::CanvasEvent const &event, Inkscape::Drawi
     }
 
     return false;
-}
 }
 
 /// Called when document is starting to be rebuilt.
