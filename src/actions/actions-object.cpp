@@ -10,11 +10,21 @@
 
 #include "actions-object.h"
 
+#include <cmath>
+#include <cstdio>
+#include <ctime>
+#include <future>
 #include <giomm.h> // Not <gtkmm.h>! To eventually allow a headless version!
 #include <glibmm/i18n.h>
 #include <iostream>
+#include <memory>
+#include <ostream>
+#include <thread>
+#include <chrono>
 
 #include "actions-helper.h"
+#include "async/progress.h"
+#include "display/drawing-item.h"
 #include "document-undo.h"
 #include "inkscape-application.h"
 #include "inkscape.h" // Inkscape::Application
@@ -22,30 +32,52 @@
 #include "live_effects/lpe-powerclip.h"
 #include "live_effects/lpe-powermask.h"
 #include "object/sp-lpe-item.h"
+#include "object/sp-mesh-array.h"
 #include "path/path-simplify.h"
 #include "selection.h" // Selection
+#include "snap-candidate.h"
 #include "trace/autotrace/inkscape-autotrace.h"
 #include "trace/depixelize/inkscape-depixelize.h"
 #include "trace/potrace/inkscape-potrace.h"
+#include "trace/trace.h"
 #include "ui/icon-names.h"
+#include "xml/node.h"
 
 void selection_trace(const Glib::VariantBase &value, InkscapeApplication *app)
 {
+    auto selection = app->get_active_selection();
+    if (selection->isEmpty()) {
+        show_output("action:object_set_attribute: selection empty!");
+        return;
+    }
+
+    selection->createBitmapCopy();
+
     Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value);
     std::vector<Glib::ustring> settings = Glib::Regex::split_simple(",", s.get());
-    Inkscape::Trace::Tracer tracer;
     auto scans = std::stoi(settings[0]);           // Scans
     auto smooth = settings[1] == "true";           // Smooth
     auto stack = settings[2] == "true";            // Stack
     auto removeBackground = settings[3] == "true"; // Remove background
-    Inkscape::Trace::Potrace::PotraceTracingEngine pte(Inkscape::Trace::Potrace::TRACE_QUANT_COLOR, false, 64, 0.45, 0.,
-                                                       .65, scans, stack, smooth, removeBackground);
-    pte.potraceParams->opticurve = true;
-    pte.potraceParams->opttolerance = std::stof(settings[6]); // Optimize
-    pte.potraceParams->alphamax = std::stof(settings[5]);     // Smooth corners
-    pte.potraceParams->turdsize = std::stoi(settings[4]);     // Speckles
 
-    tracer.trace(&pte);
+    auto tracer = std::make_unique<Inkscape::Trace::Potrace::PotraceTracingEngine>(Inkscape::Trace::Potrace::TraceType::QUANT_COLOR, false, 64,
+                                                       0.45, 0., .65, scans, stack, smooth, removeBackground);
+    tracer->setOptiCurve(true);
+    tracer->setOptTolerance(std::stof(settings[6])); // Optimize
+    tracer->setAlphaMax(std::stof(settings[5]));     // Smooth corners
+    tracer->setTurdSize(std::stoi(settings[4]));     // Speckles
+
+    std::cout << "Tracing scheduling ";
+    std::cout.flush();
+    Inkscape::Trace::TraceFuture result = Inkscape::Trace::trace(
+            std::move(tracer),
+            false,
+            [](double progress) {
+                std::cerr << "Processing...  " << progress << std::endl;
+            },
+            [](){
+                std::cout << "Done." << std::endl;
+            });
 }
 
 // No sanity checking is done... should probably add.
@@ -344,9 +376,10 @@ void add_actions_object(InkscapeApplication *app)
     auto *gapp = app->gio_app();
 
     // clang-format off
-    gapp->add_action_with_parameter( "object-set-attribute",    String, sigc::bind(sigc::ptr_fun(&object_set_attribute),  app));
-    gapp->add_action_with_parameter( "selection-trace",          String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&selection_trace), app)); //TODO(David): May need fix to conform new bindings format like the others here
-    gapp->add_action_with_parameter( "object-set-property",     String, sigc::bind(sigc::ptr_fun(&object_set_property),   app));
+    gapp->add_action_with_parameter( "object-set-attribute",    String, sigc::bind(sigc::ptr_fun(&object_set_attribute),          app));
+
+    gapp->add_action_with_parameter( "selection-trace",         String, sigc::bind(sigc::ptr_fun(&selection_trace),               app));
+    gapp->add_action_with_parameter( "object-set-property",     String, sigc::bind(sigc::ptr_fun(&object_set_property),           app));
 
     gapp->add_action(                "object-unlink-clones",            sigc::bind(sigc::ptr_fun(&object_unlink_clones),          app));
     gapp->add_action(                "object-to-path",                  sigc::bind(sigc::ptr_fun(&object_to_path),                app));

@@ -391,30 +391,6 @@ void SPNamedView::set(SPAttr key, const gchar *value)
         case SPAttr::INKSCAPE_ANTIALIAS_RENDERING:
             antialias_rendering.readOrUnset(value);
             break;
-        /*
-        case SPAttr::UNITS: {
-            // Only used in "Custom size" section of Document Properties dialog
-                Inkscape::Util::Unit const *new_unit = nullptr;
-
-                if (value) {
-                    Inkscape::Util::Unit const *const req_unit = unit_table.getUnit(value);
-                    if ( !unit_table.hasUnit(value) ) {
-                        g_warning("Unrecognized unit `%s'", value);
-                        / * fixme: Document errors should be reported in the status bar or
-                         * the like (e.g. as per
-                         * http://www.w3.org/TR/SVG11/implnote.html#ErrorProcessing); g_log
-                         * should be only for programmer errors. * /
-                    } else if ( req_unit->isAbsolute() ) {
-                        new_unit = req_unit;
-                    } else {
-                        g_warning("Document units must be absolute like `mm', `pt' or `px', but found `%s'",
-                                  value);
-                        / * fixme: Don't use g_log (see above). * /
-                    }
-                }
-                this->page_size_units = new_unit;
-                break;
-        } */
         default:
             SPObjectGroup::set(key, value);
             return;
@@ -566,80 +542,80 @@ void SPNamedView::show(SPDesktop *desktop)
  */
 void sp_namedview_window_from_document(SPDesktop *desktop)
 {
-    // TODO(David): Maybe uncoment
-    //    SPNamedView *nv = desktop->namedview;
-    //    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    //    int window_geometry = prefs->getInt("/options/savewindowgeometry/value", PREFS_WINDOW_GEOMETRY_NONE);
-    //    int default_size = prefs->getInt("/options/defaultwindowsize/value", PREFS_WINDOW_SIZE_NATURAL);
-    //    bool new_document = (nv->window_width <= 0) || (nv->window_height <= 0);
-    //
-    //    // restore window size and position stored with the document
-    //    Gtk::Window *win = desktop->getToplevel();
-    //    g_assert(win);
-    //
-    //    if (window_geometry == PREFS_WINDOW_GEOMETRY_LAST) {
-    //        gint pw = prefs->getInt("/desktop/geometry/width", -1);
-    //        gint ph = prefs->getInt("/desktop/geometry/height", -1);
-    //        gint px = prefs->getInt("/desktop/geometry/x", -1);
-    //        gint py = prefs->getInt("/desktop/geometry/y", -1);
-    //        gint full = prefs->getBool("/desktop/geometry/fullscreen");
-    //        gint maxed = prefs->getBool("/desktop/geometry/maximized");
-    //        if (pw > 0 && ph > 0) {
-    //            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(px, py);
-    //            pw = std::min(pw, monitor_geometry.get_width());
-    //            ph = std::min(ph, monitor_geometry.get_height());
-    //            desktop->setWindowSize(pw, ph);
-    //            desktop->setWindowPosition(Geom::Point(px, py));
-    //        }
-    //        if (maxed) {
-    //            win->maximize();
-    //        }
-    //        if (full) {
-    //            win->fullscreen();
-    //        }
-    //    } else if ((window_geometry == PREFS_WINDOW_GEOMETRY_FILE && nv->window_maximized) ||
-    //               ((new_document || window_geometry == PREFS_WINDOW_GEOMETRY_NONE) &&
-    //                default_size == PREFS_WINDOW_SIZE_MAXIMIZED)) {
-    //        win->maximize();
-    //    } else {
-    //        const int MIN_WINDOW_SIZE = 600;
-    //
-    //        int w = prefs->getInt("/template/base/inkscape:window-width", 0);
-    //        int h = prefs->getInt("/template/base/inkscape:window-height", 0);
-    //        bool move_to_screen = false;
-    //        if (window_geometry == PREFS_WINDOW_GEOMETRY_FILE && !new_document) {
-    //            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(nv->window_x,
-    //            nv->window_y); w = MIN(monitor_geometry.get_width(), nv->window_width); h =
-    //            MIN(monitor_geometry.get_height(), nv->window_height); move_to_screen = true;
-    //        } else if (default_size == PREFS_WINDOW_SIZE_LARGE) {
-    //            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
-    //            w = MAX(0.75 * monitor_geometry.get_width(), MIN_WINDOW_SIZE);
-    //            h = MAX(0.75 * monitor_geometry.get_height(), MIN_WINDOW_SIZE);
-    //        } else if (default_size == PREFS_WINDOW_SIZE_SMALL) {
-    //            w = h = MIN_WINDOW_SIZE;
-    //        } else if (default_size == PREFS_WINDOW_SIZE_NATURAL) {
-    //            // don't set size (i.e. keep the gtk+ default, which will be the natural size)
-    //            // unless gtk+ decided it would be a good idea to show a window that is larger than the screen
-    //            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
-    //            int monitor_width = monitor_geometry.get_width();
-    //            int monitor_height = monitor_geometry.get_height();
-    //            int window_width, window_height;
-    //            win->get_size(window_width, window_height);
-    //            if (window_width > monitor_width || window_height > monitor_height) {
-    //                w = std::min(monitor_width, window_width);
-    //                h = std::min(monitor_height, window_height);
-    //            }
-    //        }
-    //        if ((w > 0) && (h > 0)) {
-    //            desktop->setWindowSize(w, h);
-    //            if (move_to_screen) {
-    //                desktop->setWindowPosition(Geom::Point(nv->window_x, nv->window_y));
-    //            }
-    //        }
-    //    }
-    //
-    //    // Cancel any history of transforms up to this point (must be before call to zoom).
-    //    desktop->clear_transform_history();
+    // FIXIT(David): Previously commented on the "chore: remove ui"
+    SPNamedView *nv = desktop->namedview;
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    int window_geometry = prefs->getInt("/options/savewindowgeometry/value", PREFS_WINDOW_GEOMETRY_NONE);
+    int default_size = prefs->getInt("/options/defaultwindowsize/value", PREFS_WINDOW_SIZE_NATURAL);
+    bool new_document = (nv->window_width <= 0) || (nv->window_height <= 0);
+    
+    // restore window size and position stored with the document
+    Gtk::Window *win = desktop->getToplevel();
+    g_assert(win);
+    
+    if (window_geometry == PREFS_WINDOW_GEOMETRY_LAST) {
+        gint pw = prefs->getInt("/desktop/geometry/width", -1);
+        gint ph = prefs->getInt("/desktop/geometry/height", -1);
+        gint px = prefs->getInt("/desktop/geometry/x", -1);
+        gint py = prefs->getInt("/desktop/geometry/y", -1);
+        gint full = prefs->getBool("/desktop/geometry/fullscreen");
+        gint maxed = prefs->getBool("/desktop/geometry/maximized");
+        if (pw > 0 && ph > 0) {
+            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(px, py);
+            pw = std::min(pw, monitor_geometry.get_width());
+            ph = std::min(ph, monitor_geometry.get_height());
+            desktop->setWindowSize(pw, ph);
+            desktop->setWindowPosition(Geom::Point(px, py));
+        }
+        if (maxed) {
+            win->maximize();
+        }
+        if (full) {
+            win->fullscreen();
+        }
+    } else if ((window_geometry == PREFS_WINDOW_GEOMETRY_FILE && nv->window_maximized) ||
+               ((new_document || window_geometry == PREFS_WINDOW_GEOMETRY_NONE) &&
+                default_size == PREFS_WINDOW_SIZE_MAXIMIZED)) {
+        win->maximize();
+    } else {
+        const int MIN_WINDOW_SIZE = 600;
+    
+        int w = prefs->getInt("/template/base/inkscape:window-width", 0);
+        int h = prefs->getInt("/template/base/inkscape:window-height", 0);
+        bool move_to_screen = false;
+        if (window_geometry == PREFS_WINDOW_GEOMETRY_FILE && !new_document) {
+            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_point(nv->window_x,
+            nv->window_y); w = MIN(monitor_geometry.get_width(), nv->window_width); h =
+            MIN(monitor_geometry.get_height(), nv->window_height); move_to_screen = true;
+        } else if (default_size == PREFS_WINDOW_SIZE_LARGE) {
+            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
+            w = MAX(0.75 * monitor_geometry.get_width(), MIN_WINDOW_SIZE);
+            h = MAX(0.75 * monitor_geometry.get_height(), MIN_WINDOW_SIZE);
+        } else if (default_size == PREFS_WINDOW_SIZE_SMALL) {
+            w = h = MIN_WINDOW_SIZE;
+        } else if (default_size == PREFS_WINDOW_SIZE_NATURAL) {
+            // don't set size (i.e. keep the gtk+ default, which will be the natural size)
+            // unless gtk+ decided it would be a good idea to show a window that is larger than the screen
+            Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_at_window(win->get_window());
+            int monitor_width = monitor_geometry.get_width();
+            int monitor_height = monitor_geometry.get_height();
+            int window_width, window_height;
+            win->get_size(window_width, window_height);
+            if (window_width > monitor_width || window_height > monitor_height) {
+                w = std::min(monitor_width, window_width);
+                h = std::min(monitor_height, window_height);
+            }
+        }
+        if ((w > 0) && (h > 0)) {
+            desktop->setWindowSize(w, h);
+            if (move_to_screen) {
+                desktop->setWindowPosition(Geom::Point(nv->window_x, nv->window_y));
+            }
+        }
+    }
+    
+    // Cancel any history of transforms up to this point (must be before call to zoom).
+    desktop->clear_transform_history();
 }
 
 /*
@@ -694,7 +670,7 @@ void sp_namedview_update_layers_from_document(SPDesktop *desktop)
     document->get_event_log()->updateUndoVerbs();
 }
 
-void sp_namedview_document_from_window(SPDesktop * desktop)
+void sp_namedview_document_from_window(SPDesktop *desktop)
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     int window_geometry = prefs->getInt("/options/savewindowgeometry/value", PREFS_WINDOW_GEOMETRY_NONE);
@@ -844,7 +820,7 @@ void SPNamedView::setLockGuides(bool v)
     }
 }
 
-void SPNamedView::setShowGuideSingle(SPGuide * guide)
+void SPNamedView::setShowGuideSingle(SPGuide *guide)
 {
     if (getShowGuides())
         guide->showSPGuide();
@@ -883,9 +859,8 @@ void SPNamedView::newGridCreated()
 
 void SPNamedView::updateGrids()
 {
-    if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
-                document->getActionGroup()->lookup_action("show-grids"))) {
-
+    if (auto saction =
+            Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(document->getActionGroup()->lookup_action("show-grids"))) {
         saction->change_state(getShowGrids());
     }
     if (_sync_grids) {
@@ -899,14 +874,12 @@ void SPNamedView::updateGrids()
 void SPNamedView::updateGuides()
 {
     if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
-                document->getActionGroup()->lookup_action("show-all-guides"))) {
-
+            document->getActionGroup()->lookup_action("show-all-guides"))) {
         saction->change_state(getShowGuides());
     }
 
     if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
-                document->getActionGroup()->lookup_action("lock-all-guides"))) {
-
+            document->getActionGroup()->lookup_action("lock-all-guides"))) {
         bool is_locked = getLockGuides();
         saction->change_state(is_locked);
 
@@ -939,8 +912,10 @@ void SPNamedView::setDisplayUnit(std::string unit)
     setDisplayUnit(unit_table.getUnit(unit));
 }
 
-//this->requestModified(SP_OBJECT_MODIFIED_FLAG);
-//}
+void SPNamedView::setDisplayUnit(Inkscape::Util::Unit const *value)
+{
+    this->display_units = value;
+}
 
 /**
  * Returns the first grid it could find that isEnabled(). Returns NULL, if none is enabled
@@ -991,8 +966,9 @@ void SPNamedView::change_color(unsigned int rgba, SPAttr color_key, SPAttr opaci
     }
 }
 
-void SPNamedView::change_bool_setting(SPAttr key, bool value) {
-    const char* str_value = nullptr;
+void SPNamedView::change_bool_setting(SPAttr key, bool value)
+{
+    const char *str_value = nullptr;
     if (key == SPAttr::SHAPE_RENDERING) {
         str_value = value ? "auto" : "crispEdges";
     } else if (key == SPAttr::PAGELABELSTYLE) {
@@ -1004,7 +980,8 @@ void SPNamedView::change_bool_setting(SPAttr key, bool value) {
 }
 
 // show/hide guide lines without modifying view; used to quickly and temporarily hide them and restore them
-void SPNamedView::temporarily_show_guides(bool show) {
+void SPNamedView::temporarily_show_guides(bool show)
+{
     // hide grid and guides
     for (auto guide : guides) {
         show ? guide->showSPGuide() : guide->hideSPGuide();

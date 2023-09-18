@@ -15,7 +15,6 @@
  *
  */
 #include <iomanip>
-#include <glibmm/i18n.h>
 #include <potracelib.h>
 
 #include "inkscape-potrace.h"
@@ -202,15 +201,15 @@ IndexedMap PotraceTracingEngine::filterIndexed(Glib::RefPtr<Gdk::Pixbuf> const &
 
     auto imap = rgbMapQuantize(map, multiScanNrColors);
 
-    auto tomono = [] (RGB c) -> RGB {
+    auto tomono = [] (RGB& c) {
         unsigned char s = ((int)c.r + (int)c.g + (int)c.b) / 3;
-        return { s, s, s };
+        c = { s, s, s };
     };
 
     if (traceType == TraceType::QUANT_MONO || traceType == TraceType::BRIGHTNESS_MULTI) {
         // Turn to grays
         for (auto &c : imap.clut) {
-            c = tomono(c);
+            tomono(c);
         }
     }
 
@@ -404,8 +403,6 @@ TraceResult PotraceTracingEngine::traceQuant(Glib::RefPtr<Gdk::Pixbuf> const &pi
             }
         }
 
-        subprogress.report_or_throw(0.2);
-
         // Now we have a traceable graymap
         auto sub_gmtopath = Async::SubProgress(subprogress, 0.2, 0.8);
         auto pv = grayMapToPath(gm, sub_gmtopath);
@@ -416,8 +413,6 @@ TraceResult PotraceTracingEngine::traceQuant(Glib::RefPtr<Gdk::Pixbuf> const &pi
             auto style = Glib::ustring::compose("fill:#%1%2%3", twohex(rgb.r), twohex(rgb.g), twohex(rgb.b));
             results.emplace_back(style.raw(), std::move(pv));
         }
-
-        subprogress.report_or_throw(1.0);
     }
 
     // Remove the bottom-most scan, if requested.
