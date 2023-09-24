@@ -902,7 +902,7 @@ guint32 MultiPathManipulator::_getOutlineColor(ShapeRole role, SPObject *object)
         return prefs->getColor("/tools/nodes/lpe_param_color", 0x009000ff);
     case SHAPE_ROLE_NORMAL:
     default:
-        return cast<SPItem>(object)->highlight_color();
+        return prefs->getColor("/tools/nodes/highlight_color", 0xff0000ff);;
     }
 }
 

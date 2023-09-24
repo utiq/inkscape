@@ -8,28 +8,84 @@
  *
  */
 
-#include <iostream>
-
-#include <giomm.h>  // Not <gtkmm.h>! To eventually allow a headless version!
-#include <glibmm/i18n.h>
-
 #include "actions-object.h"
+
+#include <cmath>
+#include <cstdio>
+#include <ctime>
+#include <future>
+#include <giomm.h> // Not <gtkmm.h>! To eventually allow a headless version!
+#include <glibmm/i18n.h>
+#include <iostream>
+#include <memory>
+#include <ostream>
+#include <thread>
+#include <chrono>
+
 #include "actions-helper.h"
+#include "async/progress.h"
+#include "display/drawing-item.h"
 #include "document-undo.h"
 #include "inkscape-application.h"
-
-#include "inkscape.h"             // Inkscape::Application
-#include "selection.h"            // Selection
-#include "path/path-simplify.h"
+#include "inkscape.h" // Inkscape::Application
 #include "live_effects/effect.h"
 #include "live_effects/lpe-powerclip.h"
 #include "live_effects/lpe-powermask.h"
-#include "ui/icon-names.h"
 #include "object/sp-lpe-item.h"
+#include "object/sp-mesh-array.h"
+#include "path/path-simplify.h"
+#include "selection.h" // Selection
+#include "snap-candidate.h"
+#include "trace/autotrace/inkscape-autotrace.h"
+#include "trace/depixelize/inkscape-depixelize.h"
+#include "trace/potrace/inkscape-potrace.h"
+#include "trace/trace.h"
+#include "ui/icon-names.h"
+#include "xml/node.h"
+
+void selection_trace(const Glib::VariantBase &value, InkscapeApplication *app)
+{
+    auto selection = app->get_active_selection();
+    if (selection->isEmpty()) {
+        show_output("action:object_set_attribute: selection empty!");
+        return;
+    }
+
+    Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value);
+    std::vector<Glib::ustring> settings = Glib::Regex::split_simple(",", s.get());
+    auto scans = std::stoi(settings[0]);           // Scans
+    auto smooth = settings[1] == "true";           // Smooth
+    auto stack = settings[2] == "true";            // Stack
+    auto removeBackground = settings[3] == "true"; // Remove background
+
+    auto tracer = std::make_unique<Inkscape::Trace::Potrace::PotraceTracingEngine>(Inkscape::Trace::Potrace::TraceType::QUANT_COLOR, false, 64,
+                                                       0.45, 0., .65, scans, stack, smooth, removeBackground);
+    tracer->setOptiCurve(true);
+    tracer->setOptTolerance(std::stof(settings[6])); // Optimize
+    tracer->setAlphaMax(std::stof(settings[5]));     // Smooth corners
+    tracer->setTurdSize(std::stoi(settings[4]));     // Speckles
+
+    std::cout << "Tracing scheduling ";
+    std::cout.flush();
+    bool finished = false;
+    Inkscape::Trace::TraceFuture result = Inkscape::Trace::trace(
+            std::move(tracer),
+            false,
+            [](double progress) {
+                std::cerr << "Processing...  " << progress << std::endl;
+            },
+            [&finished](){
+                std::cout << "Done." << std::endl;
+                finished = true;
+            });
+    do {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(100ms);
+    } while (!finished);
+}
 
 // No sanity checking is done... should probably add.
-void
-object_set_attribute(const Glib::VariantBase& value, InkscapeApplication *app)
+void object_set_attribute(const Glib::VariantBase &value, InkscapeApplication *app)
 {
     auto const argument = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value).get();
     auto const comma_position = argument.find_first_of(',');
@@ -57,12 +113,10 @@ object_set_attribute(const Glib::VariantBase& value, InkscapeApplication *app)
     Inkscape::DocumentUndo::done(app->get_active_document(), "ActionObjectSetAttribute", "");
 }
 
-
 // No sanity checking is done... should probably add.
-void
-object_set_property(const Glib::VariantBase& value, InkscapeApplication *app)
+void object_set_property(const Glib::VariantBase &value, InkscapeApplication *app)
 {
-    Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring> >(value);
+    Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value);
 
     std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", s.get());
     if (tokens.size() != 2) {
@@ -90,27 +144,23 @@ object_set_property(const Glib::VariantBase& value, InkscapeApplication *app)
     Inkscape::DocumentUndo::done(app->get_active_document(), "ActionObjectSetProperty", "");
 }
 
-
-void
-object_unlink_clones(InkscapeApplication *app)
+void object_unlink_clones(InkscapeApplication *app)
 {
     auto selection = app->get_active_selection();
 
     // We should not have to do this!
-    auto document  = app->get_active_document();
+    auto document = app->get_active_document();
     selection->setDocument(document);
 
     selection->unlink();
 }
 
-bool
-should_remove_original()
+bool should_remove_original()
 {
     return Inkscape::Preferences::get()->getBool("/options/maskobject/remove", true);
 }
 
-void
-object_clip_set(InkscapeApplication *app)
+void object_clip_set(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -119,8 +169,7 @@ object_clip_set(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(selection->document(), _("Set clipping path"), "");
 }
 
-void
-object_clip_set_inverse(InkscapeApplication *app)
+void object_clip_set_inverse(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -130,8 +179,7 @@ object_clip_set_inverse(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(app->get_active_document(), _("Set Inverse Clip(LPE)"), "");
 }
 
-void
-object_clip_release(InkscapeApplication *app)
+void object_clip_release(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -141,16 +189,14 @@ object_clip_release(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(app->get_active_document(), _("Release clipping path"), "");
 }
 
-void
-object_clip_set_group(InkscapeApplication *app)
+void object_clip_set_group(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
     selection->setClipGroup();
     // Undo added in setClipGroup().
 }
 
-void
-object_mask_set(InkscapeApplication *app)
+void object_mask_set(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -159,8 +205,7 @@ object_mask_set(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(selection->document(), _("Set mask"), "");
 }
 
-void
-object_mask_set_inverse(InkscapeApplication *app)
+void object_mask_set_inverse(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -170,8 +215,7 @@ object_mask_set_inverse(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(app->get_active_document(), _("Set Inverse Mask (LPE)"), "");
 }
 
-void
-object_mask_release(InkscapeApplication *app)
+void object_mask_release(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -181,8 +225,7 @@ object_mask_release(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(app->get_active_document(), _("Release mask"), "");
 }
 
-void
-object_rotate_90_cw(InkscapeApplication *app)
+void object_rotate_90_cw(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -191,8 +234,7 @@ object_rotate_90_cw(InkscapeApplication *app)
     selection->rotate((!desktop || desktop->is_yaxisdown()) ? 90 : -90);
 }
 
-void
-object_rotate_90_ccw(InkscapeApplication *app)
+void object_rotate_90_ccw(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -201,8 +243,7 @@ object_rotate_90_ccw(InkscapeApplication *app)
     selection->rotate((!desktop || desktop->is_yaxisdown()) ? -90 : 90);
 }
 
-void
-object_flip_horizontal(InkscapeApplication *app)
+void object_flip_horizontal(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -221,11 +262,11 @@ object_flip_horizontal(InkscapeApplication *app)
 
     // Object Flip Horizontal
     selection->setScaleRelative(center, Geom::Scale(-1.0, 1.0));
-    Inkscape::DocumentUndo::done(app->get_active_document(), _("Flip horizontally"), INKSCAPE_ICON("object-flip-horizontal"));
+    Inkscape::DocumentUndo::done(app->get_active_document(), _("Flip horizontally"),
+                                 INKSCAPE_ICON("object-flip-horizontal"));
 }
 
-void
-object_flip_vertical(InkscapeApplication *app)
+void object_flip_vertical(InkscapeApplication *app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
@@ -244,27 +285,26 @@ object_flip_vertical(InkscapeApplication *app)
 
     // Object Flip Vertical
     selection->setScaleRelative(center, Geom::Scale(1.0, -1.0));
-    Inkscape::DocumentUndo::done(app->get_active_document(), _("Flip vertically"), INKSCAPE_ICON("object-flip-vertical"));
+    Inkscape::DocumentUndo::done(app->get_active_document(), _("Flip vertically"),
+                                 INKSCAPE_ICON("object-flip-vertical"));
 }
 
-
-void
-object_to_path(InkscapeApplication *app)
+void object_to_path(InkscapeApplication *app)
 {
     auto selection = app->get_active_selection();
 
     // We should not have to do this!
-    auto document  = app->get_active_document();
+    auto document = app->get_active_document();
     selection->setDocument(document);
     selection->toCurves(false, Inkscape::Preferences::get()->getBool("/options/clonestocurvesjustunlink/value", true));
 }
 
-void
-object_add_corners_lpe(InkscapeApplication *app) {
+void object_add_corners_lpe(InkscapeApplication *app)
+{
     auto selection = app->get_active_selection();
 
     // We should not have to do this!
-    auto document  = app->get_active_document();
+    auto document = app->get_active_document();
     selection->setDocument(document);
     std::vector<SPItem *> items(selection->items().begin(), selection->items().end());
     selection->clear();
@@ -272,10 +312,12 @@ object_add_corners_lpe(InkscapeApplication *app) {
         if (auto lpeitem = cast<SPLPEItem>(i)) {
             if (auto lpe = lpeitem->getFirstPathEffectOfType(Inkscape::LivePathEffect::FILLET_CHAMFER)) {
                 lpeitem->removePathEffect(lpe, false);
-                Inkscape::DocumentUndo::done(document, _("Remove Live Path Effect"), INKSCAPE_ICON("dialog-path-effects"));
+                Inkscape::DocumentUndo::done(document, _("Remove Live Path Effect"),
+                                             INKSCAPE_ICON("dialog-path-effects"));
             } else {
                 Inkscape::LivePathEffect::Effect::createAndApply("fillet_chamfer", document, lpeitem);
-                Inkscape::DocumentUndo::done(document, _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
+                Inkscape::DocumentUndo::done(document, _("Create and apply path effect"),
+                                             INKSCAPE_ICON("dialog-path-effects"));
             }
             if (auto lpe = lpeitem->getCurrentLPE()) {
                 lpe->refresh_widgets = true;
@@ -285,21 +327,18 @@ object_add_corners_lpe(InkscapeApplication *app) {
     }
 }
 
-void
-object_stroke_to_path(InkscapeApplication *app)
+void object_stroke_to_path(InkscapeApplication *app)
 {
     auto selection = app->get_active_selection();
 
     // We should not have to do this!
-    auto document  = app->get_active_document();
+    auto document = app->get_active_document();
     selection->setDocument(document);
 
     selection->strokesToPaths();
 }
 
-
-std::vector<std::vector<Glib::ustring>> raw_data_object =
-{
+std::vector<std::vector<Glib::ustring>> raw_data_object = {
     // clang-format off
     {"app.object-set-attribute",        N_("Set Attribute"),                    "Object",     N_("Set or update an attribute of selected objects; usage: object-set-attribute:attribute name, attribute value;")},
     {"app.object-set-property",         N_("Set Property"),                     "Object",     N_("Set or update a property on selected objects; usage: object-set-property:property name, property value;")},
@@ -324,27 +363,27 @@ std::vector<std::vector<Glib::ustring>> raw_data_object =
     // clang-format on
 };
 
-std::vector<std::vector<Glib::ustring>> hint_data_object =
-{
+std::vector<std::vector<Glib::ustring>> hint_data_object = {
     // clang-format off
     {"app.object-set-attribute",        N_("Enter comma-separated string for attribute name, attribute value") },
     {"app.object-set-property",         N_("Enter comma-separated string for property name, property value")  }
     // clang-format on
 };
 
-void
-add_actions_object(InkscapeApplication* app)
+void add_actions_object(InkscapeApplication *app)
 {
-    Glib::VariantType Bool(  Glib::VARIANT_TYPE_BOOL);
-    Glib::VariantType Int(   Glib::VARIANT_TYPE_INT32);
+    Glib::VariantType Bool(Glib::VARIANT_TYPE_BOOL);
+    Glib::VariantType Int(Glib::VARIANT_TYPE_INT32);
     Glib::VariantType Double(Glib::VARIANT_TYPE_DOUBLE);
     Glib::VariantType String(Glib::VARIANT_TYPE_STRING);
 
     auto *gapp = app->gio_app();
 
     // clang-format off
-    gapp->add_action_with_parameter( "object-set-attribute",            String, sigc::bind(sigc::ptr_fun(&object_set_attribute),  app));
-    gapp->add_action_with_parameter( "object-set-property",             String, sigc::bind(sigc::ptr_fun(&object_set_property),   app));
+    gapp->add_action_with_parameter( "object-set-attribute",    String, sigc::bind(sigc::ptr_fun(&object_set_attribute),          app));
+
+    gapp->add_action_with_parameter( "selection-trace",         String, sigc::bind(sigc::ptr_fun(&selection_trace),               app));
+    gapp->add_action_with_parameter( "object-set-property",     String, sigc::bind(sigc::ptr_fun(&object_set_property),           app));
 
     gapp->add_action(                "object-unlink-clones",            sigc::bind(sigc::ptr_fun(&object_unlink_clones),          app));
     gapp->add_action(                "object-to-path",                  sigc::bind(sigc::ptr_fun(&object_to_path),                app));
@@ -368,7 +407,6 @@ add_actions_object(InkscapeApplication* app)
     app->get_action_extra_data().add_data(raw_data_object);
     app->get_action_hint_data().add_data(hint_data_object);
 }
-
 
 /*
   Local Variables:

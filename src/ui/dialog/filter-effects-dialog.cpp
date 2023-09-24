@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/**
- * @file
+/**@file
  * Filter Effects dialog.
  */
 /* Authors:
@@ -92,9 +91,7 @@
 
 using namespace Inkscape::Filters;
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 using Inkscape::UI::Widget::AttrWidget;
 using Inkscape::UI::Widget::ComboBoxEnum;
@@ -2747,7 +2744,6 @@ void FilterEffectsDialog::add_effects(Inkscape::UI::Widget::CompletionPopup& pop
 
     // 2-column menu
     Inkscape::UI::ColumnMenuBuilder<EffectCategory> builder(menu, 2, Gtk::ICON_SIZE_LARGE_TOOLBAR);
-
     for (auto& effect : effects) {
         // build popup menu
         auto type = effect.type;
@@ -2760,11 +2756,9 @@ void FilterEffectsDialog::add_effects(Inkscape::UI::Widget::CompletionPopup& pop
         if (builder.new_section()) {
             builder.set_section(get_category_name(effect.category));
         }
-    
         // build completion list
         popup.add_to_completion_list(static_cast<int>(effect.type), effect.label, effect.icon_name + (symbolic ? "-symbolic" : ""));
     }
-
     if (symbolic) {
         menu.get_style_context()->add_class("symbolic");
     }
@@ -3348,9 +3342,7 @@ void FilterEffectsDialog::update_automatic_region(Gtk::CheckButton *btn)
 
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

@@ -8,11 +8,12 @@
 #include <glibmm/ustring.h>
 #include <gtkmm/box.h>
 #include <gtkmm/builder.h>
-#include <gtkmm/entrycompletion.h>
-#include <gtkmm/liststore.h>
+
 #include "ui/widget/popover-menu.h"
 
 namespace Gtk {
+class EntryCompletion;
+class ListStore;
 class MenuButton;
 class SearchEntry;
 } // namespace Gtk
@@ -22,6 +23,7 @@ namespace Inkscape::UI::Widget {
 class CompletionPopup : public Gtk::Box {
 public:
     CompletionPopup();
+    ~CompletionPopup();
 
     PopoverMenu& get_menu();
     Gtk::SearchEntry& get_entry();
@@ -51,3 +53,14 @@ private:
 } // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_COMPLETION_POPUP_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:

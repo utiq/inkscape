@@ -2,31 +2,9 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkTextBuffer" id="stacktrace">
-    <property name="text">stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktrace
-stacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktracestacktra
-stacktrace
-stacktrace</property>
-  </object>
+  <object class="GtkTextBuffer" id="stacktrace"/>
   <object class="GtkMessageDialog" id="crash_dialog">
+    <property name="resizable">True</property>
     <property name="message-type">error</property>
     <property name="buttons">ok</property>
     <property name="text" translatable="yes">Inkscape has crashed and will now close.</property>

@@ -19,12 +19,8 @@
 #include "preferences.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/completion-popup.h"
-#include "ui/column-menu-builder.h"
 
-namespace Inkscape {
-
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 /*
  * @brief The LivePathEffectEditor class
@@ -104,9 +100,7 @@ private:
     std::unique_ptr<Preferences::PreferencesObserver> const _showgallery_observer;
 };
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 #endif // LIVEPATHEFFECTEDITOR_H
 

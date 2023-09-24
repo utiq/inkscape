@@ -1,17 +1,23 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef INKSCAPE_FILLCONVERSION_H
-#define INKSCAPE_FILLCONVERSION_H
-
+/**
+ * @file
+ * Fill/stroke conversion routines for LPEs which draw a stroke
+ */
 /*
- * Copyright (C) Liam P White 2020
+ * Authors:
+ *   Liam P White
+ *
+ * Copyright (C) 2020 Authors
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_LPE_FILLCONVERSION_H
+#define INKSCAPE_LPE_FILLCONVERSION_H
+
 class SPShape;
 
-namespace Inkscape {
-namespace LivePathEffect {
+namespace Inkscape::LivePathEffect {
 
 /**
  * Prepares a SPShape's fill and stroke for use in a path effect by setting
@@ -29,10 +35,9 @@ void lpe_shape_convert_stroke_and_fill(SPShape *shape);
  */
 void lpe_shape_revert_stroke_and_fill(SPShape *shape, double width);
 
-}
-}
+} // namespace Inkscape::LivePathEffect
 
-#endif
+#endif // INKSCAPE_LPE_FILLCONVERSION_H
 
 /*
   Local Variables:

@@ -7,8 +7,9 @@
  * Authors:
  *   Tavmjong Bah       <tavmjong@free.fr>
  *   Patrick Storz      <eduard.braun2@gmx.de>
+ *   Daniel Boles       <dboles.src+inkscape@gmail.com>
  *
- * Copyright (C) 2020 Authors
+ * Copyright (C) 2020-2023 Authors
  *
  * The contents of this file may be used under the GNU General Public License Version 2 or later.
  * Read the file 'COPYING' for more information.
@@ -17,8 +18,9 @@
 
 #include "menu-icon-shift.h"
 
-#include <iostream>
-#include <gtkmm.h>
+#include <string>
+#include <gtkmm/cssprovider.h>
+#include <gtkmm/menushell.h>
 
 #include "inkscape-application.h"  // Action extra data
 
@@ -28,36 +30,43 @@
 //     return false;
 // }
 
-/*
+/**
  *  Install CSS to shift icons into the space reserved for toggles (i.e. check and radio items).
  *  The CSS will apply to all menu icons but is updated as each menu is shown.
  */
-
 bool
 shift_icons(Gtk::MenuShell* menu)
 {
-    gint width, height;
+    int width, height;
     gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
     bool shifted = false;    
+
     // Calculate required shift. We need an example!
     // Search for Gtk::MenuItem -> Gtk::Box -> Gtk::Image
     static auto app = InkscapeApplication::instance();
     auto &label_to_tooltip_map = app->get_menu_label_to_tooltip_map();
 
     for (auto child : menu->get_children()) {
+        if (shifted) {
+            break;
+        }
+
         auto menuitem = dynamic_cast<Gtk::MenuItem *>(child);
         if (menuitem) { //we need to go here to know we are in RTL maybe we can check in otehr way and simplify
             auto submenu = menuitem->get_submenu();
             if (submenu) {
                 shifted = shift_icons(submenu);
             }
+
             Gtk::Box *box = nullptr;
+
             auto label = menuitem->get_label();
             if (label.empty()) {
                 box = dynamic_cast<Gtk::Box *>(menuitem->get_child());
                 if (!box) {
                     continue;
                 }  
+
                 std::vector<Gtk::Widget *> children = box->get_children();
                 if (children.size() == 2) {
                     auto label_widget = dynamic_cast<Gtk::Label *>(children[1]);
@@ -72,14 +81,17 @@ shift_icons(Gtk::MenuShell* menu)
             if (label.empty()) {
                 continue;
             } 
+
             auto it = label_to_tooltip_map.find(label);
             if (it != label_to_tooltip_map.end()) {
                 menuitem->set_tooltip_text(it->second);
             }
+
             if (shifted || !box) {
                 continue;
             }
-            width += box->get_spacing() * 1.5; //2 elements 3 halfs to measure
+
+            width += box->get_spacing();
             std::string css_str;
             Glib::RefPtr<Gtk::CssProvider> provider = Gtk::CssProvider::create();
             auto const screen = Gdk::Screen::get_default();
@@ -93,6 +105,7 @@ shift_icons(Gtk::MenuShell* menu)
             shifted = true;
         }
     }
+
     return shifted;
 }
 

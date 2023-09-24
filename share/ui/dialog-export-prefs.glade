@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkImage" id="gear_icon">
@@ -36,6 +35,7 @@
         <child>
           <object class="GtkViewport" id="pref_holder">
             <property name="visible">True</property>
+            <property name="shadow-type">none</property>
           </object>
           <packing>
             <property name="position">2</property>
@@ -51,5 +51,6 @@
     <property name="image">gear_icon</property>
     <property name="direction">left</property>
     <property name="popover">pref_popover</property>
+    <property name="tooltip-text" translatable="yes">View export format options</property>
   </object>
 </interface>

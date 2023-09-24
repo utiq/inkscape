@@ -2,7 +2,8 @@
 /**
  * @file
  * Fill/stroke conversion routines for LPEs which draw a stroke
- *
+ */
+/*
  * Authors:
  *   Liam P White
  *
@@ -151,8 +152,7 @@ static bool has_stroke(SPObject *source)
     return source->style->stroke.isColor() || source->style->stroke.isPaintserver();
 }
 
-namespace Inkscape {
-namespace LivePathEffect {
+namespace Inkscape::LivePathEffect {
 
 void lpe_shape_convert_stroke_and_fill(SPShape *shape)
 {
@@ -221,8 +221,7 @@ void lpe_shape_revert_stroke_and_fill(SPShape *shape, double width)
     sp_repr_css_attr_unref(css);
 }
 
-}
-}
+} // namespace Inkscape::LivePathEffect
 
 /*
   Local Variables:

@@ -171,6 +171,7 @@ public:
 
     void iconify();
     void maximize();
+    void hide();
     void fullscreen();
 
     void layoutWidgets();

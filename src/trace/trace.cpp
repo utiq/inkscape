@@ -14,16 +14,17 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 #include <limits>
+#include <memory>
 #include <mutex>
 #include <algorithm>
 #include <cassert>
 #include <2geom/transforms.h>
 #include <glibmm/i18n.h>
 
+#include "actions/actions-helper.h"
 #include "trace.h"
 #include "siox.h"
 
-#include "desktop.h"
 #include "document.h"
 #include "document-undo.h"
 #include "helper/geom.h"
@@ -53,59 +54,6 @@
 namespace Inkscape {
 namespace Trace {
 namespace {
-
-/**
- * Grab the image and siox items from the current selection, performing some validation.
- * \pre SP_ACTIVE_DESKTOP must not be null.
- */
-std::optional<std::pair<SPImage*, std::vector<SPItem*>>> getImageAndItems(bool sioxEnabled, bool notifications = true)
-{
-    auto desktop = SP_ACTIVE_DESKTOP;
-    auto msgStack = desktop->getMessageStack();
-    auto sel = desktop->getSelection();
-
-    if (sioxEnabled) {
-        auto selection = std::vector<SPItem*>(sel->items().begin(), sel->items().end());
-        std::sort(selection.begin(), selection.end(), sp_item_repr_compare_position_bool);
-
-        SPImage *img = nullptr;
-        std::vector<SPItem*> items;
-
-        for (auto item : selection) {
-            if (auto itemimg = cast<SPImage>(item)) {
-                if (img) { // we want only one
-                    if (notifications) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Select only one <b>image</b> to trace"));
-                    return {};
-                }
-                img = itemimg;
-            } else if (img) { // Items are processed back-to-front, so this means "above the image".
-                items.emplace_back(item);
-            }
-        }
-
-        if (!img || items.empty()) {
-            if (notifications) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Select one image and one or more shapes above it"));
-            return {};
-        }
-
-        return std::make_pair(img, std::move(items));
-    } else {
-        // SIOX not enabled. We want exactly one image selected.
-        auto item = sel->singleItem();
-        if (!item) {
-            if (notifications) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Select an <b>image</b> to trace")); // same as above
-            return {};
-        }
-
-        auto img = cast<SPImage>(item);
-        if (!img) {
-            if (notifications) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Select an <b>image</b> to trace"));
-            return {};
-        }
-
-        return {{ img, {} }};
-    }
-}
 
 /**
  * Given an SPImage, get the transform from pixbuf coordinates to the document.
@@ -314,8 +262,10 @@ private:
 
 TraceFuture trace(std::unique_ptr<TracingEngine> engine, bool sioxEnabled, std::function<void(double)> onprogress, std::function<void()> onfinished)
 {
+    std::cout << "Begin trace schedule" << std::endl;
     auto task = std::make_unique<TraceTask>(std::move(engine), sioxEnabled, std::move(onprogress), std::move(onfinished));
     auto saved = task.get();
+
     return saved->launch(std::move(task));
 }
 
@@ -328,35 +278,24 @@ TraceFuture preview(std::unique_ptr<TracingEngine> engine, bool sioxEnabled, std
 
 TraceFuture TraceTask::launch(std::unique_ptr<TraceTask> self)
 {
-    // Grab data and validate setup.
-
-    auto desktop = SP_ACTIVE_DESKTOP;
-    if (!desktop) {
-        g_warning("Trace: No active desktop\n");
-        return {};
-    }
-
-    auto msgStack = desktop->getMessageStack();
+    g_info("Grab data and validate setup.");
 
     auto doc = SP_ACTIVE_DOCUMENT;
     if (!doc) {
-        if (type == Type::Trace) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Trace: No active document"));
+        if (type == Type::Trace) g_error("Trace: No active document");
         return {};
     }
     doc->ensureUpToDate();
 
-    auto imageanditems = getImageAndItems(sioxEnabled, type == Type::Trace);
-    if (!imageanditems) {
-        return {};
+    g_info("Copy into coroutine frame.");
+
+    std::vector<SPItem*> items = doc->getItemsPartiallyInBox(0, Geom::Rect{0,0,100,100});
+    SPImage* image = nullptr;
+    if (image = cast<SPImage>(items.front()); image) {
+      image_pixbuf = image->pixbuf; // Note: image->pixbuf is immutable, so can be shared thread-safely.
     }
-
-    // Copy into coroutine frame.
-
-    auto image = imageanditems->first;
-
-    image_pixbuf = image->pixbuf; // Note: image->pixbuf is immutable, so can be shared thread-safely.
     if (!image_pixbuf) {
-        if (type == Type::Trace) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Trace: Image has no bitmap data"));
+        if (type == Type::Trace) g_error("Trace: Image has no bitmap data");
         return {};
     }
 
@@ -368,12 +307,10 @@ TraceFuture TraceTask::launch(std::unique_ptr<TraceTask> self)
     image_transform = getImageTransform(image);
 
     if (sioxEnabled) {
-        siox_mask = rasterizeItems(imageanditems->second, image_transform, dimensions(*image_pixbuf));
+        siox_mask = rasterizeItems(items, image_transform, dimensions(*image_pixbuf));
     }
 
-    if (type == Type::Trace) msgStack->flash(Inkscape::NORMAL_MESSAGE, _("Trace: Starting trace..."));
-
-    // Open channel and launch background task.
+    if (type == Type::Trace) g_info("Trace: Starting trace...");
 
     auto [src, dst] = Async::Channel::create();
     auto image_watcher = std::make_shared<SPWeakPtr<SPImage>>(image);
@@ -385,6 +322,7 @@ TraceFuture TraceTask::launch(std::unique_ptr<TraceTask> self)
         do_async_work(std::move(self));
     });
 
+    std::cout << "Finished" << std::endl;
     return detail::TraceFutureCreate::create(std::move(dst), std::move(image_watcher));
 }
 
@@ -432,9 +370,7 @@ void TraceTask::do_async_work(std::unique_ptr<TraceTask> self)
         progress.report_or_throw(1.0);
 
         // Return to the original thread for the remainder of the processing.
-        channel.run([this, self = std::move(self)] () mutable {
-            do_final_work(std::move(self));
-        });
+        do_final_work(std::move(self));
 
     } catch (Async::CancelledException const &) {
 
@@ -458,10 +394,9 @@ void TraceTask::do_final_work(std::unique_ptr<TraceTask> self)
     assert(channel);
 
     auto doc = SP_ACTIVE_DOCUMENT;
-    auto desktop = SP_ACTIVE_DESKTOP;
     auto image_watcher = image_watcher_weak.lock();
 
-    if (!doc || !desktop || !image_watcher || traceresult.empty()) {
+    if (!doc || !image_watcher || traceresult.empty()) {
         onfinished_trace();
         return;
     }
@@ -473,8 +408,7 @@ void TraceTask::do_final_work(std::unique_ptr<TraceTask> self)
         return;
     }
 
-    auto msgStack = desktop->getMessageStack();
-    auto selection = desktop->getSelection();
+    auto selection = doc->getSelection();
 
     // Get pointers to the <image> and its parent.
     // XML Tree being used directly here while it shouldn't be
@@ -485,7 +419,7 @@ void TraceTask::do_final_work(std::unique_ptr<TraceTask> self)
     image_transform = getImageTransform(image);
 
     // OK. Now let's start making new nodes.
-    Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
+    Inkscape::XML::Document *xml_doc = doc->getReprDoc();
     Inkscape::XML::Node *groupRepr = nullptr;
 
     // If more than one path, make a <g>roup of <path>s.
@@ -528,9 +462,7 @@ void TraceTask::do_final_work(std::unique_ptr<TraceTask> self)
     // Inform the document, so we can undo.
     DocumentUndo::done(doc, _("Trace bitmap"), INKSCAPE_ICON("bitmap-trace"));
 
-    char *msg = g_strdup_printf(_("Trace: Done. %ld nodes created"), totalNodeCount);
-    msgStack->flash(Inkscape::NORMAL_MESSAGE, msg);
-    g_free(msg);
+    g_info(_("Trace: Done. %ld nodes created"), totalNodeCount);
 
     onfinished_trace();
 }
