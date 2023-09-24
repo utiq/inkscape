@@ -55,3 +55,6 @@ tags
 .DS_Store
 .idea
 cmake-build-debug
+
+# YCM code completer
+.ycm_*

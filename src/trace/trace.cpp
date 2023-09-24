@@ -370,9 +370,7 @@ void TraceTask::do_async_work(std::unique_ptr<TraceTask> self)
         progress.report_or_throw(1.0);
 
         // Return to the original thread for the remainder of the processing.
-        channel.run([this, self = std::move(self)] () mutable {
-            do_final_work(std::move(self));
-        });
+        do_final_work(std::move(self));
 
     } catch (Async::CancelledException const &) {
 
@@ -464,8 +462,7 @@ void TraceTask::do_final_work(std::unique_ptr<TraceTask> self)
     // Inform the document, so we can undo.
     DocumentUndo::done(doc, _("Trace bitmap"), INKSCAPE_ICON("bitmap-trace"));
 
-    char *msg = g_strdup_printf(_("Trace: Done. %ld nodes created"), totalNodeCount);
-    g_free(msg);
+    g_info(_("Trace: Done. %ld nodes created"), totalNodeCount);
 
     onfinished_trace();
 }

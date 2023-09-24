@@ -51,8 +51,6 @@ void selection_trace(const Glib::VariantBase &value, InkscapeApplication *app)
         return;
     }
 
-    selection->createBitmapCopy();
-
     Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value);
     std::vector<Glib::ustring> settings = Glib::Regex::split_simple(",", s.get());
     auto scans = std::stoi(settings[0]);           // Scans
@@ -69,15 +67,21 @@ void selection_trace(const Glib::VariantBase &value, InkscapeApplication *app)
 
     std::cout << "Tracing scheduling ";
     std::cout.flush();
+    bool finished = false;
     Inkscape::Trace::TraceFuture result = Inkscape::Trace::trace(
             std::move(tracer),
             false,
             [](double progress) {
                 std::cerr << "Processing...  " << progress << std::endl;
             },
-            [](){
+            [&finished](){
                 std::cout << "Done." << std::endl;
+                finished = true;
             });
+    do {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(100ms);
+    } while (!finished);
 }
 
 // No sanity checking is done... should probably add.
